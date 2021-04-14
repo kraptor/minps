@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.1.0"
+version       = "0.0.1"
 author        = "kraptor"
 description   = "A wannabe PlayStation 1 emulator"
 license       = "MIT"
@@ -10,10 +10,10 @@ bin           = @[
     "minps"
 ]
 
-
 # Dependencies
 
 requires "nim >= 1.5.1"
+requires "chronicles >= 0.1.0"
 requires "nimgl >= 1.1.10"
 
 # Utilities
@@ -29,7 +29,6 @@ proc stripFile(path: string, filename: string) =
     if strip_bin != "":
         echo "Running strip on: " & filename
         withDir path:
-            echo strip_bin & " " & filename
             exec strip_bin & " " & filename
     else:
         echo "******* WARNING: Missing 'strip' command. Skipped."
@@ -37,16 +36,16 @@ proc stripFile(path: string, filename: string) =
 # Tasks
 
 task build_debug, "Build debug version":
-    exec "nimble -d:debug --debugger:native --debuginfo --linedir:on -d:MINPS_DEBUG build"
+    exec "nimble -d:debug --debugger:native --debuginfo --linedir:on -d:MINPS_DEBUG -d:Version:" & version & " build"
     appendBinaries "_debug"
 
 task build_release, "Build release version":
-    exec "nimble -d:danger --opt:speed --passC:-flto --passC:-O3 -d:MINPS_RELEASE build"
+    exec "nimble -d:danger --opt:speed --passC:-flto --passC:-O3 -d:MINPS_RELEASE -d:Version:" & version & " build"
     appendBinaries "_release"
     stripFile binDir, "minps_release"
 
 task build_profiler, "Build with profiler":
-    exec "nimble --profiler:on --stackTrace:on -d:MINPS_PROFILER build"
+    exec "nimble --profiler:on --stackTrace:on -d:MINPS_PROFILER -d:Version:" & version & " build"
     appendBinaries "_profiler"
 
 task build_all, "Build all minps versions":

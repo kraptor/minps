@@ -5,16 +5,14 @@
 
 {.experimental: "codeReordering".}
 
-const VersionCommit*: string = (staticExec "git rev-parse HEAD")
+const Version* {.strdefine.} = "devel"
 const VersionTag*: string = (staticExec "git tag --points-at HEAD")
+const VersionCommit*: string = (staticExec "git rev-parse HEAD")
 const VersionString* = getVersionString()
 
 
 proc getVersionString(): string =
-    result = VersionTag
-
-    if result.len == 0:
-        result = "devel"
+    result = Version
 
     if defined(MINPS_DEBUG):
         result = result & ".debug"
