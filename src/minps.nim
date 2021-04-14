@@ -7,7 +7,7 @@ import version
 
 proc main() =
     echo "minps - a wannabe PlayStation 1 emulator"
-    echo "version: " & versionString
+    echo "version: " & VersionString
 
 when isMainModule:
     main()
