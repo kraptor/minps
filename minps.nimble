@@ -13,7 +13,7 @@ bin           = @[
 # Dependencies
 
 requires "nim >= 1.5.1"
-requires "chronicles >= 0.1.0"
+requires "chronicles >= 0.10.1"
 requires "nimgl >= 1.1.10"
 
 # Utilities
@@ -25,7 +25,6 @@ proc appendBinaries(postfix: string) =
 
 proc stripFile(path: string, filename: string) =
     let strip_bin = findExe "strip"
-    echo strip_bin
     if strip_bin != "":
         echo "Running strip on: " & filename
         withDir path:
@@ -53,6 +52,6 @@ task build_all, "Build all minps versions":
     exec "nimble build_release"
     exec "nimble build_profiler"
 
-task clean, "Clean built files":
+task clean, "Clean all build files":
     rmDir "__nimcache"
     rmDir binDir
