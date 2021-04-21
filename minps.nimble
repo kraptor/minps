@@ -6,6 +6,7 @@ description   = "A wannabe PlayStation 1 emulator"
 license       = "MIT"
 srcDir        = "src"
 binDir        = "bin"
+backend       = "cpp"
 bin           = @[
     "minps"
 ]
