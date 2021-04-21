@@ -7,11 +7,17 @@
 ### Debug build
     nimble build_debug
 
-### Profile build
+### Profiler build
     nimble build_profiler
+
+### Profiler build (memory)
+    nimble build_profiler_memory
 
 ### Release build
     nimble build_release
+
+### Release build (with stacktrace support)
+    nimble build_release_stacktrace
 
 ## Running tests
     nimble test --silent
