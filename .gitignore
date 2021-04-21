@@ -2,6 +2,7 @@ nimcache/
 nimblecache/
 htmldocs/
 minps.log
+profile_results.txt
 
 __nimcache/
 bin/

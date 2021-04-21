@@ -18,7 +18,9 @@ proc getVersion(): string =
     if defined(MINPS_RELEASE):
         result = result & ".release"
     if defined(MINPS_PROFILER):
-        result = result & ".profiler"
+        result = result & ".profiler"        
+    if defined(MINPS_PROFILER_MEMORY):
+        result = result & ".profiler_memory"
 
 proc getVersionString(): string =
     result = Version

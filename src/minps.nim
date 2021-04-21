@@ -3,14 +3,15 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
+include core/profiler
+
+import version
+
 import chronicles
 
 logScope:
     topics = "main"
     chroniclesLineNumbers = true
-
-import version
-
 
 proc main() =
     echo "minps - a wannabe PlayStation 1 emulator"
