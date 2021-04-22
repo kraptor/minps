@@ -23,11 +23,16 @@ jobs:
         with:
           version: ${{ matrix.nimversion }}
       - run: nim --version
-      - name: Refresh packages
-        run: nimble refresh
-      - name: Install dependencies
-        run: nimble install -d
+      - name: Refresh packages + install dependencies
+        run: |
+          nimble refresh
+          nimble install -d
       - name: Build all versions
         run: nimble build_all
+      - name: Display all built executables and sizes
+        if: runner.os != "Windows"
+        run: ls -alh bin
+        if: runner.os == "Windows"
+        run: dir bin
       - name: Run all tests
         run: nimble test
