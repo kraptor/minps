@@ -13,7 +13,7 @@ bin           = @[
 
 # Dependencies
 
-requires "nim >= 1.5.1"
+requires "nim >= 1.4.6"
 requires "chronicles >= 0.10.1"
 requires "nimgl >= 1.1.10"
 
