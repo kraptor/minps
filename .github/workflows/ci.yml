@@ -32,7 +32,7 @@ jobs:
       - name: Display all built executables and sizes (linux)
         if: runner.os != 'Windows'
         run: ls -alh bin
-      - name: Display all built executables and sizes (window)
+      - name: Display all built executables and sizes (windows)
         if: runner.os == 'Windows'
         run: dir bin
       - name: Run all tests
