@@ -21,8 +21,8 @@ requires "nimgl >= 1.1.10"
 
 proc appendBinaries(postfix: string) =
     withDir binDir:
-        for b in bin:
-            mvFile(b, b & postfix)
+        for binary in bin:
+            mvFile(toExe(binary), toExe(binary & postfix))
 
 proc stripFile(path: string, filename: string) =
     let strip_bin = findExe "strip"
