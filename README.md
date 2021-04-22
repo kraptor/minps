@@ -10,7 +10,7 @@
 
 Debug build: 
 
-    nimble build_debug```
+    nimble build_debug
 
 Profiler build
 
