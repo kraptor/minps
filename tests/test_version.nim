@@ -4,7 +4,7 @@
 # https://opensource.org/licenses/MIT
 
 import unittest
-import version
+import core/version
 
 suite "version":
     test "version value":
