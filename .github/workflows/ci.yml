@@ -29,9 +29,10 @@ jobs:
           nimble install -d
       - name: Build all versions
         run: nimble build_all
-      - name: Display all built executables and sizes
+      - name: Display all built executables and sizes (windows)
         if: runner.os != "Windows"
         run: ls -alh bin
+      - name: Display all built executables and sizes (linux)
         if: runner.os == "Windows"
         run: dir bin
       - name: Run all tests
