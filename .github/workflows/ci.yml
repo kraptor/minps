@@ -23,7 +23,6 @@ jobs:
         with:
           version: ${{ matrix.nimversion }}
       - run: nim --version
-      - name:
       - name: Install dependencies
         - run: nimble refresh
         - run: nimble install -d
