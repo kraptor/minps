@@ -42,12 +42,11 @@ task build_debug, "Build debug version":
 task build_release, "Build release version":
     exec "nimble -d:danger --opt:speed --passC:-flto --passC:-O3 -d:MINPS_RELEASE -d:Version:" & version & " build"
     appendBinaries "_release"
-    stripFile binDir, "minps_release"
+    stripFile binDir, toExe("minps_release")
 
 task build_release_stacktrace, "Build release version (with stacktraces)":
     exec "nimble -d:danger --stackTrace:on --opt:speed --passC:-flto --passC:-O3 -d:MINPS_RELEASE -d:Version:" & version & " build"
     appendBinaries "_release_stacktrace"
-    stripFile binDir, "minps_release_stacktrace"
 
 task build_profiler, "Build with profiler":
     exec "nimble --profiler:on --stackTrace:on -d:MINPS_PROFILER -d:Version:" & version & " build"
