@@ -7,11 +7,11 @@ jobs:
     strategy:
       matrix:
         os:
-          - windows-latest
-          - macos-latest
+          #- windows-latest
+          #- macos-latest
           - ubuntu-latest
         nimversion:
-          - stable
+          # - stable
           - devel
     name: ${{ matrix.os }} - ${{ matrix.nimversion }}
     runs-on: ${{ matrix.os }}
@@ -29,9 +29,9 @@ jobs:
           nimble install -d
       - name: Build all versions
         run: nimble build_all
-      - name: Display all built executables and sizes (linux)
+      - name: Display all built executables and sizes (unix)
         if: runner.os != 'Windows'
-        run: ls -alh bin
+        run: ls -al bin
       - name: Display all built executables and sizes (windows)
         if: runner.os == 'Windows'
         run: dir bin
