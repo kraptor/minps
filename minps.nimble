@@ -36,24 +36,24 @@ proc stripFile(path: string, filename: string) =
 # Tasks
 
 task build_debug, "Build debug version":
-    exec "nimble -d:debug --debugger:native --debuginfo --linedir:on -d:MINPS_DEBUG -d:Version:" & version & " build"
+    exec "nimble -d:debug --gc:orc --debugger:native --debuginfo --linedir:on -d:MINPS_DEBUG -d:Version:" & version & " build"
     appendBinaries "_debug"
 
 task build_release, "Build release version":
-    exec "nimble -d:danger --opt:speed --passC:-flto --passC:-O3 -d:MINPS_RELEASE -d:Version:" & version & " build"
+    exec "nimble -d:danger --gc:orc --opt:speed --passC:-flto --passC:-O3 -d:MINPS_RELEASE -d:Version:" & version & " build"
     appendBinaries "_release"
     stripFile binDir, toExe("minps_release")
 
 task build_release_stacktrace, "Build release version (with stacktraces)":
-    exec "nimble -d:danger --stackTrace:on --opt:speed --passC:-flto --passC:-O3 -d:MINPS_RELEASE -d:Version:" & version & " build"
+    exec "nimble -d:danger --gc:orc --stackTrace:on --opt:speed --passC:-flto --passC:-O3 -d:MINPS_RELEASE -d:Version:" & version & " build"
     appendBinaries "_release_stacktrace"
 
 task build_profiler, "Build with profiler":
-    exec "nimble --profiler:on --stackTrace:on -d:MINPS_PROFILER -d:Version:" & version & " build"
+    exec "nimble -d:danger --gc:orc --profiler:on --stackTrace:on -d:MINPS_PROFILER -d:Version:" & version & " build"
     appendBinaries "_profiler"
 
 task build_profiler_memory, "Build with memory profiler":
-    exec "nimble --profiler:off -d:memProfiler --stackTrace:on -d:MINPS_PROFILER_MEMORY -d:Version:" & version & " build"
+    exec "nimble -d:danger --gc:orc --profiler:off -d:memProfiler --stackTrace:on -d:MINPS_PROFILER_MEMORY -d:Version:" & version & " build"
     appendBinaries "_profiler_memory"
 
 task build_all, "Build all minps versions":
