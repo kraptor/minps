@@ -12,19 +12,19 @@ Debug build:
 
     nimble build_debug
 
-Profiler build
+Profiler build:
 
     nimble build_profiler
 
-Profiler build (memory)
+Profiler build (memory):
 
     nimble build_profiler_memory
 
-Release build
+Release build:
 
     nimble build_release
 
-Release build (with stacktrace support)
+Release build (with stacktrace support):
 
     nimble build_release_stacktrace
 
