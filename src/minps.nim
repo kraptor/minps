@@ -3,15 +3,17 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
-include core/profiler # NOTE: should be an include for it to work
+include inc/profiler # NOTE: should be an include for it to work
 
 import chronicles
+
+import core/version
+
 
 logScope:
     topics = "main"
     chroniclesLineNumbers = true
 
-import core/version
 
 proc main() =
     echo "minps - a wannabe PlayStation 1 emulator"
@@ -20,5 +22,5 @@ proc main() =
     notice "minps started", version = VersionString
     notice "minps stopped"
 
-when isMainModule:    
+when isMainModule:
     main()
