@@ -8,7 +8,7 @@
 
 ``minps`` can be compiled in different flavors using ``nimble``.
 
-Debug build: 
+Debug build:
 
     nimble build_debug
 
@@ -33,4 +33,9 @@ Release build (with stacktrace support):
     nimble test --silent
 
 ## Logging configuration
-``minps`` uses [nim-chronicles](https://github.com/status-im/nim-chronicles) for logging. Use any of it's configuration options to change the default logging behavior. To do so, edit the file [``src/nim.cfg``](src/nim.cfg)
+
+Available defines:
+ * `loglevel`: set a minimum log level to log.
+ * `loglevel_channels`: set channels to log (separated by commas) or using a wildcard to specify all.
+
+See the file [``src/nim.cfg``](src/nim.cfg) for defaults.
