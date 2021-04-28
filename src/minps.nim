@@ -3,24 +3,23 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
+{.experimental: "codeReordering".}
+
 include inc/profiler # NOTE: should be an include for it to work
-
-import chronicles
-
-import core/version
+import core/[log, version]
 
 
-logScope:
-    topics = "main"
-    chroniclesLineNumbers = true
+#logFile ":stdout"
+logChannels ["main"]
 
 
 proc main() =
-    echo "minps - a wannabe PlayStation 1 emulator"
-    echo "version: " & VersionString
-    echo "---"
-    notice "minps started", version = VersionString
+    logEcho "minps - a wannabe PlayStation 1 emulator"
+    logEcho "version: " & VersionString
+
+    notice "minps started"
     notice "minps stopped"
+
 
 when isMainModule:
     main()

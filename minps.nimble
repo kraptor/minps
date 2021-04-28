@@ -14,7 +14,6 @@ bin           = @[
 # Dependencies
 
 requires "nim >= 1.4.6"
-requires "chronicles >= 0.10.1"
 requires "nimgl >= 1.1.10"
 
 # Utilities
@@ -36,24 +35,24 @@ proc stripFile(path: string, filename: string) =
 # Tasks
 
 task build_debug, "Build debug version":
-    exec "nimble --silent -d:debug --gc:orc --debugger:native --debuginfo --linedir:on -d:MINPS_DEBUG -d:Version:" & version & " build"
+    exec "nimble --silent -d:debug --gc:orc --debugger:native --debuginfo --linedir:on --threads:on -d:MINPS_DEBUG -d:Version:" & version & " build"
     appendBinaries "_debug"
 
 task build_release, "Build release version":
-    exec "nimble --silent -d:danger --gc:orc --opt:speed --passC:-flto --passC:-O3 -d:MINPS_RELEASE -d:Version:" & version & " build"
+    exec "nimble --silent -d:danger --gc:orc --opt:speed --passC:-flto --passC:-O3 --threads:on -d:MINPS_RELEASE -d:Version:" & version & " build"
     appendBinaries "_release"
     stripFile binDir, toExe("minps_release")
 
 task build_release_stacktrace, "Build release version (with stacktraces)":
-    exec "nimble --silent -d:danger --gc:orc --stackTrace:on --opt:speed --passC:-flto --passC:-O3 -d:MINPS_RELEASE -d:Version:" & version & " build"
+    exec "nimble --silent -d:danger --gc:orc --stackTrace:on --opt:speed --passC:-flto --passC:-O3 --threads:on -d:MINPS_RELEASE -d:Version:" & version & " build"
     appendBinaries "_release_stacktrace"
 
 task build_profiler, "Build with profiler":
-    exec "nimble --silent -d:danger --gc:orc --profiler:on --stackTrace:on -d:MINPS_PROFILER -d:Version:" & version & " build"
+    exec "nimble --silent -d:danger --gc:orc --profiler:on --stackTrace:on -d:MINPS_PROFILER --threads:on -d:Version:" & version & " build"
     appendBinaries "_profiler"
 
 task build_profiler_memory, "Build with memory profiler":
-    exec "nimble --silent -d:danger --gc:orc --profiler:off -d:memProfiler --stackTrace:on -d:MINPS_PROFILER_MEMORY -d:Version:" & version & " build"
+    exec "nimble --silent -d:danger --gc:orc --profiler:off -d:memProfiler --stackTrace:on --threads:on -d:MINPS_PROFILER_MEMORY -d:Version:" & version & " build"
     appendBinaries "_profiler_memory"
 
 task build_all, "Build all minps versions":
