@@ -116,15 +116,14 @@ macro doLog(level: static LogLevel, message: string, channels: static openArray[
 
 template logChannels*(channels: static openArray[string]) =
     # logChannels ["channel"]
-    template exception(msg: string) = doLog LogLevel.Exception, msg, channels, instantiationInfo()
-    template notice(msg: string) = doLog Notice, msg, channels, instantiationInfo()
-    template warn(msg: string) = doLog Warning, msg, channels, instantiationinfo()
-    template trace(msg: string) = doLog Trace, msg, channels, instantiationInfo()
-    template error(msg: string) = doLog Error, msg, channels, instantiationInfo()
-    template debug(msg: string) = doLog Debug, msg, channels, instantiationInfo()
-    template info(msg: string) = doLog Info, msg, channels, instantiationInfo()
-    template log(msg: string) = doLog None, msg, channels, instantiationInfo()
-    template logEcho(msg: string) = echo msg; log msg
+    template exception*(msg: string) = doLog LogLevel.Exception, msg, channels, instantiationInfo()
+    template notice*(msg: string) = doLog Notice, msg, channels, instantiationInfo()
+    template warn*(msg: string) = doLog Warning, msg, channels, instantiationinfo()
+    template trace*(msg: string) = doLog Trace, msg, channels, instantiationInfo()
+    template error*(msg: string) = doLog Error, msg, channels, instantiationInfo()
+    template debug*(msg: string) = doLog Debug, msg, channels, instantiationInfo()
+    template log*(msg: string) = doLog None, msg, channels, instantiationInfo()
+    template logEcho*(msg: string) = echo msg; log msg
 
     # aliases
     template warning(msg: string) = warn msg
@@ -157,3 +156,7 @@ template logFile*(filename: string = ":stdout") =
         if not open(logfile_handle, filename, fmWrite):
             echo "Cannot open file: " & filename
             quit QuitFailure
+
+
+# define default log channel if nothing specified
+logChannels [""]
