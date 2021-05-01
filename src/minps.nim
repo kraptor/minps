@@ -6,8 +6,10 @@
 {.experimental: "codeReordering".}
 
 include inc/profiler # NOTE: should be an include for it to work
-import core/[log, version]
+include inc/concept_check # NOTE: we want to check concepts asap
 
+import core/[log, version]
+import emulator/[config, bios, platform]
 
 #logFile ":stdout"
 logChannels ["main"]
@@ -18,6 +20,11 @@ proc main() =
     logEcho "version: " & VersionString
 
     notice "minps started"
+    let config = Config.New("minps.ini")
+    var platform = Platform.New(
+        Bios.FromFile(config.bios_file)
+    )
+    platform.Run()
     notice "minps stopped"
 
 
