@@ -39,7 +39,6 @@ type
 proc increaseLogIndentation =
     inc current_indentation, 2
 
-
 proc decreaseLogIndentation =
     current_indentation = max(0, current_indentation - 2)
 
@@ -103,12 +102,12 @@ macro doLog(level: static LogLevel, message: string, channels: static openArray[
                 f {.inject.} = logfile_handle
 
             if defined(LOG_NO_COLORS):
-                write f, t, " ", `level_name`, c, " ", alignLeft(m, 67), s[0], ":", s[1], "\n"
+                write f, t, " ", `level_name`, c, " ", spaces(i), alignLeft(m, 67 - i), s[0], ":", s[1], "\n"
             else:
                 styledWrite f, fgDefault, styleDim, t, " ", resetStyle,
                     ForegroundColor(`level_color`), `level_name`,
                     fgDefault, c, " ",
-                    ForegroundColor(`level_color`), styleBright, alignLeft(m, 67),
+                    ForegroundColor(`level_color`), styleBright, spaces(i), alignLeft(m, 67 - i),
                     fgDefault, styleDim, fmt"{s[0]}:{s[1]}",
                     resetStyle, "\n"
             flushFile f
