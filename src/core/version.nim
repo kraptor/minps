@@ -10,6 +10,7 @@ const VersionTag*: string = (staticExec "git tag --points-at HEAD")
 const VersionCommit*: string = (staticExec "git rev-parse HEAD")
 const VersionString* = getVersionString()
 
+
 proc getVersion(): string =
     const version {.strdefine.} = "devel"
     result = version
@@ -18,9 +19,10 @@ proc getVersion(): string =
     if defined(MINPS_RELEASE):
         result = result & ".release"
     if defined(MINPS_PROFILER):
-        result = result & ".profiler"        
+        result = result & ".profiler"
     if defined(MINPS_PROFILER_MEMORY):
         result = result & ".profiler_memory"
+
 
 proc getVersionString(): string =
     result = Version
