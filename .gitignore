@@ -1,6 +1,7 @@
 nimcache/
 nimblecache/
-htmldocs/
+bios/
+bios.bin
 minps.log
 profile_results.txt
 
