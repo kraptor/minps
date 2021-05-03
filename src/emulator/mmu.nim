@@ -29,13 +29,19 @@ proc Reset*(self: Mmu) =
 proc Read8*(self: Mmu, address: Address): uint8 {.inline.} = Read[uint8](self, address)
 proc Read16*(self: Mmu, address: Address): uint16 {.inline.} = Read[uint16](self, address)
 proc Read32*(self: Mmu, address: Address): uint32 {.inline.} = Read[uint32](self, address)
-
 proc Read*[T: uint32|uint16|uint8](self: Mmu, address: Address): T =
     trace fmt"Read ({$type(T)})@{address}"
     logIndent:
         let ka = address.toKUSEG()
 
         if ka < BIOS_START: NOT_IMPLEMENTED "No device found before BIOS"
-        if ka < BIOS_END: NOT_IMPLEMENTED "Bios not implemented"
+        if ka < BIOS_END: return Read[T](self.bios, address)
 
         NOT_IMPLEMENTED "No device found: " & $address
+
+
+proc Write8*(self: Mmu, address: Address, value: uint8) {.inline.} = Write(self, address, value)
+proc Write16*(self: Mmu, address: Address, value: uint16) {.inline.} = Write(self, address, value)
+proc Write32*(self: Mmu, address: Address, value: uint32) {.inline.} = Write(self, address, value)
+proc Write*[T: uint32|uint16|uint8](self: Mmu, address: Address, value: T) =
+    NOT_IMPLEMENTED
