@@ -14,15 +14,20 @@ logChannels ["bios"]
 
 
 const
-    BIOS_MAX_SIZE = 1024 * 1024 * 2 # 2MB max BIOS
+    BIOS_MAX_SIZE = 1024 * 1024 * 4 # 4MB max BIOS
 
     # device regions (in kuseg1 when possible)
     BIOS_START* = (Address 0xBFC00000).toKUSEG()
     BIOS_END* = BIOS_START + BIOS_MAX_SIZE
 
 type
+    BiosData {.union.} = object
+        u8: array[BIOS_MAX_SIZE, uint8]
+        u16: array[BIOS_MAX_SIZE div 2, uint16]
+        u32: array[BIOS_MAX_SIZE div 4, uint32]
+
     Bios* = ref object
-        data*: array[BIOS_MAX_SIZE, uint8]
+        data*: BiosData #array[BIOS_MAX_SIZE, uint8]
         filename: string
         size_loaded: int
 
@@ -46,7 +51,7 @@ proc FromStream*(T: type Bios, stream: Stream): Bios =
         NOT_IMPLEMENTED "Error loading BIOS from stream"
 
     result = Bios()
-    result.size_loaded = readData(stream, result.data.addr, result.data.len)
+    result.size_loaded = readData(stream, result.data.u8.addr, result.data.u8.len)
     assert result.size_loaded > 0
 
 
@@ -63,8 +68,12 @@ proc Read16*(self: Bios, address: Address): uint16 {.inline.} = Read[uint16](sel
 proc Read32*(self: Bios, address: Address): uint32 {.inline.} = Read[uint32](self, address)
 
 
-proc Read*[T: uint8|uint16|uint32](self: Bios, address: Address): T =
+proc Read*[T: uint8|uint16|uint32](self: Bios, address: KusegAddress): T =
+    let offset = address - BIOS_START
+    assert offset <= BIOS_MAX_SIZE - sizeof(T)
     if T is uint32:
-        NOT_IMPLEMENTED "Bios read not implemented:*** " & $type(T)
+        return cast[T](self.data.u32[offset])
     else:
         NOT_IMPLEMENTED "Bios read not implemented: " & $type(T)
+
+    debug "BIOS READ VALUE: " & $(result.uint32)
