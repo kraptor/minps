@@ -116,12 +116,12 @@ macro doLog(level: static LogLevel, message: string, channels: static openArray[
 template logChannels*(channels: static openArray[string]) =
     # logChannels ["channel"]
     template exception*(msg: string) = doLog LogLevel.Exception, msg, channels, instantiationInfo()
-    template notice*(msg: string) = doLog Notice, msg, channels, instantiationInfo()
-    template warn*(msg: string) = doLog Warning, msg, channels, instantiationinfo()
-    template trace*(msg: string) = doLog Trace, msg, channels, instantiationInfo()
-    template error*(msg: string) = doLog Error, msg, channels, instantiationInfo()
-    template debug*(msg: string) = doLog Debug, msg, channels, instantiationInfo()
-    template log*(msg: string) = doLog None, msg, channels, instantiationInfo()
+    template notice*(msg: string) = doLog LogLevel.Notice, msg, channels, instantiationInfo()
+    template warn*(msg: string) = doLog LogLevel.Warning, msg, channels, instantiationinfo()
+    template trace*(msg: string) = doLog LogLevel.Trace, msg, channels, instantiationInfo()
+    template error*(msg: string) = doLog LogLevel.Error, msg, channels, instantiationInfo()
+    template debug*(msg: string) = doLog LogLevel.Debug, msg, channels, instantiationInfo()
+    template log*(msg: string) = doLog LogLevel.None, msg, channels, instantiationInfo()
     template logEcho*(msg: string) = echo msg; log msg
 
     # aliases
