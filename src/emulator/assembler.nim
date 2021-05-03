@@ -5,5 +5,5 @@
 
 import instruction
 
-const
-    NOP* = Instruction(0)
+let
+    NOP* = Instruction.New(0'u32)

@@ -45,10 +45,15 @@ proc RunOne*(self: Cpu) =
 
 
 proc Fetch(self: Cpu) =
-    self.instruction = self.mmu.Read32(self.pc).Instruction
+    self.instruction = Instruction.New(self.mmu.Read32(self.pc))
     debug fmt"{self.instruction}"
+    debug $self.instruction.opcode
 
 
 proc Execute(self: Cpu) =
-    NOT_IMPLEMENTED
+    case self.instruction.opcode:
+    of LUI:
+        NOT_IMPLEMENTED "Missing LUI implementation"
+    else:
+        NOT_IMPLEMENTED
 
