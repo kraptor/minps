@@ -30,12 +30,12 @@ proc Read8*(self: Mmu, address: Address): uint8 {.inline.} = Read[uint8](self, a
 proc Read16*(self: Mmu, address: Address): uint16 {.inline.} = Read[uint16](self, address)
 proc Read32*(self: Mmu, address: Address): uint32 {.inline.} = Read[uint32](self, address)
 proc Read*[T: uint32|uint16|uint8](self: Mmu, address: Address): T =
-    trace fmt"Read ({$type(T)})@{address}"
+    trace fmt"Read ({$type(T)}) @ {address}"
     logIndent:
         let ka = address.toKUSEG()
 
         if ka < BIOS_START: NOT_IMPLEMENTED "No device found before BIOS"
-        if ka < BIOS_END: return Read[T](self.bios, address)
+        if ka < BIOS_END: return Read[T](self.bios, ka)
 
         NOT_IMPLEMENTED "No device found: " & $address
 
