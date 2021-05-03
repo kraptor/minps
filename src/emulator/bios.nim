@@ -14,10 +14,11 @@ logChannels ["bios"]
 
 
 const
+    BIOS_MAX_SIZE = 1024 * 1024 * 2 # 2MB max BIOS
+
     # device regions (in kuseg1 when possible)
     BIOS_START* = (Address 0xBFC00000).toKUSEG()
-    BIOS_MAX_SIZE = 1024 * 1024 * 2 # 2MB
-
+    BIOS_END* = BIOS_START + BIOS_MAX_SIZE
 
 type
     Bios* = ref object
@@ -55,3 +56,15 @@ proc FromFile*(T: type Bios, filename: string): Bios =
         result = Bios.FromStream(openFileStream(filename))
         result.filename = filename
         debug fmt"BIOS Loaded. Size: {result.size_loaded} bytes"
+
+
+proc Read8*(self: Bios, address: Address): uint8 {.inline.} = Read[uint8](self, address)
+proc Read16*(self: Bios, address: Address): uint16 {.inline.} = Read[uint16](self, address)
+proc Read32*(self: Bios, address: Address): uint32 {.inline.} = Read[uint32](self, address)
+
+
+proc Read*[T: uint8|uint16|uint32](self: Bios, address: Address): T =
+    if T is uint32:
+        NOT_IMPLEMENTED "Bios read not implemented:*** " & $type(T)
+    else:
+        NOT_IMPLEMENTED "Bios read not implemented: " & $type(T)
