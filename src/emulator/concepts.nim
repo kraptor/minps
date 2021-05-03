@@ -13,9 +13,9 @@ type
         x.Run()
 
     Readable* = concept x
-        Read[uint32](x, Address) is uint32
-        Read[uint16](x, Address) is uint16
-        Read[uint8](x, Address) is uint8
+        x.Read32(Address) is uint32
+        x.Read16(Address) is uint16
+        x.Read8(Address) is uint8
 
     Component* = concept x
         x is Resettable
