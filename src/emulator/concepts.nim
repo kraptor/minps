@@ -17,5 +17,10 @@ type
         x.Read16(Address) is uint16
         x.Read8(Address) is uint8
 
+    Writable* = concept x
+        x.Write32(Address, uint32)
+        x.Write16(Address, uint16)
+        x.Write8(Address, uint8)
+
     Component* = concept x
         x is Resettable

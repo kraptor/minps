@@ -17,12 +17,12 @@ suite "Test concepts":
     test "MMU":
         assert Mmu is Resettable
         assert Mmu is Readable
-        # assert Mmu is Writable
+        assert Mmu is Writable
 
     test "BIOS":
         assert Bios is Component
-        # assert Bios is Readable
-        # assert Bios isnot Writable
+        assert Bios is Readable
+        assert Bios isnot Writable
 
     test "Platform":
         assert Platform is Runnable
