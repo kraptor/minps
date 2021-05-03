@@ -23,8 +23,6 @@ type
     Kseg1Address* = range[KSEG1_START .. KSEG2_START - 1]
     Kseg2Address* = range[KSEG2_START .. Address 0xFFFF_FFFF]
 
-#     DeviceAddress* = distinct DeviceAddress
-
 # proc value(self: Address): uint32 = cast[uint32](self)
 proc `$`*(self: Address): string = fmt"{cast[uint32](self):08x}h"
 proc `$`*(self: KusegAddress): string = fmt"{cast[uint32](self):08x}h (KUSEG)"

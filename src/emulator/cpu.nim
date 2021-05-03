@@ -8,7 +8,7 @@
 import strformat
 
 import ../core/[log, util]
-import address, mmu, instruction
+import address, mmu, instruction, assembler
 
 logChannels ["cpu"]
 
@@ -18,24 +18,37 @@ type
         pc: Address
         mmu: Mmu
 
+        instruction: Instruction
+
 
 proc New*(T: type Cpu, mmu: Mmu): Cpu =
     debug "Creating CPU..."
     result = Cpu(
-        mmu: mmu
+        mmu: mmu,
+        instruction: NOP
     )
     result.Reset()
 
 
 proc Reset*(self: Cpu) =
     self.pc = CPU_RESET_ENTRY_POINT
+    self.instruction = NOP
     warn "Reset: CPU State not fully initialized."
 
 
 proc RunOne*(self: Cpu) =
-    trace "RunOne"
+    trace $self.pc
     logIndent:
-        trace "Fetching instruction at: " & $self.pc
-        let instruction = Instruction(self.mmu.Read32(self.pc))
-        debug fmt"RunInstruction: {instruction}"
+        self.Fetch()
+        self.Execute()
         NOT_IMPLEMENTED "RunInstruction is not implemented"
+
+
+proc Fetch(self: Cpu) =
+    self.instruction = self.mmu.Read32(self.pc).Instruction
+    debug fmt"{self.instruction}"
+
+
+proc Execute(self: Cpu) =
+    NOT_IMPLEMENTED
+
