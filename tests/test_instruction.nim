@@ -5,7 +5,7 @@
 
 import unittest
 
-import emulator/instruction
+import emulator/cpu/instruction
 
 
 suite "Test instruction type":

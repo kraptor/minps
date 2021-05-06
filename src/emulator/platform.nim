@@ -6,7 +6,7 @@
 {.experimental: "codeReordering".}
 
 import ../core/[log]
-import cpu
+import cpu/cpu
 import mmu
 import bios
 

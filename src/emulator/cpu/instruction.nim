@@ -3,7 +3,10 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
+{.experimental:"codeReordering".}
+
 import strformat
+
 
 type
     Opcode* {.pure.} =  enum
@@ -74,7 +77,8 @@ type
         I     *: ImmediateInstruction
         value *: uint32
 
-const INSTRUCTION_SIZE* = sizeof(uint32) div 8
+const 
+    INSTRUCTION_SIZE* = sizeof(uint32) div 8
 
 #converter FromU32*(src: uint32): Instruction = result.value = src
 
@@ -88,11 +92,10 @@ proc shamt   *(inst: Instruction): uint8    {.inline.} = inst.R.shamt
 proc function*(inst: Instruction): Function {.inline.} = inst.R.function
 proc target  *(inst: Instruction): uint32   {.inline.} = inst.J.target
 
+
 proc `$`*(inst: Instruction): string =
     fmt"Instruction({inst.value:08X}h, Opcode: {inst.opcode})"
 
 
 proc New*(T: type Instruction, v: uint32): Instruction = 
-    Instruction(
-        value: v
-    )
+    Instruction(value: v)
