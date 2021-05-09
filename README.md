@@ -1,6 +1,6 @@
 # minps
 
-[![made-with-python](https://img.shields.io/badge/Made%20with-Nim-ffc200.svg)](https://nim-lang.org/) ![Build](https://github.com/kraptor/minps/workflows/Build/badge.svg)
+[![made-with-nim](https://img.shields.io/badge/Made%20with-Nim-ffc200.svg)](https://nim-lang.org/) ![Build](https://github.com/kraptor/minps/workflows/Build/badge.svg)
 
 `minps` - a wannabe PlayStation 1 emulator
 
