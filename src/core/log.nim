@@ -139,8 +139,10 @@ template logIndent*(body) =
     # logIndent:
     #   (...)
     increaseLogIndentation()
-    body
-    decreaseLogIndentation()
+    try:
+        body
+    finally:
+        decreaseLogIndentation()
 
 
 template logFile*(filename: string = ":stdout") =
