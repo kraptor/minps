@@ -5,6 +5,8 @@
 
 {.experimental: "codeReordering".}
 
+import strformat
+
 import ../../core/log
 import ../address
 import ../mmu
@@ -40,13 +42,14 @@ proc Reset*(self: Cpu) =
     warn "Reset: CPU State not fully initialized."
 
 
-proc RunOne*(self: Cpu) =
-    trace $self.pc
+proc RunNext*(self: Cpu) =
+    trace fmt"RunNext"
     logIndent:
         self.Fetch()
-        self.Execute()
+        discard self.Execute() # TODO: don't discard cycles
 
 
 proc Fetch(self: Cpu) =
     self.inst = Instruction.New(self.mmu.Read32(self.pc))
+    trace fmt"{self.pc}: {$self.inst}"
     self.pc += INSTRUCTION_SIZE

@@ -40,4 +40,5 @@ proc Reset*(self: Platform) =
 
 proc Run*(self: Platform) =
     while true:
-        self.cpu.RunOne()
+        self.cpu.RunNext()
+    
