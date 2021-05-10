@@ -48,25 +48,25 @@ proc getLevelColor(level: LogLevel): ForegroundColor =
         return fgDefault
     else:
         return case level:
-            of Trace: fgMagenta
-            of Critical: fgMagenta
+            of LogLevel.Trace: fgMagenta
+            of LogLevel.Critical: fgMagenta
             of LogLevel.Exception: fgMagenta
-            of Error: fgRed
-            of Debug: fgCyan
-            of Warning: fgYellow
-            of Notice: fgGreen
-            of None: fgDefault
+            of LogLevel.Error: fgRed
+            of LogLevel.Debug: fgCyan
+            of LogLevel.Warning: fgYellow
+            of LogLevel.Notice: fgGreen
+            of LogLevel.None: fgDefault
 
 proc getLevelString(level: LogLevel): string =
     result = case level:
-        of Trace: "TRC"
-        of Critical: "CRI"
+        of LogLevel.Trace: "TRC"
+        of LogLevel.Critical: "CRI"
         of LogLevel.Exception: "EXC"
-        of Error: "ERR"
-        of Debug: "DBG"
-        of Warning: "WRN"
-        of Notice: "NOT"
-        of None: "   "
+        of LogLevel.Error: "ERR"
+        of LogLevel.Debug: "DBG"
+        of LogLevel.Warning: "WRN"
+        of LogLevel.Notice: "NOT"
+        of LogLevel.None: "   "
 
 
 macro doLog(level: static LogLevel, message: string, channels: static openArray[
@@ -125,7 +125,7 @@ template logChannels*(channels: static openArray[string]) =
     template logEcho*(msg: string) = echo msg; log msg
 
     # aliases
-    template warning(msg: string) = warn msg
+    template warning*(msg: string) = warn msg
 
 
 template logChannels*(channels: static openArray[string], body: untyped) =
