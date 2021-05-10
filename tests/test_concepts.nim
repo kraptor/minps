@@ -23,9 +23,8 @@ suite "Test concepts":
         assert Mmu is Writable
 
     test "BIOS":
-        assert Bios is Component
-        assert Bios is Readable
-        assert Bios isnot Writable
+        assert Bios is ReadableDevice
+        assert Bios isnot WritableDevice
 
     test "Platform":
         assert Platform is Runnable
