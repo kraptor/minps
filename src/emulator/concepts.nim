@@ -24,3 +24,17 @@ type
 
     Component* = concept x
         x is Resettable
+
+    ReadableDevice* = concept x
+        x is Component
+        x.Read32(KusegAddress) is uint32
+        x.Read16(KusegAddress) is uint16
+        x.Read8(KusegAddress) is uint8
+
+    WritableDevice* = concept x
+        x is Component
+        x.Write32(KusegAddress, uint32)
+        x.Write16(KusegAddress, uint16)
+        x.Write8(KusegAddress, uint8)
+
+    
