@@ -78,7 +78,7 @@ type
         value *: uint32
 
 const 
-    INSTRUCTION_SIZE* = sizeof(uint32) div 8
+    INSTRUCTION_SIZE*: uint32 = sizeof(uint32).uint32
 
 #converter FromU32*(src: uint32): Instruction = result.value = src
 
@@ -94,6 +94,8 @@ proc target  *(inst: Instruction): uint32   {.inline.} = inst.J.target
 
 
 proc `$`*(inst: Instruction): string =
+    if inst.opcode == Opcode.SPECIAL:
+        return fmt"Instruction({inst.value:08X}h, Special: {inst.function})"
     fmt"Instruction({inst.value:08X}h, Opcode: {inst.opcode})"
 
 
