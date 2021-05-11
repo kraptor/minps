@@ -20,21 +20,24 @@ const
 converter u32(value: Address): uint32 = value.uint32
 
 type
-    KusegAddress* = range[KUSEG_START.u32 .. KSEG0_START.u32 - 1]
-    Kseg0Address* = range[KSEG0_START.u32 .. KSEG1_START.u32 - 1]
-    Kseg1Address* = range[KSEG1_START.u32 .. KSEG2_START.u32 - 1]
-    Kseg2Address* = range[KSEG2_START.u32 .. 0xFFFF_FFFF.Address.u32]
+    KusegAddress* = distinct range[KUSEG_START.u32 .. KSEG0_START.u32 - 1]
+    Kseg0Address* = distinct range[KSEG0_START.u32 .. KSEG1_START.u32 - 1]
+    Kseg1Address* = distinct range[KSEG1_START.u32 .. KSEG2_START.u32 - 1]
+    Kseg2Address* = distinct range[KSEG2_START.u32 .. 0xFFFF_FFFF.Address.u32]
 
-# proc value(self: Address): uint32 = cast[uint32](self)
-proc `$`*(self: Address): string = fmt"{cast[uint32](self):08x}h"
-# proc `$`*(self: KusegAddress): string = fmt"{cast[uint32](self):08x}h (KUSEG)"
-# proc `$`*(self: Kseg0Address): string = fmt"{cast[uint32](self):08x}h (KSEG0)"
-# proc `$`*(self: Kseg1Address): string = fmt"{cast[uint32](self):08x}h (KSEG1)"
-# proc `$`*(self: Kseg2Address): string = fmt"{cast[uint32](self):08x}h (KSEG2)"
+    SomeAddress = Address|KusegAddress|Kseg0Address|Kseg1Address|Kseg2Address
 
-proc toKUSEG*(self: Address): KusegAddress = KusegAddress(self and 0x1FFFFFFF)
-proc toKSEG0*(self: Address): Kseg0Address = Kseg0Address(self and 0x8FFFFFFF'u32)
-proc toKSEG1*(self: Address): Kseg1Address = Kseg1Address(self and 0xAFFFFFFF'u32)
-proc toKSEG2*(self: Address): Kseg2Address = Kseg2Address(self and 0xCFFFFFFF'u32)
+proc `$`*(self: SomeAddress): string = fmt"{self.uint32:08x}h"
+proc `+`*[T: SomeAddress](x, y: T): T = T(x.uint32 + y.uint32)
+proc `-`*[T: SomeAddress](x, y: T): T = T(x.uint32 - y.uint32)
+proc `<`*[T: SomeAddress](x, y: T): bool = x.uint32 < y.uint32
+proc `<=`*[T: SomeAddress](x, y: T): bool = x.uint32 <= y.uint32
 
-proc `+=`*(x: var Address, v: SomeInteger) = x = Address(x.u32 + v)
+proc toKUSEG*(self: Address): KusegAddress = KusegAddress(self and 0x1FFF_FFFF'u32)
+proc toKSEG0*(self: Address): Kseg0Address = Kseg0Address(self and 0x8FFF_FFFF'u32)
+proc toKSEG1*(self: Address): Kseg1Address = Kseg1Address(self and 0xAFFF_FFFF'u32)
+proc toKSEG2*(self: Address): Kseg2Address = Kseg2Address(self and 0xCFFF_FFFF'u32)
+
+proc `+=`*(x: var Address, y: SomeInteger) = x = Address(x.u32 + y)
+
+proc is_aligned*(x: SomeAddress): bool = (x.uint32 and 0b11) == 0b00
