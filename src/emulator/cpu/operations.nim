@@ -13,11 +13,14 @@ import ../../core/util
 import cpu
 import instruction
 
+import ../mmu
+import ../address
+
 logChannels ["cpu", "ops"]
 
 
 type
-    Cycles = Natural
+    Cycles = uint64
     OperationProc = proc(self: Cpu): Cycles {.gcsafe.}
 
 
@@ -33,6 +36,8 @@ const OPCODES = block:
     var o: array[Opcode.high.ord, OperationProc] 
     for x in o.mitems: x = ExecuteNotImplemented
     o[ord Opcode.LUI] = Op_LUI
+    o[ord Opcode.ORI] = Op_ORI
+    o[ord Opcode.SW] = Op_SW
     o[ord Opcode.Special] = Op_Special
     o # return the array
 
@@ -45,6 +50,8 @@ const FUNCTIONS = block:
 
 proc Execute*(self: Cpu): Cycles =
     # TODO: return number of cycles
+    trace fmt"Execute: {self.inst}"
+    trace fmt"  {self.inst.value:032b}"
     OPCODES[ord self.inst.opcode] self
 
 
@@ -53,4 +60,27 @@ proc Op_Special(self: Cpu): Cycles =
 
 
 proc Op_LUI(self: Cpu): Cycles = 
-    NOT_IMPLEMENTED "LUI is not implemented"
+    self.WriteRegister(
+        self.inst.rt, 
+        self.inst.imm16.zero_extend shl 16
+    )
+    
+
+proc Op_ORI(self: Cpu): Cycles =
+    self.WriteRegister(
+        self.inst.rt,
+        self.ReadRegister(self.inst.rs) or self.inst.imm16.zero_extend
+    )
+
+
+proc Op_SW(self: Cpu): Cycles =
+    let
+        offset = self.inst.imm16.sign_extend
+        base = self.ReadRegister(self.inst.rs)
+        value = self.ReadRegister(self.inst.rt)
+        address = Address offset + base
+
+    if not address.is_aligned:
+        NOT_IMPLEMENTED fmt"Address is not aligned: {address}"
+        
+    self.mmu.Write(address, value)

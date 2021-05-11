@@ -18,11 +18,25 @@ logChannels ["cpu"]
 
 
 type
+    RegisterIndex = 0..31
+
     Cpu* = ref object
         pc*: Address
+        inst*: Instruction # holds the current instruction to execute
+        regs*: array[RegisterIndex, uint32]
         mmu*: Mmu
 
-        inst*: Instruction # holds the current instruction to execute
+proc WriteRegister*(self: Cpu, r: RegisterIndex, v: uint32) =
+    let prev_value = self.regs[r]
+    self.regs[r] = v
+    self.regs[0] = 0
+    trace fmt"write reg[{r}] value={self.regs[r]:08x}h (was={prev_value:08x}h)"
+
+
+proc ReadRegister*(self: Cpu, r: RegisterIndex): uint32 = 
+    trace fmt"read reg[{r}] value={self.regs[r]:08x}h"
+    self.regs[r]
+
 
 import operations # NOTE: import here so Cpu type is defined and ready within operations module
 
@@ -43,7 +57,7 @@ proc Reset*(self: Cpu) =
 
 
 proc RunNext*(self: Cpu) =
-    trace fmt"RunNext"
+    trace fmt"RunNext[pc={self.pc}]"
     logIndent:
         self.Fetch()
         discard self.Execute() # TODO: don't discard cycles
@@ -51,5 +65,4 @@ proc RunNext*(self: Cpu) =
 
 proc Fetch(self: Cpu) =
     self.inst = Instruction.New(self.mmu.Read32(self.pc))
-    trace fmt"{self.pc}: {$self.inst}"
     self.pc += INSTRUCTION_SIZE

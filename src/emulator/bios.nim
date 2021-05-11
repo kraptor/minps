@@ -18,7 +18,7 @@ const
 
     # device regions (in kuseg1 when possible)
     BIOS_START* = (Address 0xBFC00000).toKUSEG()
-    BIOS_END* = BIOS_START + BIOS_MAX_SIZE
+    BIOS_END* = KusegAddress BIOS_START.uint32 + BIOS_MAX_SIZE
 
 type
     BiosData {.union.} = object
@@ -70,11 +70,11 @@ proc Read32*(self: Bios, address: KusegAddress): uint32 {.inline.} = Read[uint32
 
 proc Read*[T: uint8|uint16|uint32](self: Bios, address: KusegAddress): T =
     let offset = address - BIOS_START
-    assert offset <= BIOS_MAX_SIZE - sizeof(T)
+    assert offset <= BIOS_MAX_SIZE.KusegAddress
     if T is uint32:
-        let offset_u32 = offset shr 2
+        let offset_u32 = offset.uint32 shr 2
         result = cast[T](self.data.u32[offset_u32])
-        trace fmt"Read value at offset {offset}: {result:08x}h"
+        trace fmt"read[{$typeof(T)}] offset={offset} value={result:08x}h"
         return result
     else:
         NOT_IMPLEMENTED "Bios read not implemented: " & $type(T)
