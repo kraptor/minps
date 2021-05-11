@@ -13,3 +13,6 @@ hint "Link", false
 hint "SuccessX", false
 
 switch "verbosity", "0"
+
+if not defined(windows):
+    switch "passC", "-Wno-packed-bitfield-compat"
