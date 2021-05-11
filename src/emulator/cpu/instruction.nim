@@ -80,7 +80,6 @@ type
 const 
     INSTRUCTION_SIZE*: uint32 = sizeof(uint32).uint32
 
-#converter FromU32*(src: uint32): Instruction = result.value = src
 
 # Direct accessors to instruction parts
 proc opcode  *(inst: Instruction): Opcode   {.inline.} = inst.I.opcode
@@ -95,8 +94,13 @@ proc target  *(inst: Instruction): uint32   {.inline.} = inst.J.target
 
 proc `$`*(inst: Instruction): string =
     if inst.opcode == Opcode.SPECIAL:
-        return fmt"Instruction({inst.value:08X}h, Special: {inst.function})"
-    fmt"Instruction({inst.value:08X}h, Opcode: {inst.opcode})"
+        return fmt"Instruction({inst.value:08x}h, Special: {inst.function})"
+    fmt"Instruction({inst.value:08x}h, Opcode: {inst.opcode})"
+
+
+proc zero_extend*[T: uint16|uint8](v: T): uint32 = cast[uint32](v)
+proc sign_extend*(v: uint16): uint32 = cast[uint32](cast[int16](v))
+proc sign_extend*(v: uint8): uint32 = cast[uint32](cast[int8](v))
 
 
 proc New*(T: type Instruction, v: uint32): Instruction = 
