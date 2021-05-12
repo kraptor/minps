@@ -16,7 +16,7 @@ logChannels ["bios"]
 const
     BIOS_MAX_SIZE = 1024 * 1024 * 4 # 4MB max BIOS
 
-    # device regions (in kuseg1 when possible)
+    # device regions (in kuseg when possible)
     BIOS_START* = (Address 0xBFC00000).toKUSEG()
     BIOS_END* = KusegAddress BIOS_START.uint32 + BIOS_MAX_SIZE
 
@@ -71,12 +71,10 @@ proc Read32*(self: Bios, address: KusegAddress): uint32 {.inline.} = Read[uint32
 proc Read*[T: uint8|uint16|uint32](self: Bios, address: KusegAddress): T =
     let offset = address - BIOS_START
     assert offset <= BIOS_MAX_SIZE.KusegAddress
-    if T is uint32:
+    when T is uint32:
         let offset_u32 = offset.uint32 shr 2
         result = cast[T](self.data.u32[offset_u32])
         trace fmt"read[{$typeof(T)}] offset={offset} value={result:08x}h"
         return result
-    else:
-        NOT_IMPLEMENTED "Bios read not implemented: " & $type(T)
-
-    debug "BIOS READ VALUE: " & $(result)
+    
+    NOT_IMPLEMENTED "Bios read not implemented: " & $type(T)
