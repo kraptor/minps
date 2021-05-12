@@ -6,7 +6,7 @@
 import unittest
 
 import emulator/[
-    concepts, mmu, bios, platform
+    concepts, mmu, bios, platform, mc1
 ]
 
 import emulator/cpu/cpu
@@ -29,3 +29,6 @@ suite "Test concepts":
     test "Platform":
         assert Platform is Runnable
         assert Platform is Resettable
+
+    test "MC1":
+        assert Mc1 is Device
