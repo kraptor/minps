@@ -37,4 +37,8 @@ type
         x.Write16(KusegAddress, uint16)
         x.Write8(KusegAddress, uint8)
 
+    Device* = concept x
+        x is ReadableDevice
+        x is WritableDevice
+
     
