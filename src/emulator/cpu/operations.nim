@@ -45,6 +45,7 @@ const OPCODES = block:
 const FUNCTIONS = block:
     var f: array[Function.high.ord, OperationProc]
     for x in f.mitems: x = ExecuteFunctionNotImplemented
+    f[ord Function.SLL] = Op_SLL
     f # return the array
 
 
@@ -84,3 +85,10 @@ proc Op_SW(self: Cpu): Cycles =
         NOT_IMPLEMENTED fmt"Address is not aligned: {address}"
         
     self.mmu.Write(address, value)
+
+
+proc Op_SLL(self: Cpu): Cycles =
+    self.WriteRegister(
+        self.inst.rd,
+        self.ReadRegister(self.inst.rt) shl self.inst.shamt
+    )
