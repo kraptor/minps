@@ -12,6 +12,7 @@ import ../../core/util
 
 import cpu
 import instruction
+import disassembler
 
 import ../mmu
 import ../address
@@ -25,10 +26,16 @@ type
 
 
 proc ExecuteNotImplemented(self: Cpu): Cycles {.used.} = 
+    logIndent:
+        trace fmt"{self.inst}"
+        trace fmt"{self.inst.value:032b}"
     NOT_IMPLEMENTED fmt"Opcode not implemented: {self.inst.opcode}"
 
 
 proc ExecuteFunctionNotImplemented(self: Cpu): Cycles {.used.} = 
+    logIndent:
+        trace fmt"{self.inst}"
+        trace fmt"{self.inst.value:032b}"
     NOT_IMPLEMENTED fmt"Function Opcode not implemented: {self.inst.function}"
 
 
@@ -37,7 +44,7 @@ const OPCODES = block:
     for x in o.mitems: x = ExecuteNotImplemented
     o[ord Opcode.LUI] = Op_LUI
     o[ord Opcode.ORI] = Op_ORI
-    o[ord Opcode.SW] = Op_SW
+    o[ord Opcode.SW ] = Op_SW
     o[ord Opcode.Special] = Op_Special
     o[ord Opcode.ADDIU] = Op_ADDIU
     o # return the array
@@ -52,8 +59,7 @@ const FUNCTIONS = block:
 
 proc Execute*(self: Cpu): Cycles =
     # TODO: return number of cycles
-    trace fmt"Execute: {self.inst}"
-    trace fmt"  {self.inst.value:032b}"
+    debug fmt"Execute: {self.inst.DisasmAsText(self)}"
     OPCODES[ord self.inst.opcode] self
 
 
