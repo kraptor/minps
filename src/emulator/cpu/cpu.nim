@@ -18,23 +18,40 @@ logChannels ["cpu"]
 
 
 type
-    RegisterIndex = 0..31
+    CpuRegisterIndex* = 0..31
 
     Cpu* = ref object
         pc*: Address
         inst*: Instruction # holds the current instruction to execute
-        regs*: array[RegisterIndex, uint32]
+        regs*: array[CpuRegisterIndex, uint32]
         mmu*: Mmu
 
-proc WriteRegister*(self: Cpu, r: RegisterIndex, v: uint32) =
-    let prev_value = self.regs[r]
+
+proc GetCpuRegisterAlias*(r: CpuRegisterIndex): string =
+    const CPU_REGISTER_TO_ALIAS = [
+        "zero", "at", "v0", "v1", "a0", "a1", "a2", "a3", 
+        "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", 
+        "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7", 
+        "t8", "t9", "k0", "k1", "gp", "sp", "fp", "ra"]
+    CPU_REGISTER_TO_ALIAS[r]
+
+
+proc WriteRegister*(self: Cpu, r: CpuRegisterIndex, v: uint32) =
+    let 
+        alias = GetCpuRegisterAlias(r)
+        prev_value = self.regs[r]
     self.regs[r] = v
     self.regs[0] = 0
-    trace fmt"write reg[{r}] value={self.regs[r]:08x}h (was={prev_value:08x}h)"
+    trace fmt"write reg[{alias}] {alias}=${r} value={self.regs[r]:08x}h (was={prev_value:08x}h)"
 
 
-proc ReadRegister*(self: Cpu, r: RegisterIndex): uint32 = 
-    trace fmt"read reg[{r}] value={self.regs[r]:08x}h"
+proc ReadRegister*(self: Cpu, r: CpuRegisterIndex): uint32 = 
+    let alias = GetCpuRegisterAlias(r)
+    trace fmt"read reg[{alias}] {alias}=${r} value={self.regs[r]:08x}h"
+    ReadRegisterDebug(self, r)
+
+
+proc ReadRegisterDebug*(self: Cpu, r: CpuRegisterIndex): uint32 = 
     self.regs[r]
 
 
