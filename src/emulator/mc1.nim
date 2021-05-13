@@ -15,7 +15,7 @@ logChannels ["mc1"]
 
 
 const
-    MC1_MAX_SIZE = 60
+    MC1_MAX_SIZE = 0x64
 
     # device regions (in kuseg when possible)
     MC1_START* = (Address 0x1F801000).toKUSEG()
@@ -24,6 +24,7 @@ const
 type
     Mc1* = ref object
         bios_rom_delay_size: DelaySizeRegister
+        ram_size: RamSizeRegister
 
 type
     DataBusWidth = enum
@@ -59,6 +60,30 @@ type
     DelaySizeRegister* {.union.} = object
         value: uint32
         parts: DelaySizeRegisterParts
+
+    MemoryWindow = enum
+        Memory_1MB_Locked_7MB = 0
+        Memory_4MB_Locked_4MB = 1
+        Memory_1MB_HighZ_1MB_Locked_6MB = 2
+        Memory_4MB_HighZ_4MB = 3
+        Memory_2MB_Locked_6MB = 4
+        Memory_8MB = 5
+        Memory_2MB_HighZ_2MB_Locked_4MB = 6
+        Memory_8MB_EXT = 7
+
+    RamSizeRegisterParts* {.packed.} = object
+        UNKNOWN_00_02      {.bitsize:3.}: uint8
+        UNKNOWN_03_03      {.bitsize:1.}: bool # crashes when zero (see docs)
+        UNKNOWN_04_06      {.bitsize:3.}: uint8
+        delay_fetch_cycles {.bitsize:1.}: uint8
+        UNKNOWN_08_08      {.bitsize:1.}: bool
+        memory_window_8mb  {.bitsize:3.}: MemoryWindow
+        UNKNOWN_12_15      {.bitsize:4.}: uint8
+        UNKNOWN_16_31      {.bitsize:16.}: uint16
+
+    RamSizeRegister* {.union.} = object
+        value: uint32
+        parts: RamSizeRegisterParts
 
 
 proc New*(T: type Mc1): Mc1 =
@@ -100,6 +125,7 @@ proc Write*[T: uint8|uint16|uint32](self: Mc1, address: KusegAddress, value: T) 
 
         case address.uint32:
         of 0x1F801010: self.SetBiosRomDelaySize32(value); return
+        of 0x1F801060: self.SetRamSize32(value); return
         else:
             discard
 
@@ -142,3 +168,14 @@ proc SetBiosRomDelaySize32(self: Mc1, value: uint32) =
         notice "- " & x
     # TODO: implement side-effects
     warn "BIOS ROM Delay/Size: sideffects are ignored!"
+
+
+proc SetRamSize32(self: Mc1, value: uint32) =
+    trace fmt"write[RAM Size] value={value:08x}h"
+    self.ram_size.value = value
+
+    notice fmt"RAM Size set to: value={value:08x}h"
+    notice fmt"- Delay simultaneous CODE+DATA fetch: {self.ram_size.parts.delay_fetch_cycles} cycles"
+    notice fmt"- 8MB Memory Window: {self.ram_size.parts.memory_window_8mb}"
+    # TODO: implemented side-effects
+    warn "RAM Size: sideffects are ignored!"
