@@ -132,8 +132,11 @@ proc GetDescription(reg: DelaySizeRegister): seq[string] =
 
 
 proc SetBiosRomDelaySize32(self: Mc1, value: uint32) =
-    self.bios_rom_delay_size.value = value
     trace fmt"write[BIOS ROM Delay/Size] value={value:08x}h"
+    self.bios_rom_delay_size.value = value
+
+    assert self.bios_rom_delay_size.parts.UNKNOWN_21_23 == 0, "These should be always zero!"
+
     notice fmt"BIOS ROM Delay/Size set to: value={value:08x}h"
     for x in GetDescription(self.bios_rom_delay_size):
         notice "- " & x
