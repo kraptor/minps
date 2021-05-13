@@ -114,15 +114,9 @@ proc Write16*(self: Mc1, address: KusegAddress, value: uint16): uint16 {.inline.
 proc Write32*(self: Mc1, address: KusegAddress, value: uint32): uint32 {.inline.} = Write[uint32](self, address, value)
 
 proc Write*[T: uint8|uint16|uint32](self: Mc1, address: KusegAddress, value: T) =
-    # let offset = address - MC1_START
     trace fmt"write[{$typeof(T)}] address={address} value={value:08x}h"
 
     when T is uint32:
-        # trace fmt"write[{$typeof(T)}] offset={offset} ({address}) value={value:08x}h"
-        # let offset_32 = offset.uint32 shr 2
-        # self.data.u32[offset_32] = value
-        # trace fmt"{self.data.u32[offset_32]:08x}h"
-
         case address.uint32:
         of 0x1F801010: self.SetBiosRomDelaySize32(value); return
         of 0x1F801060: self.SetRamSize32(value); return
@@ -137,7 +131,7 @@ proc GetDescription(reg: DelaySizeRegister): seq[string] =
     let hold_period      = if not reg.parts.hold_period    : "false" else: "Use COM1 timings"
     let floating_period  = if not reg.parts.floating_period: "false" else: "Use COM2 timings"
     let prestrobe_period = if not reg.parts.floating_period: "false" else: "Use COM3 timings"
-    let wide_dma = if reg.parts.wide_dma.bool: "Use full 32 bits" else: "Use 'Data Bus width' value (bit 12)"
+    let wide_dma         = if reg.parts.wide_dma.bool: "Use full 32 bits" else: "Use 'Data Bus width' value (bit 12)"
 
     return @[
         fmt"Write delay        : {reg.parts.write_delay} cycles",
