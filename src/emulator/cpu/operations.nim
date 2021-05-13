@@ -39,6 +39,7 @@ const OPCODES = block:
     o[ord Opcode.ORI] = Op_ORI
     o[ord Opcode.SW] = Op_SW
     o[ord Opcode.Special] = Op_Special
+    o[ord Opcode.ADDIU] = Op_ADDIU
     o # return the array
 
 
@@ -83,7 +84,8 @@ proc Op_SW(self: Cpu): Cycles =
 
     if not address.is_aligned:
         NOT_IMPLEMENTED fmt"Address is not aligned: {address}"
-        
+    
+    # TODO: account for write to memory cycles?
     self.mmu.Write(address, value)
 
 
@@ -91,4 +93,11 @@ proc Op_SLL(self: Cpu): Cycles =
     self.WriteRegister(
         self.inst.rd,
         self.ReadRegister(self.inst.rt) shl self.inst.shamt
+    )
+
+
+proc Op_ADDIU(self: Cpu): Cycles =
+    self.WriteRegister(
+        self.inst.rt,
+        self.ReadRegister(self.inst.rs) + self.inst.imm16.sign_extend
     )
