@@ -41,7 +41,7 @@ proc Read*[T: uint32|uint16|uint8](self: Mmu, address: Address): T =
     trace fmt"read[{$type(T)}] address={address} ({ka})"
 
     if ka < BIOS_START: NOT_IMPLEMENTED "No device found before BIOS"
-    elif ka < BIOS_END: return Read[T](self.bios, ka)
+    elif ka <= BIOS_END: return Read[T](self.bios, ka)
 
     NOT_IMPLEMENTED fmt"No device found: address={address}"
 
@@ -54,10 +54,10 @@ proc Write*[T: uint32|uint16|uint8](self: Mmu, address: Address, value: T) =
     trace fmt"write[{$type(T)}] address={address} ({ka}) value={value:08x}h"
 
     if ka < MC1_START: NOT_IMPLEMENTED "No device found before MC1"
-    elif ka < MC1_END: 
+    elif ka <= MC1_END: 
         Write self.mc1, ka, value
         return
     elif ka < BIOS_START: NOT_IMPLEMENTED "No device found before BIOS"
-    elif ka < BIOS_END: NOT_IMPLEMENTED fmt"BIOS is not writable!"
+    elif ka <= BIOS_END: NOT_IMPLEMENTED fmt"BIOS is not writable!"
 
     NOT_IMPLEMENTED fmt"No device found: address={address}"
