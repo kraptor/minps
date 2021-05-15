@@ -38,6 +38,7 @@ proc toKSEG0*(self: Address): Kseg0Address = Kseg0Address(self and 0x8FFF_FFFF'u
 proc toKSEG1*(self: Address): Kseg1Address = Kseg1Address(self and 0xAFFF_FFFF'u32)
 proc toKSEG2*(self: Address): Kseg2Address = Kseg2Address(self and 0xCFFF_FFFF'u32)
 
+proc `+`*(x: Address, y: uint32): Address = Address(x.uint32 + y)
 proc `+=`*(x: var Address, y: SomeInteger) = x = Address(x.u32 + y)
 
 proc is_aligned*(x: SomeAddress): bool = (x.uint32 and 0b11) == 0b00

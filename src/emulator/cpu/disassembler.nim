@@ -18,7 +18,7 @@ logChannels ["cpu", "disasm"]
 
 
 type
-    Mnemonic {.pure.} = enum lui, ori, sw, sll, nop, addiu
+    Mnemonic {.pure.} = enum lui, ori, sw, nop, addiu, j
 
     InstructionType {.pure.}  = enum I, J, R
 
@@ -27,6 +27,7 @@ type
         ImmediateValue
         MemoryBase
         MemoryOffset
+        MemoryAddress
 
     InstructionPartMode {.pure.}  = enum
         Source
@@ -57,10 +58,11 @@ type
 
 proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     case inst.opcode:
-    of Opcode.LUI: return inst.DisasmRtImmediate(cpu, lui)
-    of Opcode.ORI: return inst.DisasmORI(cpu)
-    of Opcode.SW : return inst.DisasmSW(cpu)
+    of Opcode.LUI  : return inst.DisasmRtImmediate(cpu, lui)
+    of Opcode.ORI  : return inst.DisasmORI(cpu)
+    of Opcode.SW   : return inst.DisasmSW(cpu)
     of Opcode.ADDIU: return inst.DisasmRtImmediate(cpu, addiu)
+    of Opcode.J    : return inst.DisasmJ(cpu)
     of Opcode.Special:
         case inst.function:
         of Function.SLL: return inst.DisasmSLL(cpu)
@@ -71,7 +73,9 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
 
 
 proc DisasmAsText*(inst: Instruction, cpu: Cpu): string = 
-    DisasmAsText(Disasm(inst, cpu))
+    result = DisasmAsText(Disasm(inst, cpu))
+    if cpu.inst_in_delay:
+        result = fmt"{result} [IN DELAY SLOT]"
 
 
 proc DisasmAsText*(di: DisassembledInstruction): string =
@@ -101,6 +105,7 @@ proc `$`*(part: InstructionPart): string =
     of ImmediateValue: return fmt"{part.value:x}h"
     of MemoryOffset  : return fmt"{part.value:x}h"
     of MemoryBase    : return GetCpuRegisterAlias(part.value)   
+    of MemoryAddress : return fmt"{part.value:x}h"
     NOT_IMPLEMENTED "Disassembly part stringify not implemented for: " & $part.kind
 
 
@@ -150,3 +155,13 @@ proc DisasmSLL(inst: Instruction, cpu: Cpu): DisassembledInstruction =
         )
     else:
         NOT_IMPLEMENTED "Standard SLL disassembly is not implemented."
+
+
+proc DisasmJ(inst: Instruction, cpu: Cpu): DisassembledInstruction =
+    let target = (inst.target shl 2) or (0xF000_0000'u32 and cpu.pc)
+    return DisassembledInstruction(
+        mnemonic: j,
+        parts: @[
+            InstructionPart(mode: Target, kind: MemoryAddress, value: target)
+        ]
+    )
