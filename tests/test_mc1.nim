@@ -13,3 +13,5 @@ suite "Test MC1 types":
     test "Union sizes":
         check sizeof(DelaySizeRegister) == sizeof(uint32)
         check sizeof(DelaySizeRegisterParts) == sizeof(uint32)
+        check sizeof(RamSizeRegisterParts) == sizeof(uint32)
+        check sizeof(ComDelayRegisterParts) == sizeof(uint32)

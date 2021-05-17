@@ -25,6 +25,7 @@ type
     Mc1* = ref object
         bios_rom_delay_size: DelaySizeRegister
         ram_size: RamSizeRegister
+        com_delay: ComDelayRegister
 
 type
     DataBusWidth = enum
@@ -85,6 +86,17 @@ type
         value: uint32
         parts: RamSizeRegisterParts
 
+    ComDelayRegisterParts* {.packed.} = object
+        COM0          {.bitsize:4.}: uint8
+        COM1          {.bitsize:4.}: uint8
+        COM2          {.bitsize:4.}: uint8
+        COM3          {.bitsize:4.}: uint8
+        UNKNOWN_16_31 {.bitsize:16}: uint16
+
+    ComDelayRegister* {.union.} = object
+        value: uint32
+        parts: ComDelayRegisterParts
+
 
 proc New*(T: type Mc1): Mc1 =
     debug "Creating MC1..."
@@ -119,6 +131,7 @@ proc Write*[T: uint8|uint16|uint32](self: Mc1, address: KusegAddress, value: T) 
     when T is uint32:
         case address.uint32:
         of 0x1F801010: self.SetBiosRomDelaySize32(value); return
+        of 0x1F801020: self.SetComDelayCommonDelay32(value); return
         of 0x1F801060: self.SetRamSize32(value); return
         else:
             discard
@@ -173,3 +186,16 @@ proc SetRamSize32(self: Mc1, value: uint32) =
     notice fmt"- 8MB Memory Window: {self.ram_size.parts.memory_window_8mb}"
     # TODO: implemented side-effects
     warn "RAM Size: sideffects are ignored!"
+
+
+proc SetComDelayCommonDelay32(self: Mc1, value: uint32) =
+    trace fmt"write[COM_DELAY] value={value:08x}h"
+    self.com_delay.value = value
+
+    notice fmt"COM Delay set to: value={value:08x}h"
+    notice fmt"- COM0: {self.com_delay.parts.COM0} cycles"
+    notice fmt"- COM1: {self.com_delay.parts.COM1} cycles"
+    notice fmt"- COM2: {self.com_delay.parts.COM2} cycles"
+    notice fmt"- COM3: {self.com_delay.parts.COM3} cycles"
+
+    warn "COM Delay: sideffects are ignored!"
