@@ -77,4 +77,4 @@ proc Read*[T: uint8|uint16|uint32](self: Bios, address: KusegAddress): T =
         trace fmt"read[{$typeof(T)}] offset={offset} value={result:08x}h"
         return result
     
-    NOT_IMPLEMENTED "Bios read not implemented: " & $type(T)
+    NOT_IMPLEMENTED fmt"BIOS Read[{$typeof(T)}]: address={address}"

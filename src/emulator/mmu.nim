@@ -40,7 +40,7 @@ proc ReadImpl[T: uint32|uint16|uint8](self: Mmu, address: Address): T =
     if ka < BIOS_START: NOT_IMPLEMENTED "No device found before BIOS"
     elif ka <= BIOS_END: return Read[T](self.bios, ka)
 
-    NOT_IMPLEMENTED fmt"No device found: address={address}"
+    NOT_IMPLEMENTED fmt"MMU Read: No device found at address: {address}"
 
 
 
@@ -55,7 +55,7 @@ proc Write*[T: uint32|uint16|uint8](self: Mmu, address: Address, value: T) =
     elif ka < BIOS_START: NOT_IMPLEMENTED "No device found before BIOS"
     elif ka <= BIOS_END: NOT_IMPLEMENTED fmt"BIOS is not writable!"
 
-    NOT_IMPLEMENTED fmt"No device found: address={address}"
+    NOT_IMPLEMENTED fmt"MMU Write: No device found at address: {address}"
 
 
 proc Read*[T: uint32|uint16|uint8](self: Mmu, address: Address): T = 

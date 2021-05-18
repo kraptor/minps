@@ -124,7 +124,7 @@ proc Read32*(self: Mc1, address: KusegAddress): uint32 {.inline.} = Read[uint32]
 
 proc Read*[T: uint8|uint16|uint32](self: Mc1, address: KusegAddress): T =
     trace fmt"read[{$typeof(T)}] address={address:08x}h"
-    NOT_IMPLEMENTED "MC1 read not implemented: " & $type(T)
+    NOT_IMPLEMENTED fmt"MC1 Read[{$typeof(T)}]: address={address}"
 
 
 proc Write8* (self: Mc1, address: KusegAddress, value: uint8 ): uint8  {.inline.} = Write[uint8 ](self, address, value)
@@ -145,8 +145,8 @@ proc Write*[T: uint8|uint16|uint32](self: Mc1, address: KusegAddress, value: T) 
         of 0x1F801060: self.SetRamSize32(value); return
         else:
             discard
-
-    NOT_IMPLEMENTED "MC1 write not implemented: " & $type(T)
+    
+    NOT_IMPLEMENTED fmt"MC1 Write[{$typeof(T)}]: address={address} value={value:08x}h"
 
 
 proc GetDescription(reg: DelaySizeRegister): seq[string] =
