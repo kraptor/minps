@@ -7,6 +7,7 @@
 
 import strutils
 import strformat
+import bitops
 
 import ../core/[log, util]
 import address
@@ -23,6 +24,9 @@ const
 
 type
     Mc1* = ref object
+        expansion1_base_address: uint32
+        expansion2_base_address: uint32
+        expansion1_delay_size: DelaySizeRegister
         bios_rom_delay_size: DelaySizeRegister
         ram_size: RamSizeRegister
         com_delay: ComDelayRegister
@@ -73,13 +77,13 @@ type
         Memory_8MB_EXT = 7
 
     RamSizeRegisterParts* {.packed.} = object
-        UNKNOWN_00_02      {.bitsize:3.}: uint8
-        UNKNOWN_03_03      {.bitsize:1.}: bool # crashes when zero (see docs)
-        UNKNOWN_04_06      {.bitsize:3.}: uint8
-        delay_fetch_cycles {.bitsize:1.}: uint8
-        UNKNOWN_08_08      {.bitsize:1.}: bool
-        memory_window_8mb  {.bitsize:3.}: MemoryWindow
-        UNKNOWN_12_15      {.bitsize:4.}: uint8
+        UNKNOWN_00_02      {.bitsize: 3.}: uint8
+        UNKNOWN_03_03      {.bitsize: 1.}: bool # crashes when zero (see docs)
+        UNKNOWN_04_06      {.bitsize: 3.}: uint8
+        delay_fetch_cycles {.bitsize: 1.}: uint8
+        UNKNOWN_08_08      {.bitsize: 1.}: bool
+        memory_window_8mb  {.bitsize: 3.}: MemoryWindow
+        UNKNOWN_12_15      {.bitsize: 4.}: uint8
         UNKNOWN_16_31      {.bitsize:16.}: uint16
 
     RamSizeRegister* {.union.} = object
@@ -87,11 +91,11 @@ type
         parts: RamSizeRegisterParts
 
     ComDelayRegisterParts* {.packed.} = object
-        COM0          {.bitsize:4.}: uint8
-        COM1          {.bitsize:4.}: uint8
-        COM2          {.bitsize:4.}: uint8
-        COM3          {.bitsize:4.}: uint8
-        UNKNOWN_16_31 {.bitsize:16}: uint16
+        COM0          {.bitsize: 4.}: uint8
+        COM1          {.bitsize: 4.}: uint8
+        COM2          {.bitsize: 4.}: uint8
+        COM3          {.bitsize: 4.}: uint8
+        UNKNOWN_16_31 {.bitsize:16.}: uint16
 
     ComDelayRegister* {.union.} = object
         value: uint32
@@ -108,6 +112,7 @@ proc New*(T: type Mc1): Mc1 =
 proc Reset*(self: Mc1) =
     debug "Resetting MC1..."
     logIndent:
+        # TODO: set maximum cycle delays in all registers
         NOT_IMPLEMENTED
         debug("MC1 Resetted.")
 
@@ -130,6 +135,9 @@ proc Write*[T: uint8|uint16|uint32](self: Mc1, address: KusegAddress, value: T) 
 
     when T is uint32:
         case address.uint32:
+        of 0x1F801000: self.SetExpansion1BaseAddress32(value); return
+        of 0x1F801004: self.SetExpansion2BaseAddress32(value); return
+        of 0x1F801008: self.SetExpansion1DelaySize32(value); return
         of 0x1F801010: self.SetBiosRomDelaySize32(value); return
         of 0x1F801020: self.SetComDelayCommonDelay32(value); return
         of 0x1F801060: self.SetRamSize32(value); return
@@ -164,38 +172,72 @@ proc GetDescription(reg: DelaySizeRegister): seq[string] =
     ]
 
 
-proc SetBiosRomDelaySize32(self: Mc1, value: uint32) =
-    trace fmt"write[BIOS ROM Delay/Size] value={value:08x}h"
-    self.bios_rom_delay_size.value = value
+proc SetExpansion1BaseAddress32(self: Mc1, value: uint32) =
+    trace fmt"write[Expansion 1 Base Address] value={value:08x}h"
 
-    assert self.bios_rom_delay_size.parts.UNKNOWN_21_23 == 0, "These should be always zero!"
+    self.expansion1_base_address = value
+    notice fmt"EXPANSION 1 Base Address set to: {value:08x}h"
 
-    notice fmt"BIOS ROM Delay/Size set to: value={value:08x}h"
-    for x in GetDescription(self.bios_rom_delay_size):
-        notice "- " & x
     # TODO: implement side-effects
-    warn "BIOS ROM Delay/Size: sideffects are ignored!"
+    warn "EXPANSION 1 Base Address: sideeffects are ignored!"
+
+
+proc SetExpansion2BaseAddress32(self: Mc1, value: uint32) =
+    trace fmt"write[Expansion 2 Base Address] value={value:08x}h"
+
+    self.expansion2_base_address = value
+    notice fmt"EXPANSION 2 Base Address set to: {value:08x}h"
+
+    # TODO: implement side-effects
+    warn "EXPANSION 2 Base Address: sideeffects are ignored!"
+
+
+proc SetExpansion1DelaySize32(self: Mc1, value: uint32) =
+    SetDelaySizeRegister("EXPANSION 1 Delay/Size", self.expansion1_delay_size, value)
+
+
+proc SetBiosRomDelaySize32(self: Mc1, value: uint32) =
+    SetDelaySizeRegister("BIOS ROM Delay/Size", self.bios_rom_delay_size, value)
+
+
+proc SetDelaySizeRegister(name: static string, reg: var DelaySizeRegister, value: uint32) =
+    trace fmt"write[{name}] value={value:08x}h"
+
+    # SET_MASK cares about UNKNOWN_21_23 should be always zero
+    const SET_MASK = bitnot(0b111'u32 shl 21)
+    reg.value = value and SET_MASK 
+
+    notice fmt"{name} set to: {value:08x}h"
+    for x in GetDescription(reg):
+        notice "- " & x
+
+    # TODO: implement side-effects
+    warn fmt"{name}: sideffects are ignored!"
 
 
 proc SetRamSize32(self: Mc1, value: uint32) =
     trace fmt"write[RAM Size] value={value:08x}h"
     self.ram_size.value = value
 
-    notice fmt"RAM Size set to: value={value:08x}h"
+    notice fmt"RAM Size set to: {value:08x}h"
     notice fmt"- Delay simultaneous CODE+DATA fetch: {self.ram_size.parts.delay_fetch_cycles} cycles"
     notice fmt"- 8MB Memory Window: {self.ram_size.parts.memory_window_8mb}"
+    
     # TODO: implemented side-effects
     warn "RAM Size: sideffects are ignored!"
 
 
 proc SetComDelayCommonDelay32(self: Mc1, value: uint32) =
-    trace fmt"write[COM_DELAY] value={value:08x}h"
-    self.com_delay.value = value
+    trace fmt"write[COM DELAY] value={value:08x}h"
+    
+    const SET_MASK = 0x0000FFFF # UNKNOWN_16_31 always zero
+    self.com_delay.value = value and SET_MASK
 
-    notice fmt"COM Delay set to: value={value:08x}h"
+    notice fmt"COM Delay set to: {value:08x}h"
     notice fmt"- COM0: {self.com_delay.parts.COM0} cycles"
     notice fmt"- COM1: {self.com_delay.parts.COM1} cycles"
     notice fmt"- COM2: {self.com_delay.parts.COM2} cycles"
     notice fmt"- COM3: {self.com_delay.parts.COM3} cycles"
 
+    # TODO: implement side-effects
     warn "COM Delay: sideffects are ignored!"
