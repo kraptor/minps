@@ -26,11 +26,14 @@ type
     Mc1* = ref object
         expansion1_base_address: uint32
         expansion2_base_address: uint32
-        expansion1_delay_size: DelaySizeRegister
-        spu_delay_size: DelaySizeRegister
-        bios_rom_delay_size: DelaySizeRegister
-        ram_size: RamSizeRegister
-        com_delay: ComDelayRegister
+        expansion1_delay_size  : DelaySizeRegister
+        expansion3_delay_size  : DelaySizeRegister
+        spu_delay_size         : DelaySizeRegister
+        cdrom_delay_size       : DelaySizeRegister
+        expansion2_delay_size  : DelaySizeRegister
+        bios_rom_delay_size    : DelaySizeRegister
+        ram_size               : RamSizeRegister
+        com_delay              : ComDelayRegister
 
 type
     DataBusWidth = enum
@@ -136,13 +139,16 @@ proc Write*[T: uint8|uint16|uint32](self: Mc1, address: KusegAddress, value: T) 
 
     when T is uint32:
         case address.uint32:
-        of 0x1F801000: self.SetExpansion1BaseAddress32(value); return
-        of 0x1F801004: self.SetExpansion2BaseAddress32(value); return
-        of 0x1F801008: self.SetExpansion1DelaySize32(value); return
-        of 0x1F801010: self.SetBiosRomDelaySize32(value); return
-        of 0x1F801014: self.SetSpuDelaySize32(value); return
-        of 0x1F801020: self.SetComDelayCommonDelay32(value); return
-        of 0x1F801060: self.SetRamSize32(value); return
+        of 0x1F801000: self.SetExpansion1BaseAddress32 value; return
+        of 0x1F801004: self.SetExpansion2BaseAddress32 value; return
+        of 0x1F801008: self.SetExpansion1DelaySize32   value; return
+        of 0x1F80100C: self.SetExpansion3DelaySize32   value; return
+        of 0x1F801010: self.SetBiosRomDelaySize32      value; return
+        of 0x1F801014: self.SetSpuDelaySize32          value; return
+        of 0x1F801018: self.SetCdRomDelaySize32        value; return
+        of 0x1F80101C: self.SetExpansion2DelaySize32   value; return
+        of 0x1F801020: self.SetComDelayCommonDelay32   value; return
+        of 0x1F801060: self.SetRamSize32               value; return
         else:
             discard
     
@@ -204,6 +210,18 @@ proc SetBiosRomDelaySize32(self: Mc1, value: uint32) =
 
 proc SetSpuDelaySize32(self: Mc1, value: uint32) =
     SetDelaySizeRegister32("SPU Delay/Size", self.spu_delay_size, value)
+
+
+proc SetCdRomDelaySize32(self: Mc1, value: uint32) =
+    SetDelaySizeRegister32("CDROM Delay/Size", self.cdrom_delay_size, value)
+
+
+proc SetExpansion3DelaySize32(self: Mc1, value: uint32) =
+    SetDelaySizeRegister32("EXPANSION 3 Delay/Size", self.expansion3_delay_size, value)
+
+
+proc SetExpansion2DelaySize32(self: Mc1, value: uint32) =
+    SetDelaySizeRegister32("EXPANSION 2 Delay/Size", self.expansion2_delay_size, value)
 
 
 proc SetDelaySizeRegister32(name: static string, reg: var DelaySizeRegister, value: uint32) =
