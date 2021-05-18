@@ -27,6 +27,7 @@ type
         expansion1_base_address: uint32
         expansion2_base_address: uint32
         expansion1_delay_size: DelaySizeRegister
+        spu_delay_size: DelaySizeRegister
         bios_rom_delay_size: DelaySizeRegister
         ram_size: RamSizeRegister
         com_delay: ComDelayRegister
@@ -139,6 +140,7 @@ proc Write*[T: uint8|uint16|uint32](self: Mc1, address: KusegAddress, value: T) 
         of 0x1F801004: self.SetExpansion2BaseAddress32(value); return
         of 0x1F801008: self.SetExpansion1DelaySize32(value); return
         of 0x1F801010: self.SetBiosRomDelaySize32(value); return
+        of 0x1F801014: self.SetSpuDelaySize32(value); return
         of 0x1F801020: self.SetComDelayCommonDelay32(value); return
         of 0x1F801060: self.SetRamSize32(value); return
         else:
@@ -193,14 +195,18 @@ proc SetExpansion2BaseAddress32(self: Mc1, value: uint32) =
 
 
 proc SetExpansion1DelaySize32(self: Mc1, value: uint32) =
-    SetDelaySizeRegister("EXPANSION 1 Delay/Size", self.expansion1_delay_size, value)
+    SetDelaySizeRegister32("EXPANSION 1 Delay/Size", self.expansion1_delay_size, value)
 
 
 proc SetBiosRomDelaySize32(self: Mc1, value: uint32) =
-    SetDelaySizeRegister("BIOS ROM Delay/Size", self.bios_rom_delay_size, value)
+    SetDelaySizeRegister32("BIOS ROM Delay/Size", self.bios_rom_delay_size, value)
 
 
-proc SetDelaySizeRegister(name: static string, reg: var DelaySizeRegister, value: uint32) =
+proc SetSpuDelaySize32(self: Mc1, value: uint32) =
+    SetDelaySizeRegister32("SPU Delay/Size", self.spu_delay_size, value)
+
+
+proc SetDelaySizeRegister32(name: static string, reg: var DelaySizeRegister, value: uint32) =
     trace fmt"write[{name}] value={value:08x}h"
 
     # SET_MASK cares about UNKNOWN_21_23 should be always zero
