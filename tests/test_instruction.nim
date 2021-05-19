@@ -5,13 +5,54 @@
 
 import unittest
 
+import core/log
+import emulator/cpu/cpu
+import emulator/platform
 import emulator/cpu/instruction
+import emulator/cpu/assembler
+
+logChannels ["testing"]
 
 
-suite "Test instruction type":
+suite "Instruction types":
 
     test "Union sizes":
         check sizeof(Instruction) == sizeof(uint32)
         check sizeof(JumpInstruction) == sizeof(uint32)
         check sizeof(RegisterInstruction) == sizeof(uint32)
         check sizeof(ImmediateInstruction) == sizeof(uint32)
+
+
+suite "Instruction execution correctness":
+    setup:
+        var 
+            p = Platform.New()
+            cpu = p.cpu
+
+    test "LUI":
+        check cpu.ReadRegisterDebug(10) == 0
+        check cpu.ReadRegisterDebug(11) == 0
+        
+        let program = @[
+            lui(10, 0xF'u16),
+            lui(11, 0xFFFF'u16)
+        ]
+
+        p.RunProgram(program)
+        check cpu.stats.instruction_count == program.len
+        check cpu.ReadRegisterDebug(10) == 0xF0000'u32
+        check cpu.ReadRegisterDebug(11) == 0xFFFF0000'u32
+
+
+    test "ORI":
+        check cpu.ReadRegisterDebug(10) == 0
+        check cpu.ReadRegisterDebug(11) == 0
+                
+        cpu.WriteRegisterDebug(21, 1'u32)
+        p.RunProgram(@[
+            ori(10, 11, 0xF),
+            ori(20, 21, 0)
+        ])
+
+        check cpu.ReadRegisterDebug(10) == 0xF
+        check cpu.ReadRegisterDebug(20) == 1
