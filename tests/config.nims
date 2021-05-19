@@ -14,5 +14,8 @@ hint "SuccessX", false
 
 switch "verbosity", "0"
 
+# switch "define", "loglevel=Notice"
+switch "define", "loglevel_channels="
+
 if not defined(windows):
     switch "passC", "-Wno-packed-bitfield-compat"
