@@ -18,7 +18,7 @@ logChannels ["cpu", "disasm"]
 
 
 type
-    Mnemonic {.pure.} = enum lui, ori, sw, nop, addiu, j
+    Mnemonic {.pure.} = enum lui, ori, sw, nop, addiu, j, `or`
 
     InstructionType {.pure.}  = enum I, J, R
 
@@ -66,6 +66,7 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     of Opcode.Special:
         case inst.function:
         of Function.SLL: return inst.DisasmSLL(cpu)
+        of Function.OR : return inst.DisasmOR(cpu)
         else:
             NOT_IMPLEMENTED fmt"Missing disassembly for SPECIAL {inst}"
     else: 
@@ -121,7 +122,7 @@ proc DisasmRtImmediate(inst: Instruction, cpu: Cpu, mnemonic: Mnemonic): Disasse
 
 proc DisasmORI(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     return DisassembledInstruction(
-        mnemonic: ori,
+        mnemonic: Mnemonic.ori,
         parts: @[
             InstructionPart(mode: Target, kind: CpuRegister, value: inst.rt),
             InstructionPart(mode: Source, kind: CpuRegister, value: inst.rs),
@@ -151,7 +152,7 @@ proc DisasmSW(inst: Instruction, cpu: Cpu): DisassembledInstruction =
 proc DisasmSLL(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     if inst.value == 0:
         return DisassembledInstruction(
-            mnemonic: nop
+            mnemonic: Mnemonic.nop
         )
     else:
         NOT_IMPLEMENTED "Standard SLL disassembly is not implemented."
@@ -160,8 +161,19 @@ proc DisasmSLL(inst: Instruction, cpu: Cpu): DisassembledInstruction =
 proc DisasmJ(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     let target = (inst.target shl 2) or (0xF000_0000'u32 and cpu.pc)
     return DisassembledInstruction(
-        mnemonic: j,
+        mnemonic: Mnemonic.j,
         parts: @[
             InstructionPart(mode: Target, kind: MemoryAddress, value: target)
+        ]
+    )
+
+
+proc DisasmOR(inst: Instruction, cpu: Cpu): DisassembledInstruction =
+    return DisassembledInstruction(
+        mnemonic: Mnemonic.`or`,
+        parts: @[
+            InstructionPart(mode: Target, kind: CpuRegister, value: inst.rd),
+            InstructionPart(mode: Source, kind: CpuRegister, value: inst.rs),
+            InstructionPart(mode: Source, kind: CpuRegister, value: inst.rt),
         ]
     )
