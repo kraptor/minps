@@ -11,7 +11,6 @@ import ../../core/log
 import ../address
 import ../mmu
 
-import assembler
 import instruction
     
 logChannels ["cpu"]
@@ -19,6 +18,9 @@ logChannels ["cpu"]
 
 type
     CpuRegisterIndex* = 0..31
+
+    CpuStats* = object
+        instruction_count*: int64
 
     Cpu* = ref object
         regs    *: array[CpuRegisterIndex, uint32]
@@ -30,7 +32,11 @@ type
         inst_in_delay  *: bool # if current instruction is in delay slot
         inst_is_branch *: bool # if current instruction is a branch instruction
 
-        mmu *: Mmu
+        stats *: CpuStats
+        mmu   *: Mmu
+
+
+import assembler
 
 
 proc GetCpuRegisterAlias*(r: CpuRegisterIndex): string =
@@ -47,9 +53,7 @@ proc WriteRegister*(self: Cpu, r: CpuRegisterIndex, v: uint32) =
         alias = GetCpuRegisterAlias(r)
         prev_value = self.regs[r]
 
-    self.regs[r] = v
-    self.regs[0] = 0
-
+    self.WriteRegisterDebug(r, v)
     trace fmt"write reg[{alias}] {alias}=${r} value={self.regs[r]:08x}h (was={prev_value:08x}h)"
 
 
@@ -61,7 +65,10 @@ proc ReadRegister*(self: Cpu, r: CpuRegisterIndex): uint32 =
 
 proc ReadRegisterDebug*(self: Cpu, r: CpuRegisterIndex): uint32 = 
     self.regs[r]
-    
+
+proc WriteRegisterDebug*(self: Cpu, r: CpuRegisterIndex, v: uint32) =
+    self.regs[r] = v
+    self.regs[0] = 0
 
 
 import operations # NOTE: import here so Cpu type is defined and ready within operations module
@@ -71,7 +78,7 @@ proc New*(T: type Cpu, mmu: Mmu): Cpu =
     debug "Creating CPU..."
     result = Cpu(
         mmu: mmu,
-        inst: NOP
+        inst: nop
     )
     result.Reset()
 
@@ -80,10 +87,12 @@ proc Reset*(self: Cpu) =
     self.pc = CPU_RESET_ENTRY_POINT
     self.pc_next = CPU_RESET_ENTRY_POINT
 
-    self.inst = NOP
+    self.inst = nop
     self.inst_pc = CPU_RESET_ENTRY_POINT
     self.inst_is_branch = false
     self.inst_in_delay = false
+
+    self.stats.instruction_count = -1
     warn "Reset: CPU State not fully initialized."
 
 
@@ -104,9 +113,9 @@ proc RunNext*(self: Cpu) =
     self.inst_in_delay = self.inst_is_branch
     self.inst_is_branch = false
 
+    inc self.stats.instruction_count
+
 
 proc Fetch(self: Cpu) =
     self.inst = Instruction.New(self.mmu.Read32(self.pc))
     self.inst_pc = self.pc
-
-
