@@ -3,7 +3,26 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
+import macros
+
+import cpu
 import instruction
 
 let
-    NOP* = Instruction.New(0'u32)
+    nop* = Instruction.New(0'u32)
+
+type
+    Program* = seq[Instruction]
+
+
+proc lui*(target: CpuRegisterIndex, immediate: uint16): Instruction =
+    result.I.opcode = LUI
+    result.I.rt = target.uint8
+    result.I.imm16 = immediate
+
+
+proc ori*(target, source: CpuRegisterIndex, value: uint16): Instruction =
+    result.I.opcode = ORI
+    result.I.rt = target.uint8
+    result.I.rs = source.uint8
+    result.I.imm16 = value
