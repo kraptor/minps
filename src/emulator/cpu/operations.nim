@@ -55,6 +55,7 @@ const FUNCTIONS = block:
     var f: array[Function.high.ord, OperationProc]
     for x in f.mitems: x = ExecuteFunctionNotImplemented
     f[ord Function.SLL] = Op_SLL
+    f[ord Function.OR ] = Op_OR
     f # return the array
 
 
@@ -126,3 +127,13 @@ proc Op_ADDIU(cpu: Cpu): Cycles =
 proc Op_J(cpu: Cpu): Cycles =
     let target = (cpu.inst.target shl 2) or (0xF000_0000'u32 and cpu.pc)
     cpu.BranchWithDelaySlotTo(target.Address)
+
+
+proc Op_OR(cpu: Cpu): Cycles = 
+    let
+        rd = cpu.inst.rd
+        rs = cpu.inst.rs
+        rt = cpu.inst.rt
+        value = cpu.ReadRegister(rs) or cpu.ReadRegister(rt)
+
+    cpu.WriteRegister(rd, value)

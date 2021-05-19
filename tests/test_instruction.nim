@@ -34,8 +34,8 @@ suite "Instruction execution correctness":
         check cpu.ReadRegisterDebug(11) == 0
         
         let program = @[
-            lui(10, 0xF'u16),
-            lui(11, 0xFFFF'u16),
+            LUI(10, 0xF'u16),
+            LUI(11, 0xFFFF'u16),
         ]
 
         p.RunProgram(program)
@@ -50,8 +50,8 @@ suite "Instruction execution correctness":
                 
         cpu.WriteRegisterDebug(21, 1'u32)
         p.RunProgram(@[
-            ori(10, 11, 0xF),
-            ori(20, 21, 0),
+            ORI(10, 11, 0xF),
+            ORI(20, 21, 0),
         ])
 
         check cpu.ReadRegisterDebug(10) == 0xF
@@ -63,8 +63,8 @@ suite "Instruction execution correctness":
 
         cpu.WriteRegister(11, 0b1)
         p.RunProgram(@[
-            sll(10, 11, 1),
-            sll(11, 11, 2),
+            SLL(10, 11, 1),
+            SLL(11, 11, 2),
         ])
 
         check cpu.ReadRegisterDebug(10) == 0b10
@@ -75,9 +75,25 @@ suite "Instruction execution correctness":
         cpu.WriteRegister(21, 0xFFFF_FFFF'u32)
 
         p.RunProgram(@[
-            addiu(10, 11, 0),
-            addiu(20, 21, 1), # checks wrap-around
+            ADDIU(10, 11, 0),
+            ADDIU(20, 21, 1), # checks wrap-around
         ])
 
         check cpu.ReadRegisterDebug(10) == 1
         check cpu.ReadRegisterDebug(20) == 0
+
+
+    test "OR":
+        cpu.WriteRegister(11, 1)
+        
+        p.RunProgram(@[
+            OR(10, 10, 11),
+            OR(11, 11, 0),
+            OR(12, 0, 0),
+            OR(13, 11, 11),
+        ])
+
+        check cpu.ReadRegisterDebug(10) == 1
+        check cpu.ReadRegisterDebug(11) == 1
+        check cpu.ReadRegisterDebug(12) == 0
+        check cpu.ReadRegisterDebug(13) == 1
