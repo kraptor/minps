@@ -59,7 +59,7 @@ proc FromStream*(T: type Bios, stream: Stream): Bios =
 
 proc FromProgram*(T: type Bios, program: seq[Instruction]): Bios =
     result = Bios()
-    
+
     var index = 0
     for instruction in program:
         result.data.u32[index] = instruction.value
@@ -85,7 +85,7 @@ proc Read*[T: uint8|uint16|uint32](self: Bios, address: KusegAddress): T =
     when T is uint32:
         let offset_u32 = offset.uint32 shr 2
         result = cast[T](self.data.u32[offset_u32])
-        trace fmt"read[{$typeof(T)}] offset={offset} value={result:08x}h"
+        trace fmt"read[{$T}] offset={offset} value={result:08x}h"
         return result
     
-    NOT_IMPLEMENTED fmt"BIOS Read[{$typeof(T)}]: address={address}"
+    NOT_IMPLEMENTED fmt"BIOS Read[{$T}]: address={address}"
