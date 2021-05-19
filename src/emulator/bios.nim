@@ -7,8 +7,10 @@
 
 import streams
 import strformat
+
 import ../core/[log, util]
 import address
+import cpu/instruction
 
 logChannels ["bios"]
 
@@ -53,6 +55,15 @@ proc FromStream*(T: type Bios, stream: Stream): Bios =
     result = Bios()
     result.size_loaded = readData(stream, result.data.u8.addr, result.data.u8.len)
     assert result.size_loaded > 0
+
+
+proc FromProgram*(T: type Bios, program: seq[Instruction]): Bios =
+    result = Bios()
+    
+    var index = 0
+    for instruction in program:
+        result.data.u32[index] = instruction.value
+        inc index
 
 
 proc FromFile*(T: type Bios, filename: string): Bios =
