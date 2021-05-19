@@ -34,3 +34,12 @@ proc sll*(target, source: CpuRegisterIndex, amount: 0..0b11111): Instruction =
     result.R.rd = target.uint8
     result.R.rt = source.uint8
     result.R.shamt = amount.uint8
+
+
+proc addiu*(target, source, immediate: uint16): Instruction =
+    result.I.opcode = ADDIU
+    result.I.rt = target.uint8
+    result.I.rs = source.uint8
+    result.I.imm16 = immediate
+
+
