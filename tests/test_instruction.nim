@@ -35,7 +35,7 @@ suite "Instruction execution correctness":
         
         let program = @[
             lui(10, 0xF'u16),
-            lui(11, 0xFFFF'u16)
+            lui(11, 0xFFFF'u16),
         ]
 
         p.RunProgram(program)
@@ -51,8 +51,21 @@ suite "Instruction execution correctness":
         cpu.WriteRegisterDebug(21, 1'u32)
         p.RunProgram(@[
             ori(10, 11, 0xF),
-            ori(20, 21, 0)
+            ori(20, 21, 0),
         ])
 
         check cpu.ReadRegisterDebug(10) == 0xF
         check cpu.ReadRegisterDebug(20) == 1
+
+    test "SLL":
+        check cpu.ReadRegisterDebug(10) == 0
+        check cpu.ReadRegisterDebug(11) == 0
+
+        cpu.WriteRegister(11, 0b1)
+        p.RunProgram(@[
+            sll(10, 11, 1),
+            sll(11, 11, 2),
+        ])
+
+        check cpu.ReadRegisterDebug(10) == 0b10
+        check cpu.ReadRegisterDebug(11) == 0b100
