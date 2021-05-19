@@ -12,7 +12,7 @@ import bitops
 import ../core/[log, util]
 import address
 
-logChannels ["mc1"]
+logChannels ["mc"]
 
 
 const
@@ -22,8 +22,12 @@ const
     MC1_START* = (Address 0x1F801000).toKUSEG()
     MC1_END* = KusegAddress MC1_START.uint32 + MC1_MAX_SIZE
 
+    MC3_CACHE_CONTROL_REGISTER_ADDRESS = Address 0xFFFE0130
+    MC3_CACHE_CONTROL_REGISTER_ADDRESS_END = Address 0xFFFE0133
+
 type
-    Mc1* = ref object
+    MemoryControl* = ref object
+        # mc1
         expansion1_base_address: uint32
         expansion2_base_address: uint32
         expansion1_delay_size  : DelaySizeRegister
@@ -34,8 +38,27 @@ type
         bios_rom_delay_size    : DelaySizeRegister
         ram_size               : RamSizeRegister
         com_delay              : ComDelayRegister
+        # mc3
+        cache_control: CacheControlRegister
+
 
 type
+    CacheControlRegisterParts* {.packed.} = object
+        UNKNOWN_00_02               {.bitsize: 3.}: uint8
+        enable_scratchpad_1         {.bitsize: 1.}: bool
+        UNKNOWN_04_05               {.bitsize: 2.}: uint8
+        UNKNOWN_06_06               {.bitsize: 1.}: bool # always 0 (false)
+        enable_scratchpad_2         {.bitsize: 1.}: bool
+        UNKNOWN_08_08               {.bitsize: 1.}: bool
+        crash_if_code_cache_enabled {.bitsize: 1.}: bool
+        UNKNOWN_10_10               {.bitsize: 1.}: bool # always 0 (false)
+        enable_code_cache           {.bitsize: 1.}: bool
+        UNKNOWN_12_31               {.bitsize:20.}: uint32
+
+    CacheControlRegister* {.union.} = object
+        value: uint32
+        parts: CacheControlRegisterParts
+
     DataBusWidth = enum
         Use8Bits = 0
         Use16Bits = 1
@@ -106,36 +129,37 @@ type
         parts: ComDelayRegisterParts
 
 
-proc New*(T: type Mc1): Mc1 =
-    debug "Creating MC1..."
+proc New*(T: type MemoryControl): MemoryControl =
+    debug "Creating MemoryControl..."
     logIndent:
-        result = Mc1()
-        debug "MC1 created!"
+        result = MemoryControl()
+        debug "MemoryControl created!"
 
 
-proc Reset*(self: Mc1) =
-    debug "Resetting MC1..."
+proc Reset*(self: MemoryControl) =
+    debug "Resetting MemoryControl..."
     logIndent:
         # TODO: set maximum cycle delays in all registers
-        warn "MC1 Reset not fully implemented. Missing initial values!"
-        debug "MC1 Resetted."
+        self.cache_control.value = 0
+        warn "MemoryControl Reset not fully implemented. Missing initial values!"
+        debug "MemoryControl Resetted."
 
 
-proc Read8* (self: Mc1, address: KusegAddress): uint8  {.inline.} = Read[uint8 ](self, address)
-proc Read16*(self: Mc1, address: KusegAddress): uint16 {.inline.} = Read[uint16](self, address)
-proc Read32*(self: Mc1, address: KusegAddress): uint32 {.inline.} = Read[uint32](self, address)
+proc Read8* (self: MemoryControl, address: KusegAddress): uint8  {.inline.} = Read[uint8 ](self, address)
+proc Read16*(self: MemoryControl, address: KusegAddress): uint16 {.inline.} = Read[uint16](self, address)
+proc Read32*(self: MemoryControl, address: KusegAddress): uint32 {.inline.} = Read[uint32](self, address)
 
-proc Read*[T: uint8|uint16|uint32](self: Mc1, address: KusegAddress): T =
-    trace fmt"read[{$typeof(T)}] address={address:08x}h"
-    NOT_IMPLEMENTED fmt"MC1 Read[{$typeof(T)}]: address={address}"
+proc Read*[T: uint8|uint16|uint32](self: MemoryControl, address: KusegAddress): T =
+    trace fmt"read[{$T}] address={address:08x}h"
+    NOT_IMPLEMENTED fmt"MemoryControl Read[{$T}]: address={address}"
 
 
-proc Write8* (self: Mc1, address: KusegAddress, value: uint8 ): uint8  {.inline.} = Write[uint8 ](self, address, value)
-proc Write16*(self: Mc1, address: KusegAddress, value: uint16): uint16 {.inline.} = Write[uint16](self, address, value)
-proc Write32*(self: Mc1, address: KusegAddress, value: uint32): uint32 {.inline.} = Write[uint32](self, address, value)
+proc Write8* (self: MemoryControl, address: KusegAddress, value: uint8 ): uint8  {.inline.} = Write[uint8 ](self, address, value)
+proc Write16*(self: MemoryControl, address: KusegAddress, value: uint16): uint16 {.inline.} = Write[uint16](self, address, value)
+proc Write32*(self: MemoryControl, address: KusegAddress, value: uint32): uint32 {.inline.} = Write[uint32](self, address, value)
 
-proc Write*[T: uint8|uint16|uint32](self: Mc1, address: KusegAddress, value: T) =
-    trace fmt"write[{$typeof(T)}] address={address} value={value:08x}h"
+proc Write*[T: uint8|uint16|uint32](self: MemoryControl, address: KusegAddress, value: T) =
+    trace fmt"write[{$T}] address={address} value={value:08x}h"
 
     when T is uint32:
         case address.uint32:
@@ -152,7 +176,7 @@ proc Write*[T: uint8|uint16|uint32](self: Mc1, address: KusegAddress, value: T) 
         else:
             discard
     
-    NOT_IMPLEMENTED fmt"MC1 Write[{$typeof(T)}]: address={address} value={value:08x}h"
+    NOT_IMPLEMENTED fmt"MemoryControl Write[{$T}]: address={address} value={value:08x}h"
 
 
 proc GetDescription(reg: DelaySizeRegister): seq[string] =
@@ -180,8 +204,10 @@ proc GetDescription(reg: DelaySizeRegister): seq[string] =
     ]
 
 
-proc SetExpansion1BaseAddress32(self: Mc1, value: uint32) =
+proc SetExpansion1BaseAddress32(self: MemoryControl, value: uint32) =
     trace fmt"write[Expansion 1 Base Address] value={value:08x}h"
+
+    assert value == 0x1F000000, "Unexpected EXP 1 Base Address"
 
     self.expansion1_base_address = value
     notice fmt"EXPANSION 1 Base Address set to: {value:08x}h"
@@ -190,8 +216,10 @@ proc SetExpansion1BaseAddress32(self: Mc1, value: uint32) =
     warn "EXPANSION 1 Base Address: sideeffects are ignored!"
 
 
-proc SetExpansion2BaseAddress32(self: Mc1, value: uint32) =
+proc SetExpansion2BaseAddress32(self: MemoryControl, value: uint32) =
     trace fmt"write[Expansion 2 Base Address] value={value:08x}h"
+
+    assert value == 0x1F802000, "Unexpected EXP 2 Base Address"
 
     self.expansion2_base_address = value
     notice fmt"EXPANSION 2 Base Address set to: {value:08x}h"
@@ -200,27 +228,27 @@ proc SetExpansion2BaseAddress32(self: Mc1, value: uint32) =
     warn "EXPANSION 2 Base Address: sideeffects are ignored!"
 
 
-proc SetExpansion1DelaySize32(self: Mc1, value: uint32) =
+proc SetExpansion1DelaySize32(self: MemoryControl, value: uint32) =
     SetDelaySizeRegister32("EXPANSION 1 Delay/Size", self.expansion1_delay_size, value)
 
 
-proc SetBiosRomDelaySize32(self: Mc1, value: uint32) =
+proc SetBiosRomDelaySize32(self: MemoryControl, value: uint32) =
     SetDelaySizeRegister32("BIOS ROM Delay/Size", self.bios_rom_delay_size, value)
 
 
-proc SetSpuDelaySize32(self: Mc1, value: uint32) =
+proc SetSpuDelaySize32(self: MemoryControl, value: uint32) =
     SetDelaySizeRegister32("SPU Delay/Size", self.spu_delay_size, value)
 
 
-proc SetCdRomDelaySize32(self: Mc1, value: uint32) =
+proc SetCdRomDelaySize32(self: MemoryControl, value: uint32) =
     SetDelaySizeRegister32("CDROM Delay/Size", self.cdrom_delay_size, value)
 
 
-proc SetExpansion3DelaySize32(self: Mc1, value: uint32) =
+proc SetExpansion3DelaySize32(self: MemoryControl, value: uint32) =
     SetDelaySizeRegister32("EXPANSION 3 Delay/Size", self.expansion3_delay_size, value)
 
 
-proc SetExpansion2DelaySize32(self: Mc1, value: uint32) =
+proc SetExpansion2DelaySize32(self: MemoryControl, value: uint32) =
     SetDelaySizeRegister32("EXPANSION 2 Delay/Size", self.expansion2_delay_size, value)
 
 
@@ -239,7 +267,7 @@ proc SetDelaySizeRegister32(name: static string, reg: var DelaySizeRegister, val
     warn fmt"{name}: sideffects are ignored!"
 
 
-proc SetRamSize32(self: Mc1, value: uint32) =
+proc SetRamSize32(self: MemoryControl, value: uint32) =
     trace fmt"write[RAM Size] value={value:08x}h"
     self.ram_size.value = value
 
@@ -251,7 +279,7 @@ proc SetRamSize32(self: Mc1, value: uint32) =
     warn "RAM Size: sideffects are ignored!"
 
 
-proc SetComDelayCommonDelay32(self: Mc1, value: uint32) =
+proc SetComDelayCommonDelay32(self: MemoryControl, value: uint32) =
     trace fmt"write[COM DELAY] value={value:08x}h"
     
     const SET_MASK = 0x0000FFFF # UNKNOWN_16_31 always zero
@@ -265,3 +293,46 @@ proc SetComDelayCommonDelay32(self: Mc1, value: uint32) =
 
     # TODO: implement side-effects
     warn "COM Delay: sideffects are ignored!"
+
+
+proc ReadMc3*[T: uint8|uint16|uint32](self: MemoryControl, address: Address): T =
+    case address:
+    of MC3_CACHE_CONTROL_REGISTER_ADDRESS..MC3_CACHE_CONTROL_REGISTER_ADDRESS_END:
+        return GetCacheControl[T](self, address)
+    else:
+        NOT_IMPLEMENTED fmt"MemoryControl MC3 Read: No device found at KSEG2 address: {address}"
+
+
+proc WriteMc3*[T: uint8|uint16|uint32](self: MemoryControl, address: Address, value: T) =
+    case address:
+        of MC3_CACHE_CONTROL_REGISTER_ADDRESS..MC3_CACHE_CONTROL_REGISTER_ADDRESS_END:
+            SetCacheControl[T](self, address, value)
+        else:
+            NOT_IMPLEMENTED fmt"MemoryControl MC3 Write: No device found at KSEG2 address: {address}"
+
+
+proc SetCacheControl[T: uint32|uint16|uint8](self: MemoryControl, address: Address, value: T) =
+    trace fmt"write[{$T}][Cache Control] value={value:08x}h"
+
+    when T is uint32:
+        self.cache_control.value = value
+        notice fmt"Cache Control set to: {value:08x}h"
+
+    when T is uint16:
+        NOT_IMPLEMENTED fmt"Set Cache Control is not implemented for {$T}"
+
+    when T is uint8:
+        NOT_IMPLEMENTED fmt"Set Cache Control is not implemented for {$T}"
+    
+    notice fmt"- Enable ScratchPad 1        : {self.cache_control.parts.enable_scratchpad_1}"
+    notice fmt"- Enable ScratchPad 2        : {self.cache_control.parts.enable_scratchpad_2}"
+    notice fmt"- Crash if code cache enabled: {self.cache_control.parts.crash_if_code_cache_enabled}"
+    notice fmt"- Enable Code Cache          : {self.cache_control.parts.enable_code_cache}"
+    
+    # TODO: implemented side-effects
+    warn "Cache Control: sideffects are ignored!"
+    
+
+proc GetCacheControl[T: uint32|uint16|uint8](self: MemoryControl, address: Address): T =
+    trace fmt"read[{$T}][Cache Control]"
+    NOT_IMPLEMENTED fmt"Get Cache Control is not implemented for {$T}"

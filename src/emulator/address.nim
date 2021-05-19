@@ -34,9 +34,11 @@ proc `<`*[T: SomeAddress](x, y: T): bool = x.uint32 < y.uint32
 proc `<=`*[T: SomeAddress](x, y: T): bool = x.uint32 <= y.uint32
 
 proc toKUSEG*(self: Address): KusegAddress = KusegAddress(self and 0x1FFF_FFFF'u32)
-proc toKSEG0*(self: Address): Kseg0Address = Kseg0Address(self and 0x8FFF_FFFF'u32)
-proc toKSEG1*(self: Address): Kseg1Address = Kseg1Address(self and 0xAFFF_FFFF'u32)
-proc toKSEG2*(self: Address): Kseg2Address = Kseg2Address(self and 0xCFFF_FFFF'u32)
+# proc toKSEG0*(self: Address): Kseg0Address = Kseg0Address(self and 0x8FFF_FFFF'u32)
+# proc toKSEG1*(self: Address): Kseg1Address = Kseg1Address(self and 0xAFFF_FFFF'u32)
+# proc toKSEG2*(self: Address): Kseg2Address = Kseg2Address(self and 0xCFFF_FFFF'u32)
+
+proc inKSEG2*(self: Address): bool = self.uint32 >= KSEG2_START
 
 proc `+`*(x: Address, y: uint32): Address = Address(x.uint32 + y)
 proc `+=`*(x: var Address, y: SomeInteger) = x = Address(x.u32 + y)
