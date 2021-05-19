@@ -117,8 +117,8 @@ proc Reset*(self: Mc1) =
     debug "Resetting MC1..."
     logIndent:
         # TODO: set maximum cycle delays in all registers
-        NOT_IMPLEMENTED
-        debug("MC1 Resetted.")
+        warn "MC1 Reset not fully implemented. Missing initial values!"
+        debug "MC1 Resetted."
 
 
 proc Read8* (self: Mc1, address: KusegAddress): uint8  {.inline.} = Read[uint8 ](self, address)
