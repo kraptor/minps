@@ -5,7 +5,7 @@
 
 {.experimental: "codeReordering".}
 
-import ../core/[log, util]
+import ../core/[log]
 import cpu/cpu
 import cpu/assembler
 import mmu
