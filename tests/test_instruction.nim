@@ -69,3 +69,15 @@ suite "Instruction execution correctness":
 
         check cpu.ReadRegisterDebug(10) == 0b10
         check cpu.ReadRegisterDebug(11) == 0b100
+
+    test "ADDIU":
+        cpu.WriteRegister(11, 1)
+        cpu.WriteRegister(21, 0xFFFF_FFFF'u32)
+
+        p.RunProgram(@[
+            addiu(10, 11, 0),
+            addiu(20, 21, 1), # checks wrap-around
+        ])
+
+        check cpu.ReadRegisterDebug(10) == 1
+        check cpu.ReadRegisterDebug(20) == 0
