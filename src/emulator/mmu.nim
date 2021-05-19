@@ -17,7 +17,7 @@ logChannels ["mmu"]
 
 type
     Mmu* = ref object
-        bios: Bios
+        bios*: Bios
         mc1: Mc1
 
 
@@ -31,7 +31,8 @@ proc New*(T: type Mmu, bios: Bios): Mmu =
 proc Reset*(self: Mmu) =
     # self.bios.Reset() # BIOS should not be resetted
     self.mc1.Reset()
-    NOT_IMPLEMENTED "MMU Reset not implemented"
+    # TODO: implement full MMU reset
+    warn "MMU Reset not fully implemented!"
 
 
 proc ReadImpl[T: uint32|uint16|uint8](self: Mmu, address: Address): T =
