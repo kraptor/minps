@@ -9,6 +9,7 @@ import ../../core/log
 import ../../core/util
 import ../mmu
 import cpu
+import cop0
 
 import strutils
 import strformat
@@ -18,7 +19,7 @@ logChannels ["cpu", "disasm"]
 
 
 type
-    Mnemonic {.pure.} = enum lui, ori, sw, nop, addiu, j, `or`
+    Mnemonic {.pure.} = enum lui, ori, sw, nop, addiu, j, `or`, mtc0
 
     InstructionType {.pure.}  = enum I, J, R
 
@@ -28,6 +29,7 @@ type
         MemoryBase
         MemoryOffset
         MemoryAddress
+        Cop0Register
 
     InstructionPartMode {.pure.}  = enum
         Source
@@ -63,6 +65,7 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     of Opcode.SW   : return inst.DisasmSW(cpu)
     of Opcode.ADDIU: return inst.DisasmRtImmediate(cpu, addiu)
     of Opcode.J    : return inst.DisasmJ(cpu)
+    of Opcode.COP0 : return inst.DisasmCop0(cpu)
     of Opcode.Special:
         case inst.function:
         of Function.SLL: return inst.DisasmSLL(cpu)
@@ -107,6 +110,7 @@ proc `$`*(part: InstructionPart): string =
     of MemoryOffset  : return fmt"{part.value:x}h"
     of MemoryBase    : return GetCpuRegisterAlias(part.value)   
     of MemoryAddress : return fmt"{part.value:x}h"
+    of Cop0Register  : return GetCop0RegisterAlias(part.value)
     NOT_IMPLEMENTED "Disassembly part stringify not implemented for: " & $part.kind
 
 
@@ -177,3 +181,17 @@ proc DisasmOR(inst: Instruction, cpu: Cpu): DisassembledInstruction =
             InstructionPart(mode: Source, kind: CpuRegister, value: inst.rt),
         ]
     )
+
+
+proc DisasmCop0(inst: Instruction, cpu: Cpu): DisassembledInstruction =
+    case inst.rs.Cop0Opcode:
+    of MTC:
+        return DisassembledInstruction(
+            mnemonic: Mnemonic.mtc0,
+            parts: @[
+                InstructionPart(mode: Source, kind: CpuRegister, value: inst.rt),
+                InstructionPart(mode: Target, kind: Cop0Register, value: inst.rd),
+            ]
+        )
+    else:
+        NOT_IMPLEMENTED
