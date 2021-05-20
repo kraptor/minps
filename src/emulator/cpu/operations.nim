@@ -32,6 +32,13 @@ proc ExecuteNotImplemented(cpu: Cpu): Cycles {.used.} =
     NOT_IMPLEMENTED fmt"Opcode not implemented: {cpu.inst.opcode}"
 
 
+proc ExecuteCop0NotImplemented(cpu: Cpu): Cycles {.used.} =
+    logIndent:
+        trace fmt"{cpu.inst}"
+        trace fmt"{cpu.inst.value:032b}"        
+    NOT_IMPLEMENTED fmt"Cop0 Opcode not implemented: {cpu.inst.rs.Cop0Opcode}"
+
+
 proc ExecuteFunctionNotImplemented(cpu: Cpu): Cycles {.used.} = 
     logIndent:
         trace fmt"{cpu.inst}"
@@ -48,6 +55,7 @@ const OPCODES = block:
     o[ord Opcode.Special] = Op_Special
     o[ord Opcode.ADDIU]   = Op_ADDIU
     o[ord Opcode.J]       = Op_J
+    o[ord Opcode.COP0]    = Op_COP0
     o # return the array
 
 
@@ -57,6 +65,12 @@ const FUNCTIONS = block:
     f[ord Function.SLL] = Op_SLL
     f[ord Function.OR ] = Op_OR
     f # return the array
+
+
+const COP0_OPCODES = block:
+    var o: array[Cop0Opcode.high.ord, OperationProc]
+    for x in o.mitems: x = ExecuteCop0NotImplemented
+    o
 
 
 # Utility functions to support operations
@@ -73,6 +87,10 @@ proc Execute*(cpu: Cpu): Cycles =
 
 proc Op_Special(cpu: Cpu): Cycles =
     FUNCTIONS[ord cpu.inst.function] cpu
+
+
+proc Op_COP0(cpu: Cpu): Cycles = 
+    COP0_OPCODES[ord cpu.inst.rs.Cop0Opcode] cpu
 
 
 proc Op_LUI(cpu: Cpu): Cycles = 
