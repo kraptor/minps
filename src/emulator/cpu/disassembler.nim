@@ -103,6 +103,7 @@ proc `$`*(metadata: seq[MetadataPart]): string =
             result = result & fmt"{m.key:08x}h={m.value:08x}h "
     result = result.strip()
 
+
 proc `$`*(part: InstructionPart): string =
     case part.kind:
     of CpuRegister   : return GetCpuRegisterAlias(part.value)
