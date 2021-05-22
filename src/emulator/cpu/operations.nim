@@ -58,6 +58,7 @@ const OPCODES = block:
     o[ord Opcode.J]       = Op_J
     o[ord Opcode.COP0]    = Op_COP0
     o[ord Opcode.BNE]     = Op_BNE
+    o[ord Opcode.ADDI]    = Op_ADDI
     o # return the array
 
 
@@ -184,3 +185,17 @@ proc Op_BNE(cpu: Cpu): Cycles =
     if cpu.ReadRegister(rs) != cpu.ReadRegister(rt):
         let address = cpu.pc + offset
         cpu.BranchWithDelaySlotTo(address)
+
+
+proc Op_ADDI(cpu: Cpu): Cycles =
+    let
+        rt = cpu.inst.rt
+        rs = cpu.inst.rs
+        
+    try:
+        let value = cast[int32](cpu.ReadRegister(rs)) + cast[int32](cpu.inst.imm16.sign_extend)
+        cpu.WriteRegister(rt, cast[uint32](value))
+    except:
+        NOT_IMPLEMENTED "Arithmetic ADD Exception not handled."
+
+    
