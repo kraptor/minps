@@ -14,13 +14,12 @@ import strformat
 
 import ../core/[log, util]
 import address
-import cpu/instruction
 
 logChannels ["ram"]
 
 
 const
-    RAM_MAX_SIZE = 1024 * 1024 * 2 # 2MB max Ram
+    RAM_MAX_SIZE = 1024 * 1024 * 8 # 8MB max Ram
 
     # device regions (in kuseg when possible)
     RAM_START* = (Address 0x0).toKUSEG()
