@@ -10,17 +10,24 @@ import emulator/cpu/cpu
 import emulator/platform
 import emulator/cpu/instruction
 import emulator/cpu/assembler
+import emulator/cpu/cop0
+
 
 logChannels ["testing"]
 
 
-suite "Instruction types":
+suite "CPU types":
 
     test "Union sizes":
         check sizeof(Instruction) == sizeof(uint32)
         check sizeof(JumpInstruction) == sizeof(uint32)
         check sizeof(RegisterInstruction) == sizeof(uint32)
         check sizeof(ImmediateInstruction) == sizeof(uint32)
+
+suite "Cop0 types":
+    test "Union sizes":
+        check sizeof(Cop0RegisterArray) == sizeof(Cop0RegistersParts)
+        check sizeof(Cop0SystemStatusRegister) == sizeof(uint32)
 
 
 suite "Instruction execution correctness":
@@ -97,3 +104,4 @@ suite "Instruction execution correctness":
         check cpu.ReadRegisterDebug(11) == 1
         check cpu.ReadRegisterDebug(12) == 0
         check cpu.ReadRegisterDebug(13) == 1
+
