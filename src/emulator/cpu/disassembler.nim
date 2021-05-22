@@ -19,7 +19,7 @@ logChannels ["cpu", "disasm"]
 
 
 type
-    Mnemonic {.pure.} = enum lui, ori, sw, nop, addiu, j, `or`, mtc0, bne
+    Mnemonic {.pure.} = enum lui, ori, sw, nop, addiu, j, `or`, mtc0, bne, addi
 
     InstructionType {.pure.}  = enum I, J, R
 
@@ -64,12 +64,13 @@ type
 proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     case inst.opcode:
     of Opcode.LUI  : return inst.DisasmRtImmediate(cpu, lui)
-    of Opcode.ORI  : return inst.DisasmORI(cpu)
+    of Opcode.ORI  : return inst.DisasmArithmeticImmediate(cpu, ori)
     of Opcode.SW   : return inst.DisasmSW(cpu)
     of Opcode.ADDIU: return inst.DisasmRtImmediate(cpu, addiu)
     of Opcode.J    : return inst.DisasmJ(cpu)
     of Opcode.COP0 : return inst.DisasmCop0(cpu)
     of Opcode.BNE  : return inst.DisasmBNE(cpu)
+    of Opcode.ADDI : return inst.DisasmArithmeticImmediate(cpu, addi)
     of Opcode.Special:
         case inst.function:
         of Function.SLL: return inst.DisasmSLL(cpu)
@@ -101,7 +102,7 @@ proc `$`*(metadata: seq[MetadataPart]): string =
                 result = result & fmt"{m.assign_target:08x}h={m.assign_value:08x}h "
             of MemoryTarget:
                 result = result & fmt"target={m.target_address:08x}h "
-        result = fmt"[{result.strip()}]"
+        result = fmt"[{result.strip}]"
 
 
 proc `$`*(part: InstructionPart): string =
@@ -125,9 +126,9 @@ proc DisasmRtImmediate(inst: Instruction, cpu: Cpu, mnemonic: Mnemonic): Disasse
     )
 
 
-proc DisasmORI(inst: Instruction, cpu: Cpu): DisassembledInstruction =
+proc DisasmArithmeticImmediate(inst: Instruction, cpu: Cpu, mnemonic: Mnemonic): DisassembledInstruction =
     return DisassembledInstruction(
-        mnemonic: Mnemonic.ori,
+        mnemonic: mnemonic,
         parts: @[
             InstructionPart(mode: Target, kind: CpuRegister, value: inst.rt),
             InstructionPart(mode: Source, kind: CpuRegister, value: inst.rs),
@@ -135,6 +136,17 @@ proc DisasmORI(inst: Instruction, cpu: Cpu): DisassembledInstruction =
         ]
     )
 
+
+# proc DisasmORI(inst: Instruction, cpu: Cpu): DisassembledInstruction =
+#     return DisassembledInstruction(
+#         mnemonic: Mnemonic.ori,
+#         parts: @[
+#             InstructionPart(mode: Target, kind: CpuRegister, value: inst.rt),
+#             InstructionPart(mode: Source, kind: CpuRegister, value: inst.rs),
+#             InstructionPart(mode: Source, kind: ImmediateValue, value: inst.imm16)
+#         ]
+#     )
+    
 
 proc DisasmSW(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     let 
