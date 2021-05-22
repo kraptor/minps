@@ -11,6 +11,7 @@ import ../../core/log
 import ../../core/util
 
 import cpu
+import cop0
 import instruction
 import disassembler
 
@@ -70,6 +71,7 @@ const FUNCTIONS = block:
 const COP0_OPCODES = block:
     var o: array[Cop0Opcode.high.ord, OperationProc]
     for x in o.mitems: x = ExecuteCop0NotImplemented
+    o[ord Cop0Opcode.MTC] = Op_MTC0
     o
 
 
@@ -155,3 +157,12 @@ proc Op_OR(cpu: Cpu): Cycles =
         value = cpu.ReadRegister(rs) or cpu.ReadRegister(rt)
 
     cpu.WriteRegister(rd, value)
+
+
+proc Op_MTC0(cpu: Cpu): Cycles =
+    let
+        rd = cpu.inst.rd
+        rt = cpu.inst.rt
+        value = cpu.ReadRegister(rt)
+
+    cpu.cop0.WriteRegister(rd, value)
