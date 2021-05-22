@@ -6,16 +6,19 @@
 import unittest
 
 import emulator/[
-    concepts, mmu, bios, platform, mc
+    concepts, mmu, bios, platform, mc, ram
 ]
 
-import emulator/cpu/cpu
+import emulator/cpu/[cpu, cop0]
 
 
 suite "Test concepts":
 
     test "CPU":
         assert Cpu is Component
+
+    test "Cop0":
+        assert Cop0 is Component
 
     test "MMU":
         assert Mmu is Resettable
@@ -25,6 +28,12 @@ suite "Test concepts":
     test "BIOS":
         assert Bios is ReadableDevice
         assert Bios isnot WritableDevice
+
+    test "RAM":
+        assert Ram is Component
+        assert Ram is Resettable
+        assert Ram is WritableDevice
+        assert Ram is ReadableDevice
 
     test "Platform":
         assert Platform is Runnable
