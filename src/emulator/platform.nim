@@ -5,9 +5,12 @@
 
 {.experimental: "codeReordering".}
 
+import strformat
+
 import ../core/[log]
 import cpu/cpu
 import cpu/assembler
+import cpu/disassembler
 import mmu
 import bios
 
@@ -41,11 +44,13 @@ proc Reset*(self: Platform) =
 
 proc Run*(self: Platform) =
     while true:
+        notice fmt"[CPU] {self.cpu.pc}: {self.cpu.inst.DisasmAsText(self.cpu)}"
         self.cpu.RunNext()
 
 
 proc RunFor*(self: Platform, number_of_instructions: int64) =
     while self.cpu.stats.instruction_count < number_of_instructions:
+        notice fmt"[CPU] {self.cpu.pc}: {self.cpu.inst.DisasmAsText(self.cpu)}"
         self.cpu.RunNext()
 
 
