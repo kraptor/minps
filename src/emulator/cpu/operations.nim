@@ -57,6 +57,7 @@ const OPCODES = block:
     o[ord Opcode.ADDIU]   = Op_ADDIU
     o[ord Opcode.J]       = Op_J
     o[ord Opcode.COP0]    = Op_COP0
+    o[ord Opcode.BNE]     = Op_BNE
     o # return the array
 
 
@@ -79,6 +80,7 @@ const COP0_OPCODES = block:
 proc BranchWithDelaySlotTo*(cpu: Cpu, target: Address) =
     cpu.inst_is_branch = true
     cpu.pc_next = target
+    trace fmt"CPU will branch to: {target} after the delay slot."
 
 
 proc Execute*(cpu: Cpu): Cycles =
@@ -171,3 +173,14 @@ proc Op_MTC0(cpu: Cpu): Cycles =
         value = cpu.ReadRegister(rt)
 
     cpu.cop0.WriteRegister(rd, value)
+
+
+proc Op_BNE(cpu: Cpu): Cycles =
+    let
+        rs = cpu.inst.rs
+        rt = cpu.inst.rt
+        offset = (cpu.inst.imm16 shl 2).sign_extend
+
+    if cpu.ReadRegister(rs) != cpu.ReadRegister(rt):
+        let address = cpu.pc + offset
+        cpu.BranchWithDelaySlotTo(address)
