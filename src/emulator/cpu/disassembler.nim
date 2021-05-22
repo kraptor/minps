@@ -19,7 +19,7 @@ logChannels ["cpu", "disasm"]
 
 
 type
-    Mnemonic {.pure.} = enum lui, ori, sw, nop, addiu, j, `or`, mtc0
+    Mnemonic {.pure.} = enum lui, ori, sw, nop, addiu, j, `or`, mtc0, bne
 
     InstructionType {.pure.}  = enum I, J, R
 
@@ -42,13 +42,16 @@ type
         kind: InstructionPartType
 
     MetadataPartKind {.pure.} = enum
-        metaCpuRegister
-        metaMemoryAddress
+        MemoryAssignment
+        MemoryTarget
 
     MetadataPart = object
-        key: uint32
-        value: uint32
-        kind: MetadataPartKind
+        case kind: MetadataPartKind
+        of MemoryAssignment:
+            assign_target: uint32
+            assign_value: uint32
+        of MemoryTarget:
+            target_address: uint32
     
     DisassembledInstruction = object
         kind: InstructionType
@@ -66,6 +69,7 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     of Opcode.ADDIU: return inst.DisasmRtImmediate(cpu, addiu)
     of Opcode.J    : return inst.DisasmJ(cpu)
     of Opcode.COP0 : return inst.DisasmCop0(cpu)
+    of Opcode.BNE  : return inst.DisasmBNE(cpu)
     of Opcode.Special:
         case inst.function:
         of Function.SLL: return inst.DisasmSLL(cpu)
@@ -83,32 +87,28 @@ proc DisasmAsText*(inst: Instruction, cpu: Cpu): string =
 
 
 proc DisasmAsText*(di: DisassembledInstruction): string =
-    case di.mnemonic:
-    of sw:
-        result = fmt"{$di.mnemonic} {di.parts[0]} {di.parts[1]}({di.parts[2]}) [{$di.metadata}]"
-        return result
-    else:
-        var parts: string
-        for p in di.parts:
-            parts = parts & " " & $p
-        return $di.mnemonic & parts
+    var parts: string
+    for p in di.parts:
+        parts = parts & " " & $p
+    return strip(fmt"{di.mnemonic} {parts.strip} {di.metadata}")
 
 
 proc `$`*(metadata: seq[MetadataPart]): string =
-    for m in metadata:
-        case m.kind:
-        of metaCpuRegister:
-            result = result & fmt"{GetCpuRegisterAlias(m.key)}={m.value:08x}h "
-        of metaMemoryAddress:
-            result = result & fmt"{m.key:08x}h={m.value:08x}h "
-    result = result.strip()
+    if metadata.len > 0:
+        for m in metadata:
+            case m.kind:
+            of MemoryAssignment:
+                result = result & fmt"{m.assign_target:08x}h={m.assign_value:08x}h "
+            of MemoryTarget:
+                result = result & fmt"target={m.target_address:08x}h "
+        result = fmt"[{result.strip()}]"
 
 
 proc `$`*(part: InstructionPart): string =
     case part.kind:
     of CpuRegister   : return GetCpuRegisterAlias(part.value)
     of ImmediateValue: return fmt"{part.value:x}h"
-    of MemoryOffset  : return fmt"{part.value:x}h"
+    of MemoryOffset  : return fmt"{cast[int32](part.value):x}h"
     of MemoryBase    : return GetCpuRegisterAlias(part.value)   
     of MemoryAddress : return fmt"{part.value:x}h"
     of Cop0Register  : return GetCop0RegisterAlias(part.value)
@@ -140,7 +140,7 @@ proc DisasmSW(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     let 
         target = inst.imm16.sign_extend + cpu.ReadRegisterDebug(inst.rs)
         metadata = @[
-            MetadataPart(kind: metaMemoryAddress, key: target, value: cpu.ReadRegisterDebug(inst.rt))
+            MetadataPart(kind: MemoryAssignment, assign_target: target, assign_value: cpu.ReadRegisterDebug(inst.rt))
         ]
 
     return DisassembledInstruction(
@@ -148,7 +148,7 @@ proc DisasmSW(inst: Instruction, cpu: Cpu): DisassembledInstruction =
         parts: @[
             InstructionPart(mode: Source, kind: CpuRegister, value: inst.rt),
             InstructionPart(mode: Target, kind: MemoryBase, value: inst.rs),
-            InstructionPart(mode: Target, kind: MemoryOffset, value: inst.imm16),
+            InstructionPart(mode: Target, kind: MemoryOffset, value: inst.imm16.sign_extend),
         ],
         metadata: metadata
     )
@@ -196,3 +196,22 @@ proc DisasmCop0(inst: Instruction, cpu: Cpu): DisassembledInstruction =
         )
     else:
         NOT_IMPLEMENTED
+
+
+proc DisasmBNE(inst: Instruction, cpu: Cpu): DisassembledInstruction =
+    let 
+        delay_slot_pc = cpu.inst_pc + 4  # can't use next_pc, depends on call-site
+        target = (inst.imm16 shl 2).sign_extend + delay_slot_pc
+        metadata = @[
+            MetadataPart(kind: MemoryTarget, target_address: target)
+        ]
+
+    return DisassembledInstruction(
+        mnemonic: Mnemonic.bne,
+        parts: @[
+            InstructionPart(mode: Source, kind: CpuRegister, value: inst.rs),
+            InstructionPart(mode: Source, kind: CpuRegister, value: inst.rt),
+            InstructionPart(mode: Target, kind: MemoryOffset, value: (inst.imm16 shl 2).sign_extend)
+        ],
+        metadata: metadata
+    )

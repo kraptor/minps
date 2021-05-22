@@ -33,7 +33,7 @@ type
         inst_in_delay  *: bool # if current instruction is in delay slot
         inst_is_branch *: bool # if current instruction is a branch instruction
 
-        cop0*: Cop0
+        cop0  *: Cop0
 
         stats *: CpuStats
         mmu   *: Mmu
