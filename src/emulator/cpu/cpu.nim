@@ -11,6 +11,7 @@ import ../../core/log
 import ../address
 import ../mmu
 
+import cop0
 import instruction
     
 logChannels ["cpu"]
@@ -31,6 +32,8 @@ type
         inst_pc        *: Address  # instruction address of the current excecuting instruction
         inst_in_delay  *: bool # if current instruction is in delay slot
         inst_is_branch *: bool # if current instruction is a branch instruction
+
+        cop0*: Cop0
 
         stats *: CpuStats
         mmu   *: Mmu
@@ -93,6 +96,8 @@ proc Reset*(self: Cpu) =
     self.inst_in_delay = false
 
     self.stats.instruction_count = -1
+
+    self.cop0.Reset()
     warn "Reset: CPU State not fully initialized."
 
 
