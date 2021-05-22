@@ -121,7 +121,12 @@ proc Op_SW(cpu: Cpu): Cycles =
 
     if unlikely(not address.is_aligned):
         NOT_IMPLEMENTED fmt"Address is not aligned: {address}"
-    
+
+    if unlikely(cpu.cop0.IsolateCacheEnabled):
+        # TODO: implement cache in CPU for writes
+        warn fmt"Attempt to write with Disable Cache enabled!"
+        return
+
     # TODO: account for write to memory cycles?
     cpu.mmu.Write(address, value)
 

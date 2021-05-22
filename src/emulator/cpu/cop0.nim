@@ -99,6 +99,9 @@ type
         CU3     {.bitsize: 1.}: CoprocessorEnableMode
 
 
+proc IsolateCacheEnabled*(cop0: Cop0): bool = cop0.parts.SR.Isc
+
+
 proc GetCop0RegisterAlias*(r: Cop0RegisterIndex): string =
     const COP0_REGISTER_TO_ALIAS = [
         "$0"      , "$1"  , "$2" , "BPC" , "$4" , "BDA"  , "JUMPDEST", "DCIC", 
