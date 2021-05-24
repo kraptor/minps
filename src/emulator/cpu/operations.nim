@@ -59,14 +59,15 @@ const OPCODES = block:
     o[ord Opcode.COP0]    = Op_COP0
     o[ord Opcode.BNE]     = Op_BNE
     o[ord Opcode.ADDI]    = Op_ADDI
+    o[ord Opcode.LW]      = Op_LW
     o # return the array
 
 
 const FUNCTIONS = block:
     var f: array[Function.high.ord, OperationProc]
     for x in f.mitems: x = ExecuteFunctionNotImplemented
-    f[ord Function.SLL] = Op_SLL
-    f[ord Function.OR ] = Op_OR
+    f[ord Function.SLL] = Function_SLL
+    f[ord Function.OR ] = Function_OR
     f # return the array
 
 
@@ -134,7 +135,26 @@ proc Op_SW(cpu: Cpu): Cycles =
     cpu.mmu.Write(address, value)
 
 
-proc Op_SLL(cpu: Cpu): Cycles =
+proc Op_LW(cpu: Cpu): Cycles =
+    let
+        base = cpu.ReadRegister(cpu.inst.rs)
+        offset = cpu.inst.imm16.sign_extend
+        address = Address offset + base
+
+    if unlikely(not address.is_aligned):
+        NOT_IMPLEMENTED fmt"Address is not aligned: {address}"
+
+    if unlikely(cpu.cop0.IsolateCacheEnabled):
+        # TODO: does IsolateCache affect loads??
+        NOT_IMPLEMENTED
+
+    let value = cpu.mmu.Read32(address)
+
+    # TODO: LW data loaded into register is delayed 1 instruction
+    cpu.WriteRegister(cpu.inst.rt, value)
+
+
+proc Function_SLL(cpu: Cpu): Cycles =
     let 
         rd = cpu.inst.rd
         rt = cpu.inst.rt
@@ -157,7 +177,7 @@ proc Op_J(cpu: Cpu): Cycles =
     cpu.BranchWithDelaySlotTo(target.Address)
 
 
-proc Op_OR(cpu: Cpu): Cycles = 
+proc Function_OR(cpu: Cpu): Cycles = 
     let
         rd = cpu.inst.rd
         rs = cpu.inst.rs
@@ -198,4 +218,3 @@ proc Op_ADDI(cpu: Cpu): Cycles =
     except:
         NOT_IMPLEMENTED "Arithmetic ADD Exception not handled."
 
-    
