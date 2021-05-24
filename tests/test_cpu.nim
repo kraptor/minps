@@ -28,6 +28,8 @@ suite "Cop0 types":
     test "Union sizes":
         check sizeof(Cop0RegisterArray) == sizeof(Cop0RegistersParts)
         check sizeof(Cop0SystemStatusRegister) == sizeof(uint32)
+        check sizeof(Cop0DCICRegister) == sizeof(uint32)
+
 
 
 suite "Instruction execution correctness":
