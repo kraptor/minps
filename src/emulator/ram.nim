@@ -49,11 +49,17 @@ proc Reset*(self: Ram) =
         debug("Ram Resetted.")
 
 
-proc Read8*(self: Ram, address: KusegAddress): uint8 {.inline.} = Read[uint8](self, address)
+proc Read8*(self: Ram, address: KusegAddress): uint8 {.inline.}   = Read[uint8](self, address)
 proc Read16*(self: Ram, address: KusegAddress): uint16 {.inline.} = Read[uint16](self, address)
 proc Read32*(self: Ram, address: KusegAddress): uint32 {.inline.} = Read[uint32](self, address)
 
 proc Read*[T: uint8|uint16|uint32](self: Ram, address: KusegAddress): T =
+    let
+        offset = cast[uint32](address)
+
+    when T is uint32:
+        return self.data.u32[offset]
+    
     NOT_IMPLEMENTED fmt"RAM Read[{$T}]: address={address}"
 
 
@@ -62,4 +68,4 @@ proc Write16*(self: Ram, address: KusegAddress, value: uint16) {.inline.} = Writ
 proc Write32*(self: Ram, address: KusegAddress, value: uint32) {.inline.} = Write[uint32](self, address, value)
 
 proc Write*[T: uint8|uint16|uint32](self: Ram, address: KusegAddress, value: T) =
-    NOT_IMPLEMENTED fmt"RAM Read[{$T}]: address={address} value={value:08x}h"
+    NOT_IMPLEMENTED fmt"RAM Write[{$T}]: address={address} value={value:08x}h"
