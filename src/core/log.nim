@@ -15,6 +15,9 @@ import strformat
 const
     loglevel_channels {.strdefine.} = "*"
     loglevel {.strdefine.} = "Trace"
+    log_indentation_width {.intdefine.} = 2
+
+    MESSAGE_WIDTH = 80
 
 var
     logfile_handle = stdout
@@ -36,10 +39,10 @@ type
 
 
 proc increaseLogIndentation =
-    inc current_indentation, 2
+    inc current_indentation, log_indentation_width
 
 proc decreaseLogIndentation =
-    current_indentation = max(0, current_indentation - 2)
+    current_indentation = max(0, current_indentation - log_indentation_width)
 
 
 proc getLevelColor(level: LogLevel): ForegroundColor =
@@ -75,7 +78,7 @@ proc doLogImplNoColors*(level: int, channels: openArray[string], message: string
         " ", getLevelString(level.LogLevel),
         align(channels.join(","), 12), 
         spaces(current_indentation + 1),
-        alignLeft(message, 67 - current_indentation), 
+        alignLeft(message, MESSAGE_WIDTH - current_indentation), 
         sourceinfo[0], ":", sourceinfo[1], 
         "\n"
     )
@@ -89,7 +92,7 @@ proc doLogImpl*(level: int, channels: openArray[string], message: string, source
         styleDim, now().format("yyyy-MM-dd HH:mm:ss'.'ffffff"),
         resetStyle, getLevelColor(level.LogLevel), " ", getLevelString(level.LogLevel),
         align(channels.join(","), 12), 
-        styleBright, spaces(current_indentation + 1), alignLeft(message, 67 - current_indentation), 
+        styleBright, spaces(current_indentation + 1), alignLeft(message, MESSAGE_WIDTH - current_indentation), 
         resetStyle, styleDim, fmt"{sourceinfo[0]}::{sourceinfo[1]}",
         "\n"
     )
