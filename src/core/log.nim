@@ -5,7 +5,6 @@
 
 {.experimental: "codeReordering".}
 
-import sets
 import times
 import macros
 import terminal

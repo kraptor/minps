@@ -87,8 +87,11 @@ proc BranchWithDelaySlotTo*(cpu: Cpu, target: Address) =
 
 proc Execute*(cpu: Cpu): Cycles =
     # TODO: return number of cycles
+    
     debug fmt"Execute: {cpu.inst.DisasmAsText(cpu)}"
-    OPCODES[ord cpu.inst.opcode] cpu
+    logIndent:
+        result = OPCODES[ord cpu.inst.opcode] cpu
+    
 
 
 proc Op_Special(cpu: Cpu): Cycles =

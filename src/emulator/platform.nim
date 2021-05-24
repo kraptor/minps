@@ -45,13 +45,15 @@ proc Reset*(self: Platform) =
 proc Run*(self: Platform) =
     while true:
         notice fmt"[CPU] {self.cpu.pc}: {self.cpu.inst.DisasmAsText(self.cpu)}"
-        self.cpu.RunNext()
+        logIndent:
+            self.cpu.RunNext()
 
 
 proc RunFor*(self: Platform, number_of_instructions: int64) =
     while self.cpu.stats.instruction_count < number_of_instructions:
         notice fmt"[CPU] {self.cpu.pc}: {self.cpu.inst.DisasmAsText(self.cpu)}"
-        self.cpu.RunNext()
+        logIndent:
+            self.cpu.RunNext()
 
 
 proc RunProgram*(self: Platform, program: Program) =
