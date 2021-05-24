@@ -69,9 +69,35 @@ proc getLevelString(level: LogLevel): string =
         of LogLevel.None: "   "
 
 
-macro doLog(level: static LogLevel, message: string, channels: static openArray[
-        string], sourceinfo: static[SourceInfo]): untyped =
+proc doLogImplNoColors*(level: int, channels: openArray[string], message: string, sourceinfo: SourceInfo) =
+    write(
+        logfile_handle, 
+        now().format("yyyy-MM-dd HH:mm:ss'.'ffffff"),
+        " ", getLevelString(level.LogLevel),
+        align(channels.join(","), 12), 
+        spaces(current_indentation + 1),
+        alignLeft(message, 67 - current_indentation), 
+        sourceinfo[0], ":", sourceinfo[1], 
+        "\n"
+    )
+    flushFile logfile_handle
 
+
+proc doLogImpl*(level: int, channels: openArray[string], message: string, sourceinfo: SourceInfo) =
+    styledWrite(
+        logfile_handle, 
+        fgDefault,
+        styleDim, now().format("yyyy-MM-dd HH:mm:ss'.'ffffff"),
+        resetStyle, getLevelColor(level.LogLevel), " ", getLevelString(level.LogLevel),
+        align(channels.join(","), 12), 
+        styleBright, spaces(current_indentation + 1), alignLeft(message, 67 - current_indentation), 
+        resetStyle, styleDim, fmt"{sourceinfo[0]}::{sourceinfo[1]}",
+        "\n"
+    )
+    flushFile logfile_handle
+
+
+macro doLog(level: static LogLevel, message: string, channels: static openArray[string], sourceinfo: static SourceInfo): untyped =
     block check_enabled_channels:
         # do not generate code for disabled channels
         let enabled_channels = loglevel_channels.split(",")
@@ -86,46 +112,30 @@ macro doLog(level: static LogLevel, message: string, channels: static openArray[
         let min_level = parseEnum[LogLevel](loglevel)
         if level.ord > min_level.ord:
             return
-
-    let level_color = getLevelColor(level)
-    let level_name = get_level_string(level)
-
-    result = quote do:
-        block:
-            let
-                l {.inject.} = LogLevel(`level`)
-                m {.inject.} = `message`
-                s {.inject.} = `sourceinfo`
-                c {.inject.} = align(`channels`.join(","), 12)
-                t {.inject.} = now().format("yyyy-MM-dd HH:mm:ss'.'ffffff")
-                i {.inject.} = current_indentation
-                f {.inject.} = logfile_handle
-
-            if defined(LOG_NO_COLORS):
-                write f, t, " ", `level_name`, c, " ", spaces(i), alignLeft(m, 67 - i), s[0], ":", s[1], "\n"
-            else:
-                styledWrite f, fgDefault, styleDim, t, " ", resetStyle,
-                    ForegroundColor(`level_color`), `level_name`,
-                    fgDefault, c, " ",
-                    ForegroundColor(`level_color`), styleBright, spaces(i), alignLeft(m, 67 - i),
-                    fgDefault, styleDim, fmt"{s[0]}:{s[1]}",
-                    resetStyle, "\n"
-            flushFile f
+    
+    if defined(LOG_NO_COLORS):
+        result = quote do:
+            block:
+                doLogImplNoColors `level`, `channels`, `message`, `sourceinfo`
+    else:
+        result = quote do:
+            block:
+                doLogImpl `level`, `channels`, `message`, `sourceinfo`
 
 
-template logChannels*(channels: static openArray[string]) =
+template logChannels*(channels: static openArray[string]) =    
     # logChannels ["channel"]
     template exception*(msg: string) = doLog LogLevel.Exception, msg, channels, instantiationInfo()
-    template notice*(msg: string) = doLog LogLevel.Notice, msg, channels, instantiationInfo()
-    template warn*(msg: string) = doLog LogLevel.Warning, msg, channels, instantiationinfo()
-    template trace*(msg: string) = doLog LogLevel.Trace, msg, channels, instantiationInfo()
-    template error*(msg: string) = doLog LogLevel.Error, msg, channels, instantiationInfo()
-    template debug*(msg: string) = doLog LogLevel.Debug, msg, channels, instantiationInfo()
-    template log*(msg: string) = doLog LogLevel.None, msg, channels, instantiationInfo()
-    template logEcho*(msg: string) = echo msg; log msg
+    template notice   *(msg: string) = doLog LogLevel.Notice,    msg, channels, instantiationInfo()
+    template warn     *(msg: string) = doLog LogLevel.Warning,   msg, channels, instantiationinfo()
+    template trace    *(msg: string) = doLog LogLevel.Trace,     msg, channels, instantiationInfo()
+    template error    *(msg: string) = doLog LogLevel.Error,     msg, channels, instantiationInfo()
+    template debug    *(msg: string) = doLog LogLevel.Debug,     msg, channels, instantiationInfo()
+    template log      *(msg: string) = doLog LogLevel.None,      msg, channels, instantiationInfo()
+    template logEcho  *(msg: string) = echo msg; log msg
 
     # aliases
-    template warning*(msg: string) = warn msg
+    template warning  *(msg: string) = warn msg
 
 
 template logChannels*(channels: static openArray[string], body: untyped) =
