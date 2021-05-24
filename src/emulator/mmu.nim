@@ -11,6 +11,7 @@ import ../core/[util, log]
 import address
 import bios
 import mc
+import ram
 
 logChannels ["mmu"]
 
@@ -19,19 +20,23 @@ type
     Mmu* = ref object
         bios*: Bios
         mc: MemoryControl
+        ram: Ram
+
         cache_control: CacheControlRegister
 
 
 proc New*(T: type Mmu, bios: Bios): Mmu =
     result = Mmu(
         bios: bios,
-        mc: MemoryControl.New()
+        mc: MemoryControl.New(),
+        ram: Ram.New(),
     )
 
 
 proc Reset*(self: Mmu) =
     # self.bios.Reset() # BIOS should not be resetted
     self.mc.Reset()
+    self.ram.Reset()
     # TODO: implement full MMU reset
     warn "MMU Reset not fully implemented!"
 
@@ -41,11 +46,12 @@ proc ReadImpl[T: uint32|uint16|uint8](self: Mmu, address: Address): T =
         # KSEG2 addresses are NOT mapped to KUSEG, so we have to test for them first
         if unlikely(address.inKSEG2()):
             return ReadMc3[T](self.mc, address)
-            
 
     block CheckOtherAddresses:
         let ka = address.toKUSEG()
+        trace fmt"read[{$T}] ka={ka}"
 
+        if ka <= RAM_END: return Read[T](self.ram, ka)
         if ka < BIOS_START: NOT_IMPLEMENTED "No device found before BIOS"
         elif ka <= BIOS_END: return Read[T](self.bios, ka)
 
@@ -61,7 +67,7 @@ proc WriteImpl*[T: uint32|uint16|uint8](self: Mmu, address: Address, value: T) =
 
     block CheckOtherAddresses:
         let ka = address.toKUSEG()
-        trace fmt"write[{$T}] address={address} ({ka}) value={value:08x}h"
+        trace fmt"write[{$T}] ka={ka} value={value:08x}"
 
         if ka < MC1_START: NOT_IMPLEMENTED "No device found before MemoryControl 1"
         elif ka <= MC1_END:
