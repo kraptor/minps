@@ -51,9 +51,9 @@ proc ReadImpl[T: uint32|uint16|uint8](self: Mmu, address: Address): T =
         let ka = address.toKUSEG()
         trace fmt"read[{$T}] ka={ka}"
 
-        if ka <= RAM_END: return Read[T](self.ram, ka)
-        if ka < BIOS_START: NOT_IMPLEMENTED "No device found before BIOS"
-        elif ka <= BIOS_END: return Read[T](self.bios, ka)
+        if   ka <= RAM_END   : return Read[T](self.ram, ka)
+        if   ka <  BIOS_START: NOT_IMPLEMENTED "No device found before BIOS"
+        elif ka <= BIOS_END  : return Read[T](self.bios, ka)
 
         NOT_IMPLEMENTED fmt"MMU Read: No device found at address: {address}"
 
@@ -69,12 +69,11 @@ proc WriteImpl*[T: uint32|uint16|uint8](self: Mmu, address: Address, value: T) =
         let ka = address.toKUSEG()
         trace fmt"write[{$T}] ka={ka} value={value:08x}"
 
-        if ka < MC1_START: NOT_IMPLEMENTED "No device found before MemoryControl 1"
-        elif ka <= MC1_END:
-            Write self.mc, ka, value
-            return
-        elif ka < BIOS_START: NOT_IMPLEMENTED "No device found before BIOS"
-        elif ka <= BIOS_END: NOT_IMPLEMENTED fmt"BIOS is not writable!"
+        if   ka <= RAM_END   : Write(self.ram, ka, value); return
+        if   ka <  MC1_START : NOT_IMPLEMENTED "No device found before MemoryControl 1"
+        elif ka <= MC1_END   : Write(self.mc, ka, value); return
+        elif ka <  BIOS_START: NOT_IMPLEMENTED "No device found before BIOS"
+        elif ka <= BIOS_END  : NOT_IMPLEMENTED fmt"BIOS is not writable!"
 
         NOT_IMPLEMENTED fmt"MMU Write: No device found at address: {address}"
 
