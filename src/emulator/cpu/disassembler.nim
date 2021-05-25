@@ -22,7 +22,7 @@ type
     Mnemonic {.pure.} = enum 
         lui, ori, sw, nop, addiu, 
         j, `or`, mtc0, bne, addi, 
-        lw
+        lw, sltu
 
     InstructionType {.pure.}  = enum I, J, R
 
@@ -81,8 +81,9 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     of Opcode.LW   : return inst.DisasmLW(cpu)
     of Opcode.Special:
         case inst.function:
-        of Function.SLL: return inst.DisasmSLL(cpu)
-        of Function.OR : return inst.DisasmOR(cpu)
+        of Function.SLL : return inst.DisasmSLL  cpu
+        of Function.OR  : return inst.DisasmSpecialArithmetic(cpu, Mnemonic.`or`)
+        of Function.SLTU: return inst.DisasmSpecialArithmetic(cpu, sltu)
         else:
             NOT_IMPLEMENTED fmt"Missing disassembly for SPECIAL {inst}"
     else: 
@@ -117,7 +118,7 @@ proc `$`*(part: InstructionPart): string =
     case part.kind:
     of CpuRegister   : return GetCpuRegisterAlias(part.value)
     of ImmediateValue: return fmt"{part.value:x}h"
-    of Offset  : return fmt"{cast[int32](part.value):x}h"
+    of Offset        : return fmt"{cast[int32](part.value):x}h"
     of MemoryAddress : return fmt"{part.value:x}h"
     of Cop0Register  : return GetCop0RegisterAlias(part.value)
     of MemoryAddressIndirect:
@@ -129,7 +130,7 @@ proc DisasmRtImmediate(inst: Instruction, cpu: Cpu, mnemonic: Mnemonic): Disasse
     return DisassembledInstruction(
         mnemonic: mnemonic,
         parts: @[
-            InstructionPart(mode: Target, kind: CpuRegister, value: inst.rt),
+            InstructionPart(mode: Target, kind: CpuRegister,    value: inst.rt),
             InstructionPart(mode: Source, kind: ImmediateValue, value: inst.imm16)
         ]
     )
@@ -139,11 +140,23 @@ proc DisasmArithmeticImmediate(inst: Instruction, cpu: Cpu, mnemonic: Mnemonic):
     return DisassembledInstruction(
         mnemonic: mnemonic,
         parts: @[
-            InstructionPart(mode: Target, kind: CpuRegister, value: inst.rt),
-            InstructionPart(mode: Source, kind: CpuRegister, value: inst.rs),
+            InstructionPart(mode: Target, kind: CpuRegister   , value: inst.rt),
+            InstructionPart(mode: Source, kind: CpuRegister   , value: inst.rs),
             InstructionPart(mode: Source, kind: ImmediateValue, value: inst.imm16)
         ]
     )
+
+
+proc DisasmSpecialArithmetic(inst: Instruction, cpu: Cpu, mnemonic: Mnemonic): DisassembledInstruction =
+    return DisassembledInstruction(
+        mnemonic: mnemonic,
+        parts: @[
+            InstructionPart(mode: Target, kind: CpuRegister, value: inst.rd),
+            InstructionPart(mode: Source, kind: CpuRegister, value: inst.rs),
+            InstructionPart(mode: Source, kind: CpuRegister, value: inst.rt),
+        ]
+    )
+
    
 
 proc DisasmSW(inst: Instruction, cpu: Cpu): DisassembledInstruction =
@@ -194,17 +207,6 @@ proc DisasmJ(inst: Instruction, cpu: Cpu): DisassembledInstruction =
         mnemonic: Mnemonic.j,
         parts: @[
             InstructionPart(mode: Target, kind: MemoryAddress, value: target)
-        ]
-    )
-
-
-proc DisasmOR(inst: Instruction, cpu: Cpu): DisassembledInstruction =
-    return DisassembledInstruction(
-        mnemonic: Mnemonic.`or`,
-        parts: @[
-            InstructionPart(mode: Target, kind: CpuRegister, value: inst.rd),
-            InstructionPart(mode: Source, kind: CpuRegister, value: inst.rs),
-            InstructionPart(mode: Source, kind: CpuRegister, value: inst.rt),
         ]
     )
 
