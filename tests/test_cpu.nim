@@ -29,8 +29,8 @@ suite "Cop0 types":
         check sizeof(Cop0RegisterArray) == sizeof(Cop0RegistersParts)
         check sizeof(Cop0SystemStatusRegister) == sizeof(uint32)
         check sizeof(Cop0DCICRegister) == sizeof(uint32)
-
-
+        check sizeof(Cop0CauseRegister) == sizeof(uint32)
+        
 
 suite "Instruction execution correctness":
     setup:

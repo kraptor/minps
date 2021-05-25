@@ -31,7 +31,7 @@ type
         r10       : uint32
         BPCM      : uint32 # Breakpoint on Execute Mas Register
         SR        : Cop0SystemStatusRegister # System Status Register
-        CAUSE     : uint32 # Exception Cause Register
+        CAUSE     : Cop0CauseRegister # Exception Cause Register
         EPC       : uint32
         PRID      : uint32
         r16, r17, r18, r19, r20, r21, r22, r23: uint32
@@ -127,6 +127,42 @@ type
         UD      {.bitsize: 1.}: bool # User Debug Enable
         TR      {.bitsize: 1.}: bool # Trap Enable
 
+type
+    ExceptionCode* {.pure.} = enum
+        Interrupt                  = 0x00 # Interrupt
+        TLB_Modification           = 0x01 # TLB Modification
+        TLB_Load                   = 0x02 # TLB load
+        TLB_Store                  = 0x03 # TLB store
+        AddressError_Load          = 0x04 # Address error, data load or instruction fetch
+        AddressError_Store         = 0x05 # Address error, data store
+        BusError_InstructionFetch  = 0x06 # Bus error on Instruction fetch
+        BusError_DataLoadStore     = 0x07 # Bus error on Data load/store
+        Syscall                    = 0x08 # Generated unconditionally by syscall instruction
+        Breakpoint                 = 0x09 # Breakpoint
+        ReservedInstruction        = 0x0A # Reserved Instruction
+        CoprocesorUnusable         = 0x0B # Coprocesor unusable
+        ArithmeticOverflow         = 0x0C # Arithmetic overflow
+
+    SoftwareInterruptCode {.pure.} = enum
+        None = 0b00
+        Sw1  = 0b01
+        Sw2  = 0b10
+        Sw1AndSw2 = 0b11
+
+    CoprocessorErrorCode {.pure.} = enum
+        Cop0, Cop1, Cop2, Cop3
+
+    Cop0CauseRegister* {.packed.} = object
+        RESERVED_00_01     {.bitsize:  1.}: uint8
+        ExceptionCode      {.bitsize:  5.}: ExceptionCode
+        RESERVED_06_07     {.bitsize:  1.}: uint8
+        SoftwareInterrupts {.bitsize:  2.}: SoftwareInterruptCode
+        InterruptPending   {.bitsize:  6.}: uint8
+        UNUSED_16_27       {.bitsize: 12.}: uint16
+        CoprocesorError    {.bitsize:  2.}: CoprocessorErrorCode
+        BranchTaken        {.bitsize:  1.}: bool
+        BranchDelay        {.bitsize:  1.}: bool
+
 
 proc IsolateCacheEnabled*(cop0: Cop0): bool = cop0.parts.SR.Isc
 
@@ -166,7 +202,7 @@ proc WriteRegisterDebug*(self: var Cop0, r: Cop0RegisterIndex, v: uint32) =
     of JUMPDEST:
         # JUMPDEST is read-only
         # self.regs[r] = v
-        warn fmt"cop0[{r.GetCop0RegisterAlias}] attempted write to: {v:08x}h. Ignored write."
+        warn fmt"cop0[{r.GetCop0RegisterAlias}] attempted write: value={v:08x}h. Ignored write."
     of BDAM:
         self.regs[r] = v
         notice fmt"Cop0 BDAM Register set to: {v:08x}h"
@@ -174,6 +210,12 @@ proc WriteRegisterDebug*(self: var Cop0, r: Cop0RegisterIndex, v: uint32) =
     of BPCM:
         self.regs[r] = v
         notice fmt"Cop0 Breakpoint On Execute Mask Register set to: {v:08x}h."
+        warn fmt"cop0[{r.GetCop0RegisterAlias}] set to: {v:08x}h. Side-effects are not implemented."
+    of CAUSE:
+        notice fmt"Cop0 Exception Cause Register set to: {v:08x}h."
+        # Only bits 8 and 9 are writable
+        const WRITE_MASK = (0b11 shl 8)
+        self.regs[r] = v and WRITE_MASK
         warn fmt"cop0[{r.GetCop0RegisterAlias}] set to: {v:08x}h. Side-effects are not implemented."
     of SR:
         self.regs[r] = v
