@@ -22,7 +22,7 @@ type
     Mnemonic {.pure.} = enum 
         lui, ori, sw, nop, addiu, 
         j, `or`, mtc0, bne, addi, 
-        lw, sltu
+        lw, sltu, addu
 
     InstructionType {.pure.}  = enum I, J, R
 
@@ -81,9 +81,10 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     of Opcode.LW   : return inst.DisasmLW(cpu)
     of Opcode.Special:
         case inst.function:
-        of Function.SLL : return inst.DisasmSLL  cpu
+        of Function.SLL : return inst.DisasmSLL(cpu)
         of Function.OR  : return inst.DisasmSpecialArithmetic(cpu, Mnemonic.`or`)
         of Function.SLTU: return inst.DisasmSpecialArithmetic(cpu, sltu)
+        of Function.ADDU: return inst.DisasmSpecialArithmetic(cpu, addu)
         else:
             NOT_IMPLEMENTED fmt"Missing disassembly for SPECIAL {inst}"
     else: 
@@ -156,8 +157,7 @@ proc DisasmSpecialArithmetic(inst: Instruction, cpu: Cpu, mnemonic: Mnemonic): D
             InstructionPart(mode: Source, kind: CpuRegister, value: inst.rt),
         ]
     )
-
-   
+  
 
 proc DisasmSW(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     let 
