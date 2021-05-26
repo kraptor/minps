@@ -50,24 +50,25 @@ proc ExecuteFunctionNotImplemented(cpu: Cpu): Cycles {.used.} =
 const OPCODES = block:
     var o: array[Opcode.high.ord, OperationProc] 
     for x in o.mitems: x = ExecuteNotImplemented
-    o[ord Opcode.LUI]     = Op_LUI
-    o[ord Opcode.ORI]     = Op_ORI
-    o[ord Opcode.SW ]     = Op_SW
+    o[ord Opcode.LUI    ] = Op_LUI
+    o[ord Opcode.ORI    ] = Op_ORI
+    o[ord Opcode.SW     ] = Op_SW
     o[ord Opcode.Special] = Op_Special
-    o[ord Opcode.ADDIU]   = Op_ADDIU
-    o[ord Opcode.J]       = Op_J
-    o[ord Opcode.COP0]    = Op_COP0
-    o[ord Opcode.BNE]     = Op_BNE
-    o[ord Opcode.ADDI]    = Op_ADDI
-    o[ord Opcode.LW]      = Op_LW
+    o[ord Opcode.ADDIU  ] = Op_ADDIU
+    o[ord Opcode.J      ] = Op_J
+    o[ord Opcode.COP0   ] = Op_COP0
+    o[ord Opcode.BNE    ] = Op_BNE
+    o[ord Opcode.ADDI   ] = Op_ADDI
+    o[ord Opcode.LW     ] = Op_LW
     o # return the array
 
 
 const FUNCTIONS = block:
     var f: array[Function.high.ord, OperationProc]
     for x in f.mitems: x = ExecuteFunctionNotImplemented
-    f[ord Function.SLL] = Function_SLL
-    f[ord Function.OR ] = Function_OR
+    f[ord Function.SLL ] = Function_SLL
+    f[ord Function.OR  ] = Function_OR
+    f[ord Function.SLTU] = Function_SLTU
     f # return the array
 
 
@@ -163,6 +164,16 @@ proc Function_SLL(cpu: Cpu): Cycles =
         rt = cpu.inst.rt
         value = cpu.ReadRegister(rt) shl cpu.inst.shamt
 
+    cpu.WriteRegister(rd, value)
+
+
+proc Function_SLTU(cpu: Cpu): Cycles =
+    let
+        rd = cpu.inst.rd
+        rs_value = cpu.ReadRegister(cpu.inst.rs)
+        rt_value = cpu.ReadRegister(cpu.inst.rt)
+            
+    let value = if rs_value < rt_value: 1'u32  else: 0'u32
     cpu.WriteRegister(rd, value)
 
 
