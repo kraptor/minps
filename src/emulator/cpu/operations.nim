@@ -60,6 +60,7 @@ const OPCODES = block:
     o[ord Opcode.BNE    ] = Op_BNE
     o[ord Opcode.ADDI   ] = Op_ADDI
     o[ord Opcode.LW     ] = Op_LW
+    o[ord Opcode.SH     ] = Op_SH
     o # return the array
 
 
@@ -140,6 +141,19 @@ proc Op_SW(cpu: Cpu): Cycles =
     cpu.mmu.Write(address, value)
 
 
+proc Op_SH(cpu: Cpu): Cycles =
+    let
+        base = cpu.ReadRegister(cpu.inst.rs)
+        offset = cpu.inst.imm16.sign_extend
+        address = Address offset + base
+        value = cast[uint16](cpu.ReadRegister(cpu.inst.rt))
+
+    if not address.is_aligned16:
+        NOT_IMPLEMENTED "Raise Address Error Exception"
+
+    cpu.mmu.Write16(address, value)
+
+
 proc Op_LW(cpu: Cpu): Cycles =
     let
         base = cpu.ReadRegister(cpu.inst.rs)
@@ -186,8 +200,6 @@ proc Function_ADDU(cpu: Cpu): Cycles =
 
     let value = rs_value + rt_value
     cpu.WriteRegister(rd, value)
-
-    NOT_IMPLEMENTED
 
 
 proc Op_ADDIU(cpu: Cpu): Cycles =
