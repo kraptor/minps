@@ -69,6 +69,7 @@ const FUNCTIONS = block:
     f[ord Function.SLL ] = Function_SLL
     f[ord Function.OR  ] = Function_OR
     f[ord Function.SLTU] = Function_SLTU
+    f[ord Function.ADDU] = Function_ADDU
     f # return the array
 
 
@@ -177,12 +178,24 @@ proc Function_SLTU(cpu: Cpu): Cycles =
     cpu.WriteRegister(rd, value)
 
 
+proc Function_ADDU(cpu: Cpu): Cycles =
+    let 
+        rd = cpu.inst.rd
+        rs_value = cpu.ReadRegister(cpu.inst.rs)
+        rt_value = cpu.ReadRegister(cpu.inst.rt)
+
+    let value = rs_value + rt_value
+    cpu.WriteRegister(rd, value)
+
+    NOT_IMPLEMENTED
+
+
 proc Op_ADDIU(cpu: Cpu): Cycles =
     let
         rt = cpu.inst.rt
         rs = cpu.inst.rs
-        value = cpu.ReadRegister(rs) + cpu.inst.imm16.sign_extend
 
+    let value = cpu.ReadRegister(rs) + cpu.inst.imm16.sign_extend
     cpu.WriteRegister(rt, value)
 
 
