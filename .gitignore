@@ -7,3 +7,5 @@ profile_results.txt
 
 __nimcache/
 bin/
+
+callgrind.out*
