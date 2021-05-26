@@ -42,7 +42,7 @@ type
 import assembler
 
 
-proc GetCpuRegisterAlias*(r: CpuRegisterIndex): string =
+proc GetCpuRegisterAlias*(r: CpuRegisterIndex): string {.inline.} =
     const CPU_REGISTER_TO_ALIAS = [
         "zero", "at", "v0", "v1", "a0", "a1", "a2", "a3", 
         "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", 
