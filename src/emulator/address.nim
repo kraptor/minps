@@ -44,3 +44,4 @@ proc `+`*(x: Address, y: uint32): Address = Address(x.uint32 + y)
 proc `+=`*(x: var Address, y: SomeInteger) = x = Address(x.u32 + y)
 
 proc is_aligned*(x: SomeAddress): bool = (x.uint32 and 0b11) == 0b00
+proc is_aligned16*(x: SomeAddress): bool = (x.uint32 and 0b1) == 0b0
