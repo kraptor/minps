@@ -27,9 +27,9 @@ const
 
 type
     RamData {.union.} = object
-        u8 : array[Ram_MAX_SIZE, uint8]
-        u16: array[Ram_MAX_SIZE div 2, uint16]
-        u32: array[Ram_MAX_SIZE div 4, uint32]
+        u8 : array[RAM_MAX_SIZE, uint8]
+        u16: array[RAM_MAX_SIZE div 2, uint16]
+        u32: array[RAM_MAX_SIZE div 4, uint32]
 
     Ram* = ref object
         data*: RamData
