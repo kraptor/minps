@@ -44,6 +44,10 @@ task build_release, "Build release version":
     appendBinaries "_release"
     stripFile binDir, toExe("minps_release")
 
+task build_callgrind, "Build callgrind version (callgrind)":
+    exec "nimble -d:danger --opt:speed --passC:-O3 -d:MINPS_RELEASE -d:MINPS_CALLGRIND -d:Version:" & version & " build"
+    appendBinaries "_callgrind"
+
 task build_release_stacktrace, "Build release version (with stacktraces)":
     exec "nimble -d:danger --stackTrace:on --opt:speed --passC:-O3 -d:MINPS_RELEASE -d:Version:" & version & " build"
     appendBinaries "_release_stacktrace"
@@ -59,6 +63,7 @@ task build_profiler_memory, "Build with memory profiler":
 task build_all, "Build all minps versions":
     exec "nimble build_debug"
     exec "nimble build_release"
+    exec "nimble build_callgrind"
     exec "nimble build_release_stacktrace"
     exec "nimble build_profiler"
     exec "nimble build_profiler_memory"
@@ -67,3 +72,4 @@ task clean, "Clean all build files":
     rmDir "__nimcache"
     rmDir binDir
     rmFile "profile_results.txt"
+    exec "rm -f callgrind.out.*"
