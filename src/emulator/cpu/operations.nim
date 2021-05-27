@@ -62,6 +62,7 @@ const OPCODES = block:
     o[ord Opcode.LW     ] = Op_LW
     o[ord Opcode.SH     ] = Op_SH
     o[ord Opcode.JAL    ] = Op_JAL
+    o[ord Opcode.ANDI   ] = Op_ANDI
     o # return the array
 
 
@@ -264,3 +265,11 @@ proc Op_ADDI(cpu: Cpu): Cycles =
     except:
         NOT_IMPLEMENTED "Arithmetic ADD Exception not handled."
 
+
+proc Op_ANDI(cpu: Cpu): Cycles =
+    let
+        rt = cpu.inst.rt
+        rs = cpu.inst.rs
+        value = cpu.ReadRegister(rs) and cpu.inst.imm16.zero_extend
+        
+    cpu.WriteRegister(rt, value)

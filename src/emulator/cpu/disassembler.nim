@@ -22,7 +22,8 @@ type
     Mnemonic {.pure.} = enum 
         lui, ori, sw, nop, addiu, 
         j, `or`, mtc0, bne, addi, 
-        lw, sltu, addu, sh, jal
+        lw, sltu, addu, sh, jal,
+        andi
 
     InstructionType {.pure.}  = enum I, J, R
 
@@ -85,6 +86,7 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     of Opcode.LW   : return inst.DisasmLW(cpu)
     of Opcode.SH   : return inst.DisasmSH(cpu)
     of Opcode.JAL  : return inst.DisasmJAL(cpu)
+    of Opcode.ANDI : return inst.DisasmArithmeticImmediate(cpu, andi)
     of Opcode.Special:
         case inst.function:
         of Function.SLL : return inst.DisasmSLL(cpu)
