@@ -22,7 +22,7 @@ type
     Mnemonic {.pure.} = enum 
         lui, ori, sw, nop, addiu, 
         j, `or`, mtc0, bne, addi, 
-        lw, sltu, addu, sh
+        lw, sltu, addu, sh, jal
 
     InstructionType {.pure.}  = enum I, J, R
 
@@ -84,6 +84,7 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     of Opcode.ADDI : return inst.DisasmArithmeticImmediate(cpu, addi)
     of Opcode.LW   : return inst.DisasmLW(cpu)
     of Opcode.SH   : return inst.DisasmSH(cpu)
+    of Opcode.JAL  : return inst.DisasmJAL(cpu)
     of Opcode.Special:
         case inst.function:
         of Function.SLL : return inst.DisasmSLL(cpu)
@@ -230,9 +231,23 @@ proc DisasmSLL(inst: Instruction, cpu: Cpu): DisassembledInstruction =
 
 
 proc DisasmJ(inst: Instruction, cpu: Cpu): DisassembledInstruction =
-    let target = (inst.target shl 2) or (0xF000_0000'u32 and cpu.pc)
+    let 
+        delay_slot_pc = cpu.inst_pc + 4  # can't use next_pc, depends on call-site
+        target = (inst.target shl 2) or (0xF000_0000'u32 and delay_slot_pc)
     return DisassembledInstruction(
         mnemonic: Mnemonic.j,
+        parts: @[
+            InstructionPart(mode: Target, kind: MemoryAddress, value: target)
+        ]
+    )
+
+
+proc DisasmJAL(inst: Instruction, cpu: Cpu): DisassembledInstruction =
+    let 
+        delay_slot_pc = cpu.inst_pc + 4  # can't use next_pc, depends on call-site
+        target = (inst.target shl 2) or (0xF000_0000'u32 and delay_slot_pc)
+    return DisassembledInstruction(
+        mnemonic: Mnemonic.jal,
         parts: @[
             InstructionPart(mode: Target, kind: MemoryAddress, value: target)
         ]
