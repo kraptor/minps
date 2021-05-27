@@ -61,6 +61,7 @@ const OPCODES = block:
     o[ord Opcode.ADDI   ] = Op_ADDI
     o[ord Opcode.LW     ] = Op_LW
     o[ord Opcode.SH     ] = Op_SH
+    o[ord Opcode.JAL    ] = Op_JAL
     o # return the array
 
 
@@ -212,8 +213,14 @@ proc Op_ADDIU(cpu: Cpu): Cycles =
 
 
 proc Op_J(cpu: Cpu): Cycles =
-    let target = (cpu.inst.target shl 2) or (0xF000_0000'u32 and cpu.pc)
+    let target = (cpu.inst.target shl 2) or (0xF000_0000'u32 and cpu.pc + 4)
     cpu.BranchWithDelaySlotTo(target.Address)
+
+
+proc Op_JAL(cpu: Cpu): Cycles =
+    let target = (cpu.inst.target shl 2) or (0xF000_0000'u32 and cpu.pc + 4)
+    cpu.BranchWithDelaySlotTo(target.Address)
+    cpu.WriteRegister(31, cpu.inst_pc + 8)
 
 
 proc Function_OR(cpu: Cpu): Cycles = 
