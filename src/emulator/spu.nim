@@ -103,9 +103,6 @@ type
 
     SpuObject* {.union.} = object
         data*: SpuData
-        # u8 : array[SPU_MAX_SIZE, uint8]
-        # u16: array[SPU_MAX_SIZE div 2, uint16]
-        # u32: array[SPU_MAX_SIZE div 4, uint32]
         regs*: SpuControlRegisters
 
     Spu* = ref SpuObject
@@ -121,7 +118,7 @@ proc New*(T: type Spu): Spu =
 proc Reset*(self: Spu) =
     debug "Resetting Spu..."
     logIndent:
-        # self.data.reset()
+        self.data.reset()
         debug("Spu Resetted.")
 
 
