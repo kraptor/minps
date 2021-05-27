@@ -6,8 +6,11 @@
 type
     NotImplementedDefect = ref object of Defect
 
+const 
+    NOT_IMPLEMENTED_PREFIX = "[NOT IMPLEMENTED] "
+
+
 template NOT_IMPLEMENTED*(message: string = "") =
-    error message
-    var e: NotImplementedDefect = new NotImplementedDefect
-    e.msg = message
-    raise e
+    error NOT_IMPLEMENTED_PREFIX & message
+    raise NotImplementedDefect(msg: message)
+
