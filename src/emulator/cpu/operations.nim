@@ -63,6 +63,7 @@ const OPCODES = block:
     o[ord Opcode.SH     ] = Op_SH
     o[ord Opcode.JAL    ] = Op_JAL
     o[ord Opcode.ANDI   ] = Op_ANDI
+    o[ord Opcode.SB     ] = Op_SB
     o # return the array
 
 
@@ -131,7 +132,7 @@ proc Op_SW(cpu: Cpu): Cycles =
         address = Address offset + base
         value = cpu.ReadRegister(cpu.inst.rt)
 
-    if unlikely(not address.is_aligned):
+    if unlikely(not address.is_aligned32):
         NOT_IMPLEMENTED fmt"Address is not aligned: {address}"
 
     if unlikely(cpu.cop0.IsolateCacheEnabled):
@@ -150,10 +151,24 @@ proc Op_SH(cpu: Cpu): Cycles =
         address = Address offset + base
         value = cast[uint16](cpu.ReadRegister(cpu.inst.rt))
 
-    if not address.is_aligned16:
+    if unlikely(not address.is_aligned16):
         NOT_IMPLEMENTED "Raise Address Error Exception"
 
     cpu.mmu.Write16(address, value)
+
+
+proc Op_SB(cpu: Cpu): Cycles =
+    let
+        base = cpu.ReadRegister(cpu.inst.rs)
+        offset = cpu.inst.imm16.sign_extend
+        address = Address offset + base
+        value = cast[uint8](cpu.ReadRegister(cpu.inst.rt))
+
+    # NOTE: no way an addres is not aligned to byte... :)
+    # if not address.is_aligned8:
+    #     NOT_IMPLEMENTED "Raise Address Error Exception"
+
+    cpu.mmu.Write8(address, value)
 
 
 proc Op_LW(cpu: Cpu): Cycles =
@@ -162,7 +177,7 @@ proc Op_LW(cpu: Cpu): Cycles =
         offset = cpu.inst.imm16.sign_extend
         address = Address offset + base
 
-    if unlikely(not address.is_aligned):
+    if unlikely(not address.is_aligned32):
         NOT_IMPLEMENTED fmt"Address is not aligned: {address}"
 
     if unlikely(cpu.cop0.IsolateCacheEnabled):

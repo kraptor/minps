@@ -52,6 +52,7 @@ type
     MetadataPartKind {.pure.} = enum
         MemoryAssignment32
         MemoryAssignment16
+        MemoryAssignment8
         MemoryAddressMetadata
 
     MetadataPart = object
@@ -62,6 +63,9 @@ type
         of MemoryAssignment16:
             assign_target16: uint32
             assign_value16: uint16
+        of MemoryAssignment8:
+            assign_target8: uint32
+            assign_value8: uint8
         of MemoryAddressMetadata:
             address: uint32
     
@@ -87,6 +91,7 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     of Opcode.SH   : return inst.DisasmSH(cpu)
     of Opcode.JAL  : return inst.DisasmJAL(cpu)
     of Opcode.ANDI : return inst.DisasmArithmeticImmediate(cpu, andi)
+    of Opcode.SB   : return inst.DisasmSB(cpu)
     of Opcode.Special:
         case inst.function:
         of Function.SLL : return inst.DisasmSLL(cpu)
@@ -120,6 +125,8 @@ proc `$`*(metadata: seq[MetadataPart]): string =
                 result = result & fmt"{m.assign_target32:08x}h={m.assign_value32:08x}h "
             of MemoryAssignment16:
                 result = result & fmt"{m.assign_target16:08x}h={m.assign_value16:04x}h "
+            of MemoryAssignment8:
+                result = result & fmt"{m.assign_target8:08x}h={m.assign_value8:02x}h "
             of MemoryAddressMetadata:
                 result = result & fmt"address={m.address:08x}h "
         result = fmt"[{result.strip}]"
@@ -195,6 +202,25 @@ proc DisasmSH(inst: Instruction, cpu: Cpu): DisassembledInstruction =
         value  = cast[uint16](cpu.ReadRegisterDebug(inst.rt))
         metadata = @[
             MetadataPart(kind: MemoryAssignment16, assign_target16: target, assign_value16: value)
+        ]
+
+    return DisassembledInstruction(
+        mnemonic: sh,
+        parts: @[
+            InstructionPart(mode: Target, kind: CpuRegister, value: inst.rt),
+            InstructionPart(mode: Target, kind: MemoryAddressIndirect, base_register: inst.rs, offset: offset)
+        ],
+        metadata: metadata
+    )
+
+
+proc DisasmSB(inst: Instruction, cpu: Cpu): DisassembledInstruction =
+    let 
+        offset = cast[int32](inst.imm16.sign_extend)
+        target = inst.imm16.sign_extend + cpu.ReadRegisterDebug(inst.rs)
+        value  = cast[uint8](cpu.ReadRegisterDebug(inst.rt))
+        metadata = @[
+            MetadataPart(kind: MemoryAssignment8, assign_target8: target, assign_value8: value)
         ]
 
     return DisassembledInstruction(
