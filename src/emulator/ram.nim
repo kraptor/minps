@@ -58,7 +58,8 @@ proc Read*[T: uint8|uint16|uint32](self: Ram, address: KusegAddress): T =
         offset {.used.} = cast[uint32](address)
 
     when T is uint32:
-        return self.data.u32[offset]
+        assert address.is_aligned
+        return self.data.u32[offset shr 2]
     
     NOT_IMPLEMENTED fmt"RAM Read[{$T}]: address={address}"
 
@@ -72,7 +73,8 @@ proc Write*[T: uint8|uint16|uint32](self: Ram, address: KusegAddress, value: T) 
         offset {.used.} = cast[uint32](address)
 
     when T is uint32:
-        self.data.u32[offset] = value
+        assert address.is_aligned
+        self.data.u32[offset shr 2] = value
         return
 
     NOT_IMPLEMENTED fmt"RAM Write[{$T}]: address={address} value={value:08x}h"
