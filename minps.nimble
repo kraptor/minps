@@ -72,4 +72,4 @@ task clean, "Clean all build files":
     rmDir "__nimcache"
     rmDir binDir
     rmFile "profile_results.txt"
-    exec "rm -f callgrind.out.*"
+    exec "rm -f callgrind.out*"
