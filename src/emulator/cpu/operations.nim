@@ -52,7 +52,7 @@ const OPCODES = block:
     for x in o.mitems: x = ExecuteNotImplemented
     o[ord Opcode.LUI    ] = Op_LUI
     o[ord Opcode.ORI    ] = Op_ORI
-    o[ord Opcode.SW     ] = Op_SW
+    o[ord Opcode.SW     ] = Op_Store[uint32]
     o[ord Opcode.Special] = Op_Special
     o[ord Opcode.ADDIU  ] = Op_ADDIU
     o[ord Opcode.J      ] = Op_J
@@ -60,10 +60,10 @@ const OPCODES = block:
     o[ord Opcode.BNE    ] = Op_BNE
     o[ord Opcode.ADDI   ] = Op_ADDI
     o[ord Opcode.LW     ] = Op_LW
-    o[ord Opcode.SH     ] = Op_SH
+    o[ord Opcode.SH     ] = Op_Store[uint16]
     o[ord Opcode.JAL    ] = Op_JAL
     o[ord Opcode.ANDI   ] = Op_ANDI
-    o[ord Opcode.SB     ] = Op_SB
+    o[ord Opcode.SB     ] = Op_Store[uint8]
     o # return the array
 
 
@@ -125,50 +125,23 @@ proc Op_ORI(cpu: Cpu): Cycles =
     cpu.WriteRegister(rt, value)
 
 
-proc Op_SW(cpu: Cpu): Cycles =
+proc Op_Store[T: uint8|uint16|uint32](cpu: Cpu): Cycles =
     let
         base = cpu.ReadRegister(cpu.inst.rs)
         offset = cpu.inst.imm16.sign_extend
         address = Address offset + base
-        value = cpu.ReadRegister(cpu.inst.rt)
+        value = cast[T](cpu.ReadRegister(cpu.inst.rt))
 
-    if unlikely(not address.is_aligned32):
-        NOT_IMPLEMENTED fmt"Address is not aligned: {address}"
+    if unlikely(not is_aligned[T](address)):
+        NOT_IMPLEMENTED fmt"Store[{$T}] Address is not aligned: {address}"
 
     if unlikely(cpu.cop0.IsolateCacheEnabled):
         # TODO: implement cache in CPU for writes
-        warn fmt"Attempt to write with Disable Cache enabled!"
+        warn fmt"Store[{$T}] Attempt to write with Disable Cache enabled!"
         return
 
     # TODO: account for write to memory cycles?
-    cpu.mmu.Write(address, value)
-
-
-proc Op_SH(cpu: Cpu): Cycles =
-    let
-        base = cpu.ReadRegister(cpu.inst.rs)
-        offset = cpu.inst.imm16.sign_extend
-        address = Address offset + base
-        value = cast[uint16](cpu.ReadRegister(cpu.inst.rt))
-
-    if unlikely(not address.is_aligned16):
-        NOT_IMPLEMENTED "Raise Address Error Exception"
-
-    cpu.mmu.Write16(address, value)
-
-
-proc Op_SB(cpu: Cpu): Cycles =
-    let
-        base = cpu.ReadRegister(cpu.inst.rs)
-        offset = cpu.inst.imm16.sign_extend
-        address = Address offset + base
-        value = cast[uint8](cpu.ReadRegister(cpu.inst.rt))
-
-    # NOTE: no way an addres is not aligned to byte... :)
-    # if not address.is_aligned8:
-    #     NOT_IMPLEMENTED "Raise Address Error Exception"
-
-    cpu.mmu.Write8(address, value)
+    Write[T](cpu.mmu, address, value)
 
 
 proc Op_LW(cpu: Cpu): Cycles =
@@ -177,7 +150,7 @@ proc Op_LW(cpu: Cpu): Cycles =
         offset = cpu.inst.imm16.sign_extend
         address = Address offset + base
 
-    if unlikely(not address.is_aligned32):
+    if unlikely(not is_aligned[uint32](address)):
         NOT_IMPLEMENTED fmt"Address is not aligned: {address}"
 
     if unlikely(cpu.cop0.IsolateCacheEnabled):
