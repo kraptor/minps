@@ -23,7 +23,7 @@ type
         lui, ori, sw, nop, addiu, 
         j, `or`, mtc0, bne, addi, 
         lw, sltu, addu, sh, jal,
-        andi, jr
+        andi, jr, lb
 
     InstructionType {.pure.}  = enum I, J, R
 
@@ -92,6 +92,7 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     of Opcode.JAL  : return inst.DisasmJAL(cpu)
     of Opcode.ANDI : return inst.DisasmArithmeticImmediate(cpu, andi)
     of Opcode.SB   : return inst.DisasmSB(cpu)
+    of Opcode.LB   : return inst.DisasmLB(cpu)
     of Opcode.Special:
         case inst.function:
         of Function.SLL : return inst.DisasmSLL(cpu)
@@ -240,6 +241,22 @@ proc DisasmLW(inst: Instruction, cpu: Cpu): DisassembledInstruction =
 
     return DisassembledInstruction(
         mnemonic: lw,
+        parts: @[
+            InstructionPart(mode: Target, kind: CpuRegister, value: inst.rt),
+            InstructionPart(mode: Source, kind: MemoryAddressIndirect, base_register: inst.rs, offset: cast[int32](inst.imm16.sign_extend))
+        ],
+        metadata: @[
+            MetadataPart(kind: MemoryAddressMetadata, address: target)
+        ]
+    )
+
+
+proc DisasmLB(inst: Instruction, cpu: Cpu): DisassembledInstruction =
+    let
+        target = inst.imm16.sign_extend + cpu.ReadRegisterDebug(inst.rs)
+
+    return DisassembledInstruction(
+        mnemonic: lb,
         parts: @[
             InstructionPart(mode: Target, kind: CpuRegister, value: inst.rt),
             InstructionPart(mode: Source, kind: MemoryAddressIndirect, base_register: inst.rs, offset: cast[int32](inst.imm16.sign_extend))

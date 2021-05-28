@@ -64,6 +64,7 @@ const OPCODES = block:
     o[ord Opcode.JAL    ] = Op_JAL
     o[ord Opcode.ANDI   ] = Op_ANDI
     o[ord Opcode.SB     ] = Op_Store[uint8]
+    o[ord Opcode.LB     ] = Op_LB
     o # return the array
 
 
@@ -161,6 +162,25 @@ proc Op_LW(cpu: Cpu): Cycles =
     let value = cpu.mmu.Read32(address)
 
     # TODO: LW data loaded into register is delayed 1 instruction
+    cpu.WriteRegister(cpu.inst.rt, value)
+
+
+proc Op_LB(cpu: Cpu): Cycles =
+    let
+        base = cpu.ReadRegister(cpu.inst.rs)
+        offset = cpu.inst.imm16.sign_extend
+        address = Address offset + base
+
+    if unlikely(not is_aligned[uint8](address)):
+        NOT_IMPLEMENTED fmt"Address is not aligned: {address}"
+
+    if unlikely(cpu.cop0.IsolateCacheEnabled):
+        # TODO: does IsolateCache affect loads??
+        NOT_IMPLEMENTED
+
+    let value = cpu.mmu.Read8(address).sign_extend
+
+    # TODO: LB data loaded into register is delayed 1 instruction
     cpu.WriteRegister(cpu.inst.rt, value)
 
 
