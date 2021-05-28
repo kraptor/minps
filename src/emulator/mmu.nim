@@ -13,6 +13,7 @@ import bios
 import mc
 import ram
 import spu
+import post
 
 logChannels ["mmu"]
 
@@ -23,6 +24,7 @@ type
         mc: MemoryControl
         ram: Ram
         spu: Spu
+        post: Post
 
         cache_control: CacheControlRegister
 
@@ -32,15 +34,17 @@ proc New*(T: type Mmu, bios: Bios): Mmu =
         bios: bios,
         mc: MemoryControl.New(),
         ram: Ram.New(),
-        spu: Spu.New()
+        spu: Spu.New(),
+        post: Post.New()
     )
 
 
 proc Reset*(self: Mmu) =
     # self.bios.Reset() # BIOS should not be resetted
-    self.mc.Reset()
-    self.ram.Reset()
-    self.spu.Reset()
+    Reset self.mc
+    Reset self.ram
+    Reset self.spu
+    Reset self.post
     # TODO: implement full MMU reset
     warn "MMU Reset not fully implemented!"
 
@@ -56,7 +60,7 @@ proc ReadImpl[T: uint32|uint16|uint8](self: Mmu, address: Address): T =
         trace fmt"read[{$T}] ka={ka}"
 
         if   ka <= RAM_END   : return Read[T](self.ram, ka)
-        elif ka <  BIOS_START: NOT_IMPLEMENTED "No device found before BIOS"
+        elif ka <  BIOS_START: error "No device found before BIOS"
         elif ka <= BIOS_END  : return Read[T](self.bios, ka)
 
         NOT_IMPLEMENTED fmt"MMU Read: No device found at address: {address}"
@@ -74,12 +78,14 @@ proc WriteImpl*[T: uint32|uint16|uint8](self: Mmu, address: Address, value: T) =
         trace fmt"write[{$T}] ka={ka} value={value:08x}"
 
         if   ka <= RAM_END   : Write(self.ram, ka, value); return
-        elif ka <  MC1_START : NOT_IMPLEMENTED "No device found before MemoryControl 1"
+        elif ka <  MC1_START : error "No device found before MemoryControl 1"
         elif ka <= MC1_END   : Write(self.mc, ka, value); return
-        elif ka <  SPU_START : NOT_IMPLEMENTED "No device found before SPU"
+        elif ka <  SPU_START : error "No device found before SPU"
         elif ka <= SPU_END   : Write(self.spu, ka, value); return
-        elif ka <  BIOS_START: NOT_IMPLEMENTED "No device found before BIOS"
-        elif ka <= BIOS_END  : NOT_IMPLEMENTED "BIOS is not writable!"
+        elif ka <  POST_START: error "No device found before POST"
+        elif ka <= POST_END  : Write(self.post, ka, value); return
+        elif ka <  BIOS_START: error "No device found before BIOS"
+        elif ka <= BIOS_END  : error "BIOS is not writable!"
 
         NOT_IMPLEMENTED fmt"MMU Write: No device found at address: {address}"
 
