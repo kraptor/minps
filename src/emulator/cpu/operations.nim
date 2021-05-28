@@ -77,6 +77,7 @@ const FUNCTIONS = block:
     f[ord Function.SLTU] = Function_SLTU
     f[ord Function.ADDU] = Function_ADDU
     f[ord Function.JR  ] = Function_JR
+    f[ord Function.AND ] = Function_AND
     f # return the array
 
 
@@ -250,6 +251,16 @@ proc Function_OR(cpu: Cpu): Cycles =
         rs = cpu.inst.rs
         rt = cpu.inst.rt
         value = cpu.ReadRegister(rs) or cpu.ReadRegister(rt)
+
+    cpu.WriteRegister(rd, value)
+
+
+proc Function_AND(cpu: Cpu): Cycles =
+    let
+        rd = cpu.inst.rd
+        rs = cpu.inst.rs
+        rt = cpu.inst.rt
+        value = cpu.ReadRegister(rs) and cpu.ReadRegister(rt)
 
     cpu.WriteRegister(rd, value)
 

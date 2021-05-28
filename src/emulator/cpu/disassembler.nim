@@ -23,7 +23,8 @@ type
         lui, ori, sw, nop, addiu, 
         j, `or`, mtc0, bne, addi, 
         lw, sltu, addu, sh, jal,
-        andi, jr, lb, beq, mfc0
+        andi, jr, lb, beq, mfc0,
+        `and`
 
     InstructionType {.pure.}  = enum I, J, R
 
@@ -101,6 +102,7 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
         of Function.SLTU: return inst.DisasmSpecialArithmetic(cpu, sltu)
         of Function.ADDU: return inst.DisasmSpecialArithmetic(cpu, addu)
         of Function.JR  : return inst.DisasmJR(cpu)
+        of Function.AND : return inst.DisasmSpecialArithMetic(cpu, Mnemonic.`and`)
         else:
             NOT_IMPLEMENTED fmt"Missing disassembly for SPECIAL {inst}"
     else: 
