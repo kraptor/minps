@@ -11,7 +11,7 @@ include inc/concept_check # NOTE: we want to check concepts asap
 import core/[log, version]
 import emulator/[config, bios, platform]
 
-#logFile ":stdout"
+logFile "minps.log"
 logChannels ["main"]
 
 
@@ -29,4 +29,7 @@ proc main() =
 
 
 when isMainModule:
-    main()
+    try:
+        main()
+    finally:
+        logFinalize()
