@@ -47,11 +47,11 @@ proc inKSEG2*(self: Address): bool = self >= KSEG2_START
 
 proc is_aligned*[T: uint32|uint16|uint8](x: uint32): bool =
     when T is uint8:
-        return true
+        result = true
     when T is uint16:
-        return (cast[uint32](x) and 0b1) == 0b0
+        result = (cast[uint32](x) and 0b1) == 0b0
     when T is uint32:
-        return (cast[uint32](x) and 0b11) == 0b00
+        result = (cast[uint32](x) and 0b11) == 0b00
 
 
 template is_aligned*[T: uint32|uint16|uint8](x: Address     ): bool = is_aligned[T](cast[uint32](x))
