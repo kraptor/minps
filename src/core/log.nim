@@ -11,6 +11,8 @@ import terminal
 import strutils
 import strformat
 
+import faststreams/outputs
+
 
 const
     loglevel_channels {.strdefine.} = "*"
@@ -21,7 +23,17 @@ const
 
 var
     logfile_handle = stdout
+    stream {.threadvar.} : OutputStream
     current_indentation = 0
+
+import locks
+
+
+var
+    stream_lock: Lock
+
+stream = fileOutput(logfile_handle)
+stream_lock.initLock()
 
 
 type
@@ -71,32 +83,48 @@ proc getLevelString(level: LogLevel): string =
         of LogLevel.None: "   "
 
 
-proc doLogImplNoColors*(level: int, channels: openArray[string], message: string, sourceinfo: SourceInfo) =
-    write(
-        logfile_handle, 
-        now().format("yyyy-MM-dd HH:mm:ss'.'ffffff"),
-        " ", getLevelString(level.LogLevel),
-        align(channels.join(","), 12), 
-        spaces(current_indentation + 1),
-        alignLeft(message, MESSAGE_WIDTH - current_indentation), 
-        sourceinfo[0], ":", sourceinfo[1], 
-        "\n"
-    )
-    flushFile logfile_handle
+proc doLogImplNoColors*(level: int, channels: openArray[string], message: string, sourceinfo: SourceInfo) {.gcsafe.} =
+    stream_lock.acquire()
+    block:
+        stream.write now().format("yyyy-MM-dd HH:mm:ss'.'ffffff")
+        stream.write " "
+        stream.write getLevelString(level.LogLevel)
+        stream.write align(channels.join(","), 12)
+        stream.write spaces(current_indentation + 1)
+        stream.write alignLeft(message, MESSAGE_WIDTH - current_indentation)
+        stream.write sourceinfo[0]
+        stream.write ":"
+        stream.write $sourceinfo[1]
+        stream.write "\n"
+    stream_lock.release()
 
 
 proc doLogImpl*(level: int, channels: openArray[string], message: string, sourceinfo: SourceInfo) =
-    styledWrite(
-        logfile_handle, 
-        fgDefault,
-        styleDim, now().format("yyyy-MM-dd HH:mm:ss'.'ffffff"),
-        resetStyle, getLevelColor(level.LogLevel), " ", getLevelString(level.LogLevel),
-        align(channels.join(","), 12), 
-        styleBright, spaces(current_indentation + 1), alignLeft(message, MESSAGE_WIDTH - current_indentation), 
-        resetStyle, styleDim, fmt"{sourceinfo[0]}::{sourceinfo[1]}",
-        "\n"
-    )
-    flushFile logfile_handle
+    if logfile_handle in [stdout, stderr]:
+        # stream_lock.acquire()
+        # stream.write ansiForegroundColorCode(fgDefault)
+        # stream.write now().format("yyyy-MM-dd HH:mm:ss'.'ffffff")
+        # stream.write ansiForegroundColorCode(getLevelColor(level.LogLevel))
+        # stream.write " " & getLevelString(level.LogLevel)
+        # stream.write align(channels.join(","), 12)
+        # stream.write spaces(current_indentation + 1)
+        # stream.write alignLeft(message, MESSAGE_WIDTH - current_indentation)
+        # stream.write fmt"{sourceinfo[0]}::{sourceinfo[1]}"
+        # stream.write "\n"
+        # stream_lock.release()
+        styledWrite(
+            logfile_handle, 
+            fgDefault,
+            styleDim, now().format("yyyy-MM-dd HH:mm:ss'.'ffffff"),
+            resetStyle, getLevelColor(level.LogLevel), " ", getLevelString(level.LogLevel),
+            align(channels.join(","), 12), 
+            styleBright, spaces(current_indentation + 1), alignLeft(message, MESSAGE_WIDTH - current_indentation), 
+            resetStyle, styleDim, fmt"{sourceinfo[0]}::{sourceinfo[1]}",
+            "\n"
+        )
+        flushFile logfile_handle
+    else:
+        doLogImplNoColors(level, channels, message, sourceinfo)
 
 
 macro doLog(level: static LogLevel, message: string, channels: static openArray[string], sourceinfo: static SourceInfo): untyped =
@@ -157,19 +185,36 @@ template logIndent*(body) =
         decreaseLogIndentation()
 
 
-template logFile*(filename: string = ":stdout") =
-    #[ Specify the log file to be used.]#
-    if logfile_handle != stdout and logfile_handle != stderr:
-        close(logfile_handle)
+proc logFile*(filename: string = ":stdout") =
+    stream_lock.acquire()
+    
+    block:
+        if logfile_handle != stdout and logfile_handle != stderr:
+            close(logfile_handle)
 
-    case filename:
-    of ":stdout": logfile_handle = stdout
-    of ":stderr": logfile_handle = stderr
-    else:
-        if not open(logfile_handle, filename, fmWrite):
-            echo "Cannot open file: " & filename
-            quit QuitFailure
+        logfile_handle = nil
+
+        case filename:
+        of ":stdout": 
+            logfile_handle = stdout
+        of ":stderr": 
+            logfile_handle = stderr
+        else:
+            if not open(logfile_handle, filename, fmWrite):
+                echo "Cannot open file: " & filename
+                quit QuitFailure
+
+        stream = fileOutput(logfile_handle)
+
+    stream_lock.release()
 
 
 # define default log channel if nothing specified
 logChannels [""]
+
+
+proc logFinalize* =
+    stream_lock.acquire()
+    if stream != nil:
+        stream.flush()
+    stream_lock.release()
