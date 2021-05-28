@@ -84,6 +84,7 @@ const COP0_OPCODES = block:
     var o: array[Cop0Opcode.high.ord, OperationProc]
     for x in o.mitems: x = ExecuteCop0NotImplemented
     o[ord Cop0Opcode.MTC] = Op_MTC0
+    o[ord Cop0Opcode.MFC] = Op_MFC0
     o
 
 
@@ -262,25 +263,37 @@ proc Op_MTC0(cpu: Cpu): Cycles =
     cpu.cop0.WriteRegister(rd, value)
 
 
+proc Op_MFC0(cpu: Cpu): Cycles =
+    let
+        rd = cpu.inst.rd
+        rt = cpu.inst.rt
+        value = cpu.cop0.ReadRegister(rd)
+
+    # TODO: implement LOAD DELAY
+    cpu.WriteRegister(rt, value)
+
+
 proc Op_BNE(cpu: Cpu): Cycles =
     let
         rs = cpu.inst.rs
         rt = cpu.inst.rt
-        offset = (cpu.inst.imm16 shl 2).sign_extend
 
     if cpu.ReadRegister(rs) != cpu.ReadRegister(rt):
-        let address = cpu.pc + offset
+        let 
+            offset = (cpu.inst.imm16 shl 2).sign_extend
+            address = cpu.pc + offset
         cpu.BranchWithDelaySlotTo(address)
 
 
 proc Op_BEQ(cpu: Cpu): Cycles =
     let
         rs = cpu.inst.rs
-        rt = cpu.inst.rt
-        offset = (cpu.inst.imm16 shl 2).sign_extend
+        rt = cpu.inst.rt       
 
     if cpu.ReadRegister(rs) == cpu.ReadRegister(rt):
-        let address = cpu.pc + offset
+        let 
+            offset = (cpu.inst.imm16 shl 2).sign_extend
+            address = cpu.pc + offset
         cpu.BranchWithDelaySlotTo(address)
 
 

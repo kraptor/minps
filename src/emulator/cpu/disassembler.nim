@@ -23,7 +23,7 @@ type
         lui, ori, sw, nop, addiu, 
         j, `or`, mtc0, bne, addi, 
         lw, sltu, addu, sh, jal,
-        andi, jr, lb, beq
+        andi, jr, lb, beq, mfc0
 
     InstructionType {.pure.}  = enum I, J, R
 
@@ -322,6 +322,14 @@ proc DisasmCop0(inst: Instruction, cpu: Cpu): DisassembledInstruction =
             parts: @[
                 InstructionPart(mode: Source, kind: CpuRegister, value: inst.rt),
                 InstructionPart(mode: Target, kind: Cop0Register, value: inst.rd),
+            ]
+        )
+    of MFC:
+        return DisassembledInstruction(
+            mnemonic: Mnemonic.mfc0,
+            parts: @[
+                InstructionPart(mode: Target, kind: CpuRegister, value: inst.rt),
+                InstructionPart(mode: Source, kind: Cop0Register, value: inst.rd),
             ]
         )
     else:
