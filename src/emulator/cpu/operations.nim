@@ -69,6 +69,7 @@ const OPCODES = block:
     o[ord Opcode.BGTZ   ] = Op_BGTZ
     o[ord Opcode.BLEZ   ] = Op_BLEZ
     o[ord Opcode.LBU    ] = Op_LBU
+    o[ord Opcode.BCONDZ ] = Op_BCONDZ
     o # return the array
 
 
@@ -271,6 +272,24 @@ proc Function_JALR(cpu: Cpu): Cycles =
 
     cpu.BranchWithDelaySlotTo(cast[Address](target))
     cpu.WriteRegister(cpu.inst.rd, cpu.inst_pc + 8)
+
+
+proc Op_BCONDZ(cpu: Cpu): Cycles =
+    let target = (cpu.inst.target shl 2) or (0xF000_0000'u32 and cpu.pc + 4)
+
+    if unlikely(not is_aligned[uint32](target)):
+        NOT_IMPLEMENTED "BCONDZ: raise Address Error Exception"
+
+    let 
+        is_bgez = (cpu.inst.value shr 16) and 0b1
+        is_link = ((cpu.inst.value shr 20) and 0b1) != 0
+        ge_zero = cpu.ReadRegister(cpu.inst.rs) >= 0
+        test = if is_bgez == 1: ge_zero else: not ge_zero
+
+    if test:
+        cpu.BranchWithDelaySlotTo(cast[Address](target))
+        if is_link:
+            cpu.WriteRegister(31, cpu.inst_pc + 8)
 
 
 proc Function_JR(cpu: Cpu): Cycles =

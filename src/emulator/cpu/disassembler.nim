@@ -25,7 +25,8 @@ type
         lw, sltu, addu, sh, jal,
         andi, jr, lb, beq, mfc0,
         `and`, sll, add, bgtz, 
-        blez, lbu, jalr
+        blez, lbu, jalr, bltz,
+        bgez, bltzal, bgezal
 
     InstructionPartType {.pure.}  = enum
         CpuRegister
@@ -78,24 +79,32 @@ type
 
 proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     case inst.opcode:
-    of Opcode.LUI  : return inst.DisasmRtImmediate(cpu, lui)
-    of Opcode.ORI  : return inst.DisasmArithmeticImmediate(cpu, ori)
-    of Opcode.SW   : return inst.DisasmSW(cpu)
-    of Opcode.ADDIU: return inst.DisasmRtImmediate(cpu, addiu)
-    of Opcode.J    : return inst.DisasmJ(cpu)
-    of Opcode.COP0 : return inst.DisasmCop0(cpu)
-    of Opcode.BNE  : return inst.DisasmBxx(cpu, bne)
-    of Opcode.ADDI : return inst.DisasmArithmeticImmediate(cpu, addi)
-    of Opcode.LW   : return inst.DisasmLW(cpu)
-    of Opcode.SH   : return inst.DisasmSH(cpu)
-    of Opcode.JAL  : return inst.DisasmJAL(cpu)
-    of Opcode.ANDI : return inst.DisasmArithmeticImmediate(cpu, andi)
-    of Opcode.SB   : return inst.DisasmSB(cpu)
-    of Opcode.LB   : return inst.DisasmLB(cpu)
-    of Opcode.BEQ  : return inst.DisasmBxx(cpu, beq)
-    of Opcode.BGTZ : return inst.DisasmBxxZ(cpu, bgtz)
-    of Opcode.BLEZ : return inst.DisasmBxxZ(cpu, blez)
-    of Opcode.LBU  : return inst.DisasmLBU(cpu)
+    of Opcode.LUI   : return inst.DisasmRtImmediate(cpu, lui)
+    of Opcode.ORI   : return inst.DisasmArithmeticImmediate(cpu, ori)
+    of Opcode.SW    : return inst.DisasmSW(cpu)
+    of Opcode.ADDIU : return inst.DisasmRtImmediate(cpu, addiu)
+    of Opcode.J     : return inst.DisasmJ(cpu)
+    of Opcode.COP0  : return inst.DisasmCop0(cpu)
+    of Opcode.BNE   : return inst.DisasmBxx(cpu, bne)
+    of Opcode.ADDI  : return inst.DisasmArithmeticImmediate(cpu, addi)
+    of Opcode.LW    : return inst.DisasmLW(cpu)
+    of Opcode.SH    : return inst.DisasmSH(cpu)
+    of Opcode.JAL   : return inst.DisasmJAL(cpu)
+    of Opcode.ANDI  : return inst.DisasmArithmeticImmediate(cpu, andi)
+    of Opcode.SB    : return inst.DisasmSB(cpu)
+    of Opcode.LB    : return inst.DisasmLB(cpu)
+    of Opcode.BEQ   : return inst.DisasmBxx(cpu, beq)
+    of Opcode.BGTZ  : return inst.DisasmBxxZ(cpu, bgtz)
+    of Opcode.BLEZ  : return inst.DisasmBxxZ(cpu, blez)
+    of Opcode.LBU   : return inst.DisasmLBU(cpu)
+    of Opcode.BCONDZ: 
+        case inst.rt.BCondZ:
+        of BLTZ  : return inst.DisasmBxxZ(cpu, bltz)
+        of BGEZ  : return inst.DisasmBxxZ(cpu, bgez)
+        of BLTZAL: return inst.DisasmBxxZ(cpu, bltzal)
+        of BGEZAL: return inst.DisasmBxxZ(cpu, bgezal)
+        else:
+            NOT_IMPLEMENTED fmt"Missing disassembly for BcondZ {inst}"
     of Opcode.Special:
         case inst.function:
         of Function.SLL : return inst.DisasmSLL(cpu)

@@ -45,6 +45,12 @@ type
         Unk38   = 0x38, Unk39  = 0x39, Unk3A = 0x3a, Unk3B = 0x3b, 
         Unk3C   = 0x3c, Unk3D  = 0x3d, Unk3E = 0x3e, Unk3F = 0x3f
 
+    BCondZ* {.pure.} = enum
+        BLTZ   = 0b00000
+        BGEZ   = 0b00001
+        BLTZAL = 0b10000
+        BGEZAL = 0b10001
+
     Cop0Opcode* {.pure.} = enum
         MFC   = 0b00000
         CFC   = 0b00010
