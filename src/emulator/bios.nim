@@ -24,7 +24,7 @@ const
 
 type
     BiosData {.union.} = object
-        u8: array[BIOS_MAX_SIZE, uint8]
+        u8 : array[BIOS_MAX_SIZE, uint8]
         u16: array[BIOS_MAX_SIZE div 2, uint16]
         u32: array[BIOS_MAX_SIZE div 4, uint32]
 
@@ -74,7 +74,7 @@ proc FromFile*(T: type Bios, filename: string): Bios =
         debug fmt"BIOS Loaded. Size: {result.size_loaded} bytes"
 
 
-proc Read8*(self: Bios, address: KusegAddress): uint8 {.inline.} = Read[uint8](self, address)
+proc Read8 *(self: Bios, address: KusegAddress): uint8 {.inline.} = Read[uint8](self, address)
 proc Read16*(self: Bios, address: KusegAddress): uint16 {.inline.} = Read[uint16](self, address)
 proc Read32*(self: Bios, address: KusegAddress): uint32 {.inline.} = Read[uint32](self, address)
 
@@ -82,9 +82,16 @@ proc Read32*(self: Bios, address: KusegAddress): uint32 {.inline.} = Read[uint32
 proc Read*[T: uint8|uint16|uint32](self: Bios, address: KusegAddress): T =
     let offset = address - BIOS_START
     assert offset <= BIOS_MAX_SIZE.KusegAddress
+
     when T is uint32:
-        let offset_u32 = offset.uint32 shr 2
-        result = cast[T](self.data.u32[offset_u32])
+        let offset_32 = offset.uint32 shr 2
+        result = self.data.u32[offset_32]
+        trace fmt"read[{$T}] offset={offset} value={result:08x}h"
+        return result
+
+    when T is uint8:
+        let offset_8 = offset.uint32
+        result = self.data.u8[offset_8]
         trace fmt"read[{$T}] offset={offset} value={result:08x}h"
         return result
     
