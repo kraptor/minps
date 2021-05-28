@@ -36,11 +36,12 @@ type
 proc New*(T: type Mmu, bios: Bios): Mmu =
     result = Mmu(
         bios: bios,
-        mc: MemoryControl.New(),
-        ram: Ram.New(),
-        er1: ExpansionRegion1.New(),
-        spu: Spu.New(),
-        er2: ExpansionRegion2.New()
+        mc  : MemoryControl.New(),
+        ram : Ram.New(),
+        er1 : ExpansionRegion1.New(),
+        spu : Spu.New(),
+        er2 : ExpansionRegion2.New(),
+        ic  : InterruptControl.New(),
     )
 
 
