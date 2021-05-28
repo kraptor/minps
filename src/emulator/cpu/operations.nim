@@ -67,6 +67,8 @@ const OPCODES = block:
     o[ord Opcode.LB     ] = Op_LB
     o[ord Opcode.BEQ    ] = Op_BEQ
     o[ord Opcode.BGTZ   ] = Op_BGTZ
+    o[ord Opcode.BLEZ   ] = Op_BLEZ
+    o[ord Opcode.LBU    ] = Op_LBU
     o # return the array
 
 
@@ -80,6 +82,7 @@ const FUNCTIONS = block:
     f[ord Function.JR  ] = Function_JR
     f[ord Function.AND ] = Function_AND
     f[ord Function.ADD ] = Function_ADD
+    f[ord Function.JALR] = Function_JALR
     f # return the array
 
 
@@ -189,6 +192,25 @@ proc Op_LB(cpu: Cpu): Cycles =
     cpu.WriteRegister(cpu.inst.rt, value)
 
 
+proc Op_LBU(cpu: Cpu): Cycles =
+    let
+        base = cpu.ReadRegister(cpu.inst.rs)
+        offset = cpu.inst.imm16.sign_extend
+        address = Address offset + base
+
+    if unlikely(not is_aligned[uint8](address)):
+        NOT_IMPLEMENTED fmt"Address is not aligned: {address}"
+
+    if unlikely(cpu.cop0.IsolateCacheEnabled):
+        # TODO: does IsolateCache affect loads??
+        NOT_IMPLEMENTED
+
+    let value = cpu.mmu.Read8(address).zero_extend
+
+    # TODO: LB data loaded into register is delayed 1 instruction
+    cpu.WriteRegister(cpu.inst.rt, value)
+
+
 proc Function_SLL(cpu: Cpu): Cycles =
     let 
         rd = cpu.inst.rd
@@ -236,6 +258,19 @@ proc Op_JAL(cpu: Cpu): Cycles =
     let target = (cpu.inst.target shl 2) or (0xF000_0000'u32 and cpu.pc + 4)
     cpu.BranchWithDelaySlotTo(cast[Address](target))
     cpu.WriteRegister(31, cpu.inst_pc + 8)
+
+
+proc Function_JALR(cpu: Cpu): Cycles =
+    let target = cpu.ReadRegister(cpu.inst.rs)
+
+    if unlikely(not is_aligned[uint32](target)):
+        NOT_IMPLEMENTED "JALR: raise Address Error Exception"
+
+    if unlikely(cpu.inst.rs == cpu.inst.rt):
+        NOT_IMPLEMENTED "JALR: undefined behaviour"
+
+    cpu.BranchWithDelaySlotTo(cast[Address](target))
+    cpu.WriteRegister(cpu.inst.rd, cpu.inst_pc + 8)
 
 
 proc Function_JR(cpu: Cpu): Cycles =
@@ -315,6 +350,17 @@ proc Op_BGTZ(cpu: Cpu): Cycles =
         rs = cpu.inst.rs
 
     if cast[uint32](cpu.ReadRegister(rs)) > 0:
+        let 
+            offset = (cpu.inst.imm16 shl 2).sign_extend
+            address = cpu.pc + offset
+        cpu.BranchWithDelaySlotTo(address)
+
+
+proc Op_BLEZ(cpu: Cpu): Cycles =
+    let
+        rs = cpu.inst.rs
+
+    if cast[uint32](cpu.ReadRegister(rs)) <= 0:
         let 
             offset = (cpu.inst.imm16 shl 2).sign_extend
             address = cpu.pc + offset

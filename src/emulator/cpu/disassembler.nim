@@ -24,7 +24,8 @@ type
         j, `or`, mtc0, bne, addi, 
         lw, sltu, addu, sh, jal,
         andi, jr, lb, beq, mfc0,
-        `and`, sll, add, bgtz
+        `and`, sll, add, bgtz, 
+        blez, lbu, jalr
 
     InstructionPartType {.pure.}  = enum
         CpuRegister
@@ -92,7 +93,9 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     of Opcode.SB   : return inst.DisasmSB(cpu)
     of Opcode.LB   : return inst.DisasmLB(cpu)
     of Opcode.BEQ  : return inst.DisasmBxx(cpu, beq)
-    of Opcode.BGTZ : return inst.DisasmBGTZ(cpu)
+    of Opcode.BGTZ : return inst.DisasmBxxZ(cpu, bgtz)
+    of Opcode.BLEZ : return inst.DisasmBxxZ(cpu, blez)
+    of Opcode.LBU  : return inst.DisasmLBU(cpu)
     of Opcode.Special:
         case inst.function:
         of Function.SLL : return inst.DisasmSLL(cpu)
@@ -102,6 +105,7 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
         of Function.JR  : return inst.DisasmJR(cpu)
         of Function.AND : return inst.DisasmSpecialArithMetic(cpu, Mnemonic.`and`)
         of Function.ADD : return inst.DisasmSpecialArithMetic(cpu, Mnemonic.add)
+        of Function.JALR: return inst.DisasmJALR(cpu)
         else:
             NOT_IMPLEMENTED fmt"Missing disassembly for SPECIAL {inst}"
     else: 
@@ -269,6 +273,22 @@ proc DisasmLB(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     )
 
 
+proc DisasmLBU(inst: Instruction, cpu: Cpu): DisassembledInstruction =
+    let
+        target = inst.imm16.sign_extend + cpu.ReadRegisterDebug(inst.rs)
+
+    return DisassembledInstruction(
+        mnemonic: lbu,
+        parts: @[
+            InstructionPart(mode: Target, kind: CpuRegister, value: inst.rt),
+            InstructionPart(mode: Source, kind: MemoryAddressIndirect, base_register: inst.rs, offset: cast[int32](inst.imm16.sign_extend))
+        ],
+        metadata: @[
+            MetadataPart(kind: MemoryAddressMetadata, address: target)
+        ]
+    )
+
+
 proc DisasmSLL(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     if inst.value == 0:
         return DisassembledInstruction(
@@ -297,6 +317,19 @@ proc DisasmJAL(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     return DisassembledInstruction(
         mnemonic: Mnemonic.jal,
         parts: @[
+            InstructionPart(mode: Target, kind: MemoryAddress, value: target)
+        ]
+    )
+
+
+proc DisasmJALR(inst: Instruction, cpu: Cpu): DisassembledInstruction =
+    let 
+        delay_slot_pc = cpu.inst_pc + 4  # can't use next_pc, depends on call-site
+        target = (inst.target shl 2) or (0xF000_0000'u32 and delay_slot_pc)
+    return DisassembledInstruction(
+        mnemonic: Mnemonic.jalr,
+        parts: @[
+            InstructionPart(mode: Target, kind: CpuRegister, value: inst.rd),
             InstructionPart(mode: Target, kind: MemoryAddress, value: target)
         ]
     )
@@ -356,7 +389,7 @@ proc DisasmBxx(inst: Instruction, cpu: Cpu, mnemonic: Mnemonic): DisassembledIns
     )
 
 
-proc DisasmBGTZ(inst: Instruction, cpu: Cpu): DisassembledInstruction =
+proc DisasmBxxZ(inst: Instruction, cpu: Cpu, mnemonic: Mnemonic): DisassembledInstruction =
     let 
         delay_slot_pc = cpu.inst_pc + 4  # can't use next_pc, depends on call-site
         target = (inst.imm16 shl 2).sign_extend + delay_slot_pc
@@ -365,7 +398,7 @@ proc DisasmBGTZ(inst: Instruction, cpu: Cpu): DisassembledInstruction =
         ]
 
     return DisassembledInstruction(
-        mnemonic: bgtz,
+        mnemonic: mnemonic,
         parts: @[
             InstructionPart(mode: Source, kind: CpuRegister, value: inst.rs),
             InstructionPart(mode: Target, kind: Offset, value: (inst.imm16 shl 2).sign_extend)
