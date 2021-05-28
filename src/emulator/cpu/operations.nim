@@ -65,6 +65,7 @@ const OPCODES = block:
     o[ord Opcode.ANDI   ] = Op_ANDI
     o[ord Opcode.SB     ] = Op_Store[uint8]
     o[ord Opcode.LB     ] = Op_LB
+    o[ord Opcode.BEQ    ] = Op_BEQ
     o # return the array
 
 
@@ -268,6 +269,17 @@ proc Op_BNE(cpu: Cpu): Cycles =
         offset = (cpu.inst.imm16 shl 2).sign_extend
 
     if cpu.ReadRegister(rs) != cpu.ReadRegister(rt):
+        let address = cpu.pc + offset
+        cpu.BranchWithDelaySlotTo(address)
+
+
+proc Op_BEQ(cpu: Cpu): Cycles =
+    let
+        rs = cpu.inst.rs
+        rt = cpu.inst.rt
+        offset = (cpu.inst.imm16 shl 2).sign_extend
+
+    if cpu.ReadRegister(rs) == cpu.ReadRegister(rt):
         let address = cpu.pc + offset
         cpu.BranchWithDelaySlotTo(address)
 

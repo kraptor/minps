@@ -23,7 +23,7 @@ type
         lui, ori, sw, nop, addiu, 
         j, `or`, mtc0, bne, addi, 
         lw, sltu, addu, sh, jal,
-        andi, jr, lb
+        andi, jr, lb, beq
 
     InstructionType {.pure.}  = enum I, J, R
 
@@ -85,7 +85,7 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     of Opcode.ADDIU: return inst.DisasmRtImmediate(cpu, addiu)
     of Opcode.J    : return inst.DisasmJ(cpu)
     of Opcode.COP0 : return inst.DisasmCop0(cpu)
-    of Opcode.BNE  : return inst.DisasmBNE(cpu)
+    of Opcode.BNE  : return inst.DisasmBxx(cpu, bne)
     of Opcode.ADDI : return inst.DisasmArithmeticImmediate(cpu, addi)
     of Opcode.LW   : return inst.DisasmLW(cpu)
     of Opcode.SH   : return inst.DisasmSH(cpu)
@@ -93,6 +93,7 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     of Opcode.ANDI : return inst.DisasmArithmeticImmediate(cpu, andi)
     of Opcode.SB   : return inst.DisasmSB(cpu)
     of Opcode.LB   : return inst.DisasmLB(cpu)
+    of Opcode.BEQ  : return inst.DisasmBxx(cpu, beq)
     of Opcode.Special:
         case inst.function:
         of Function.SLL : return inst.DisasmSLL(cpu)
@@ -324,10 +325,10 @@ proc DisasmCop0(inst: Instruction, cpu: Cpu): DisassembledInstruction =
             ]
         )
     else:
-        NOT_IMPLEMENTED
+        NOT_IMPLEMENTED fmt"Cop0 Disasm not implemented for: {inst.rs.Cop0Opcode}"
 
 
-proc DisasmBNE(inst: Instruction, cpu: Cpu): DisassembledInstruction =
+proc DisasmBxx(inst: Instruction, cpu: Cpu, mnemonic: Mnemonic): DisassembledInstruction =
     let 
         delay_slot_pc = cpu.inst_pc + 4  # can't use next_pc, depends on call-site
         target = (inst.imm16 shl 2).sign_extend + delay_slot_pc
@@ -336,7 +337,7 @@ proc DisasmBNE(inst: Instruction, cpu: Cpu): DisassembledInstruction =
         ]
 
     return DisassembledInstruction(
-        mnemonic: Mnemonic.bne,
+        mnemonic: mnemonic,
         parts: @[
             InstructionPart(mode: Source, kind: CpuRegister, value: inst.rs),
             InstructionPart(mode: Source, kind: CpuRegister, value: inst.rt),
