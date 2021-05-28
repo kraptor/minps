@@ -24,7 +24,7 @@ type
         j, `or`, mtc0, bne, addi, 
         lw, sltu, addu, sh, jal,
         andi, jr, lb, beq, mfc0,
-        `and`, sll, add
+        `and`, sll, add, bgtz
 
     InstructionPartType {.pure.}  = enum
         CpuRegister
@@ -92,6 +92,7 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     of Opcode.SB   : return inst.DisasmSB(cpu)
     of Opcode.LB   : return inst.DisasmLB(cpu)
     of Opcode.BEQ  : return inst.DisasmBxx(cpu, beq)
+    of Opcode.BGTZ : return inst.DisasmBGTZ(cpu)
     of Opcode.Special:
         case inst.function:
         of Function.SLL : return inst.DisasmSLL(cpu)
@@ -349,6 +350,24 @@ proc DisasmBxx(inst: Instruction, cpu: Cpu, mnemonic: Mnemonic): DisassembledIns
         parts: @[
             InstructionPart(mode: Source, kind: CpuRegister, value: inst.rs),
             InstructionPart(mode: Source, kind: CpuRegister, value: inst.rt),
+            InstructionPart(mode: Target, kind: Offset, value: (inst.imm16 shl 2).sign_extend)
+        ],
+        metadata: metadata
+    )
+
+
+proc DisasmBGTZ(inst: Instruction, cpu: Cpu): DisassembledInstruction =
+    let 
+        delay_slot_pc = cpu.inst_pc + 4  # can't use next_pc, depends on call-site
+        target = (inst.imm16 shl 2).sign_extend + delay_slot_pc
+        metadata = @[
+            MetadataPart(kind: MemoryAddressMetadata, address: target)
+        ]
+
+    return DisassembledInstruction(
+        mnemonic: bgtz,
+        parts: @[
+            InstructionPart(mode: Source, kind: CpuRegister, value: inst.rs),
             InstructionPart(mode: Target, kind: Offset, value: (inst.imm16 shl 2).sign_extend)
         ],
         metadata: metadata

@@ -66,6 +66,7 @@ const OPCODES = block:
     o[ord Opcode.SB     ] = Op_Store[uint8]
     o[ord Opcode.LB     ] = Op_LB
     o[ord Opcode.BEQ    ] = Op_BEQ
+    o[ord Opcode.BGTZ   ] = Op_BGTZ
     o # return the array
 
 
@@ -303,6 +304,17 @@ proc Op_BEQ(cpu: Cpu): Cycles =
         rt = cpu.inst.rt       
 
     if cpu.ReadRegister(rs) == cpu.ReadRegister(rt):
+        let 
+            offset = (cpu.inst.imm16 shl 2).sign_extend
+            address = cpu.pc + offset
+        cpu.BranchWithDelaySlotTo(address)
+
+
+proc Op_BGTZ(cpu: Cpu): Cycles =
+    let
+        rs = cpu.inst.rs
+
+    if cast[uint32](cpu.ReadRegister(rs)) > 0:
         let 
             offset = (cpu.inst.imm16 shl 2).sign_extend
             address = cpu.pc + offset
