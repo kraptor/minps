@@ -71,7 +71,7 @@ proc Write*[T: uint8|uint16|uint32](self: InterruptControl, address: KusegAddres
         case address.uint32:
         of 0x1F80_1070: 
             self.I_STAT.value = value
-            warn fmt"IC/I_STAT set to value: {value:08x}. Side.effects not implemented."
+            warn fmt"IC/I_STAT set to value: {value:08x}h. Side.effects not implemented."
             notice fmt"- IRQ0  (vblank) Active: {self.I_STAT.parts.IRQ0_VBLANK}"
             notice fmt"- IRQ1  (GPU)    Active: {self.I_STAT.parts.IRQ1_GPU}"
             notice fmt"- IRQ2  (CDROM)  Active: {self.I_STAT.parts.IRQ2_CDROM}"
@@ -86,7 +86,7 @@ proc Write*[T: uint8|uint16|uint32](self: InterruptControl, address: KusegAddres
             return
         of 0x1F80_1074: 
             self.I_MASK.value = value    
-            warn fmt"IC/I_MASK set to value: {value:08x}. Side-effects not implemented."
+            warn fmt"IC/I_MASK set to value: {value:08x}h. Side-effects not implemented."
             notice fmt"- IRQ0  (vblank) Masked: {not self.I_MASK.parts.IRQ0_VBLANK}"
             notice fmt"- IRQ1  (GPU)    Masked: {not self.I_MASK.parts.IRQ1_GPU}"
             notice fmt"- IRQ2  (CDROM)  Masked: {not self.I_MASK.parts.IRQ2_CDROM}"
