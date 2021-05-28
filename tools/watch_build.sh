@@ -4,4 +4,4 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
-watchexec -rce nim,cfg "echo \"BUILD STARTS ****************\" && nimble build_debug && clear && bin/minps_debug"
+watchexec -rce nim,cfg "echo \"BUILD STARTS ****************\" && nimble build_debug && clear && bin/minps_debug && echo \"TERMINATED!\""
