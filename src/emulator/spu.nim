@@ -130,8 +130,9 @@ proc Read*[T: uint8|uint16|uint32](self: Spu, address: KusegAddress): T =
     let
         offset {.used.} = cast[uint32](address)
 
+    assert is_aligned[T](address)
+
     # when T is uint32:
-    #     assert address.is_aligned32
     #     return self.data.u32[offset shr 2]
     
     NOT_IMPLEMENTED fmt"SPU Read[{$T}]: address={address}"
@@ -145,8 +146,9 @@ proc Write*[T: uint8|uint16|uint32](self: Spu, address: KusegAddress, value: T) 
     let
         offset = cast[uint32](address - SPU_START)
 
+    assert is_aligned[T](address)
+    
     when T is uint16:
-        assert address.is_aligned16
         self.data.u16[offset shr 1] = value 
         
         case cast[uint32](address):
