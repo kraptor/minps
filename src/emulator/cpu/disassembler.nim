@@ -24,7 +24,7 @@ type
         j, `or`, mtc0, bne, addi, 
         lw, sltu, addu, sh, jal,
         andi, jr, lb, beq, mfc0,
-        `and`
+        `and`, sll
 
     InstructionType {.pure.}  = enum I, J, R
 
@@ -276,7 +276,8 @@ proc DisasmSLL(inst: Instruction, cpu: Cpu): DisassembledInstruction =
             mnemonic: Mnemonic.nop
         )
     else:
-        NOT_IMPLEMENTED "Standard SLL disassembly is not implemented."
+        return DisasmSpecialArithmetic(inst, cpu, sll)
+        # NOT_IMPLEMENTED "Standard SLL disassembly is not implemented."
 
 
 proc DisasmJ(inst: Instruction, cpu: Cpu): DisassembledInstruction =
