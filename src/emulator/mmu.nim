@@ -15,6 +15,7 @@ import ram
 import spu
 import er1
 import er2
+import irq
 
 logChannels ["mmu"]
 
@@ -27,6 +28,7 @@ type
         er1: ExpansionRegion1
         spu: Spu
         er2: ExpansionRegion2
+        ic : InterruptControl
 
         cache_control: CacheControlRegister
 
@@ -49,6 +51,7 @@ proc Reset*(self: Mmu) =
     Reset self.er1
     Reset self.spu
     Reset self.er2
+    Reset self.ic
     # TODO: implement full MMU reset
     warn "MMU Reset not fully implemented!"
 
@@ -68,9 +71,11 @@ proc ReadImpl[T: uint32|uint16|uint8](self: Mmu, address: Address): T =
         elif ka <= ER1_END   : return Read[T](self.er1, ka)
         elif ka <  MC1_START : error "No device found before MemoryControl 1"
         elif ka <= MC1_END   : return Read[T](self.mc, ka)
+        elif ka <  IC_START  : error "No device found before Interrupt Control"
+        elif ka <= IC_END    : return Read[T](self.ic, ka)       
         elif ka <  SPU_START : error "No device found before SPU"
         elif ka <= SPU_END   : return Read[T](self.spu, ka)
-        elif ka <  ER2_START : error "No device found before POST"
+        elif ka <  ER2_START : error "No device found before Expansion Region 2"
         elif ka <= ER2_END   : return Read[T](self.er2, ka)
         elif ka <  BIOS_START: error "No device found before BIOS"
         elif ka <= BIOS_END  : return Read[T](self.bios, ka)
@@ -94,9 +99,11 @@ proc WriteImpl*[T: uint32|uint16|uint8](self: Mmu, address: Address, value: T) =
         elif ka <= ER1_END   : Write(self.er1, ka, value); return
         elif ka <  MC1_START : error "No device found before MemoryControl 1"
         elif ka <= MC1_END   : Write(self.mc, ka, value); return
+        elif ka <  IC_START  : error "No device found before Interrupt Control"
+        elif ka <= IC_END    : Write(self.ic, ka, value); return
         elif ka <  SPU_START : error "No device found before SPU"
         elif ka <= SPU_END   : Write(self.spu, ka, value); return
-        elif ka <  ER2_START : error "No device found before POST"
+        elif ka <  ER2_START : error "No device found before Expansion Region 2"
         elif ka <= ER2_END   : Write(self.er2, ka, value); return
         elif ka <  BIOS_START: error "No device found before BIOS"
         elif ka <= BIOS_END  : error "BIOS is not writable!"
