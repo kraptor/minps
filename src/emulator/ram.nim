@@ -3,11 +3,6 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
-# Copyright (c) 2021 kraptor
-# 
-# This software is released under the MIT License.
-# https://opensource.org/licenses/MIT
-
 {.experimental: "codeReordering".}
 
 import strformat
@@ -61,7 +56,7 @@ proc Read*[T: uint8|uint16|uint32](self: Ram, address: KusegAddress): T =
 
     when T is uint32:        
         return self.data.u32[offset shr 2]
-    
+
     NOT_IMPLEMENTED fmt"RAM Read[{$T}]: address={address}"
 
 
