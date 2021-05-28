@@ -24,7 +24,7 @@ type
         j, `or`, mtc0, bne, addi, 
         lw, sltu, addu, sh, jal,
         andi, jr, lb, beq, mfc0,
-        `and`, sll
+        `and`, sll, add
 
     InstructionPartType {.pure.}  = enum
         CpuRegister
@@ -100,6 +100,7 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
         of Function.ADDU: return inst.DisasmSpecialArithmetic(cpu, addu)
         of Function.JR  : return inst.DisasmJR(cpu)
         of Function.AND : return inst.DisasmSpecialArithMetic(cpu, Mnemonic.`and`)
+        of Function.ADD : return inst.DisasmSpecialArithMetic(cpu, Mnemonic.add)
         else:
             NOT_IMPLEMENTED fmt"Missing disassembly for SPECIAL {inst}"
     else: 

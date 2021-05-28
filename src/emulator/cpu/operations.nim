@@ -78,6 +78,7 @@ const FUNCTIONS = block:
     f[ord Function.ADDU] = Function_ADDU
     f[ord Function.JR  ] = Function_JR
     f[ord Function.AND ] = Function_AND
+    f[ord Function.ADD ] = Function_ADD
     f # return the array
 
 
@@ -316,6 +317,19 @@ proc Op_ADDI(cpu: Cpu): Cycles =
     try:
         let value = cast[int32](cpu.ReadRegister(rs)) + cast[int32](cpu.inst.imm16.sign_extend)
         cpu.WriteRegister(rt, cast[uint32](value))
+    except:
+        NOT_IMPLEMENTED "Arithmetic ADDI Exception not handled."
+
+
+proc Function_ADD(cpu: Cpu): Cycles =
+    let
+        rd = cpu.inst.rd
+        rs = cpu.inst.rs
+        rt = cpu.inst.rt
+
+    try:
+        let value = cast[int32](cpu.ReadRegister(rs)) + cast[int32](cpu.ReadRegister(rt))
+        cpu.WriteRegister(rd, cast[uint32](value))
     except:
         NOT_IMPLEMENTED "Arithmetic ADD Exception not handled."
 
