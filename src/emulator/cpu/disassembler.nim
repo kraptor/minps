@@ -23,7 +23,7 @@ type
         lui, ori, sw, nop, addiu, 
         j, `or`, mtc0, bne, addi, 
         lw, sltu, addu, sh, jal,
-        andi
+        andi, jr
 
     InstructionType {.pure.}  = enum I, J, R
 
@@ -98,6 +98,7 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
         of Function.OR  : return inst.DisasmSpecialArithmetic(cpu, Mnemonic.`or`)
         of Function.SLTU: return inst.DisasmSpecialArithmetic(cpu, sltu)
         of Function.ADDU: return inst.DisasmSpecialArithmetic(cpu, addu)
+        of Function.JR  : return inst.DisasmJR(cpu)
         else:
             NOT_IMPLEMENTED fmt"Missing disassembly for SPECIAL {inst}"
     else: 
@@ -278,6 +279,19 @@ proc DisasmJAL(inst: Instruction, cpu: Cpu): DisassembledInstruction =
         mnemonic: Mnemonic.jal,
         parts: @[
             InstructionPart(mode: Target, kind: MemoryAddress, value: target)
+        ]
+    )
+
+
+proc DisasmJR(inst: Instruction, cpu: Cpu): DisassembledInstruction =
+    return DisassembledInstruction(
+        mnemonic: Mnemonic.jr,
+        parts: @[
+            # InstructionPart(mode: Target, kind: MemoryAddress, value: target)
+            InstructionPart(mode: Target, kind: CpuRegister, value: inst.rs)
+        ],
+        metadata: @[
+            MetadataPart(kind: MemoryAddressMetadata, address: cpu.ReadRegisterDebug(inst.rs))
         ]
     )
 

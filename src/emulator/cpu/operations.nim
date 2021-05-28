@@ -74,6 +74,7 @@ const FUNCTIONS = block:
     f[ord Function.OR  ] = Function_OR
     f[ord Function.SLTU] = Function_SLTU
     f[ord Function.ADDU] = Function_ADDU
+    f[ord Function.JR  ] = Function_JR
     f # return the array
 
 
@@ -203,13 +204,22 @@ proc Op_ADDIU(cpu: Cpu): Cycles =
 
 proc Op_J(cpu: Cpu): Cycles =
     let target = (cpu.inst.target shl 2) or (0xF000_0000'u32 and cpu.pc + 4)
-    cpu.BranchWithDelaySlotTo(target.Address)
+    cpu.BranchWithDelaySlotTo(cast[Address](target))
 
 
 proc Op_JAL(cpu: Cpu): Cycles =
     let target = (cpu.inst.target shl 2) or (0xF000_0000'u32 and cpu.pc + 4)
-    cpu.BranchWithDelaySlotTo(target.Address)
+    cpu.BranchWithDelaySlotTo(cast[Address](target))
     cpu.WriteRegister(31, cpu.inst_pc + 8)
+
+
+proc Function_JR(cpu: Cpu): Cycles =
+    let target = cpu.ReadRegister(cpu.inst.rs)
+
+    if unlikely(not is_aligned[uint32](target)):
+        NOT_IMPLEMENTED "JR: raise Address Error Exception"
+
+    cpu.BranchWithDelaySlotTo(cast[Address](target))
 
 
 proc Function_OR(cpu: Cpu): Cycles = 
