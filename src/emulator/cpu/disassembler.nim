@@ -26,7 +26,8 @@ type
         andi, jr, lb, beq, mfc0,
         `and`, sll, add, bgtz, 
         blez, lbu, jalr, bltz,
-        bgez, bltzal, bgezal
+        bgez, bltzal, bgezal, 
+        slti, subu, sra
 
     InstructionPartType {.pure.}  = enum
         CpuRegister
@@ -35,6 +36,7 @@ type
         Cop0Register
         MemoryAddressIndirect
         Offset
+        ShiftAmount
 
     InstructionPartMode {.pure.}  = enum
         Source
@@ -97,6 +99,7 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     of Opcode.BGTZ  : return inst.DisasmBxxZ(cpu, bgtz)
     of Opcode.BLEZ  : return inst.DisasmBxxZ(cpu, blez)
     of Opcode.LBU   : return inst.DisasmLBU(cpu)
+    of Opcode.SLTI  : return inst.DisasmArithmeticImmediate(cpu, slti)
     of Opcode.BCONDZ: 
         case inst.rt.BCondZ:
         of BLTZ  : return inst.DisasmBxxZ(cpu, bltz)
@@ -112,9 +115,11 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
         of Function.SLTU: return inst.DisasmSpecialArithmetic(cpu, sltu)
         of Function.ADDU: return inst.DisasmSpecialArithmetic(cpu, addu)
         of Function.JR  : return inst.DisasmJR(cpu)
-        of Function.AND : return inst.DisasmSpecialArithMetic(cpu, Mnemonic.`and`)
-        of Function.ADD : return inst.DisasmSpecialArithMetic(cpu, Mnemonic.add)
+        of Function.AND : return inst.DisasmSpecialArithmetic(cpu, Mnemonic.`and`)
+        of Function.ADD : return inst.DisasmSpecialArithmetic(cpu, Mnemonic.add)
         of Function.JALR: return inst.DisasmJALR(cpu)
+        of Function.SUBU: return inst.DisasmSpecialArithmetic(cpu, subu)
+        of Function.SRA : return inst.DisasmSRA(cpu)
         else:
             NOT_IMPLEMENTED fmt"Missing disassembly for SPECIAL {inst}"
     else: 
@@ -158,6 +163,7 @@ proc `$`*(part: InstructionPart): string =
     of Cop0Register  : return GetCop0RegisterAlias(part.value)
     of MemoryAddressIndirect:
         return fmt"{part.offset:x}h({part.base_register.GetCpuRegisterAlias})"
+    of ShiftAmount   : return fmt"{cast[int32](part.value)}"
     NOT_IMPLEMENTED "Disassembly part stringify not implemented for: " & $part.kind
 
 
@@ -413,4 +419,14 @@ proc DisasmBxxZ(inst: Instruction, cpu: Cpu, mnemonic: Mnemonic): DisassembledIn
             InstructionPart(mode: Target, kind: Offset, value: (inst.imm16 shl 2).sign_extend)
         ],
         metadata: metadata
+    )
+
+proc DisasmSRA(inst: Instruction, cpu: Cpu): DisassembledInstruction =
+    return DisassembledInstruction(
+        mnemonic: sra,
+        parts: @[
+            InstructionPart(mode: Target, kind: CpuRegister, value: inst.rd),
+            InstructionPart(mode: Source, kind: CpuRegister, value: inst.rt),
+            InstructionPart(mode: Source, kind: ShiftAmount, value: inst.shamt),
+        ]
     )

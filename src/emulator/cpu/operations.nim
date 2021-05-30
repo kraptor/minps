@@ -70,6 +70,7 @@ const OPCODES = block:
     o[ord Opcode.BLEZ   ] = Op_BLEZ
     o[ord Opcode.LBU    ] = Op_LBU
     o[ord Opcode.BCONDZ ] = Op_BCONDZ
+    o[ord Opcode.SLTI   ] = Op_SLTI
     o # return the array
 
 
@@ -84,6 +85,8 @@ const FUNCTIONS = block:
     f[ord Function.AND ] = Function_AND
     f[ord Function.ADD ] = Function_ADD
     f[ord Function.JALR] = Function_JALR
+    f[ord Function.SUBU] = Function_SUBU
+    f[ord Function.SRA ] = Function_SRA
     f # return the array
 
 
@@ -221,6 +224,15 @@ proc Function_SLL(cpu: Cpu): Cycles =
     cpu.WriteRegister(rd, value)
 
 
+proc Function_SRA(cpu: Cpu): Cycles =
+    let
+        rd = cpu.inst.rd
+        rt = cpu.inst.rt
+        value = cast[int32](cpu.ReadRegister(rt)) shr cpu.inst.shamt
+
+    cpu.WriteRegister(rd, cast[uint32](value))
+
+
 proc Function_SLTU(cpu: Cpu): Cycles =
     let
         rd = cpu.inst.rd
@@ -230,6 +242,16 @@ proc Function_SLTU(cpu: Cpu): Cycles =
     let value = if rs_value < rt_value: 1'u32  else: 0'u32
     cpu.WriteRegister(rd, value)
 
+
+proc Function_SUBU(cpu: Cpu): Cycles =
+    let
+        rd = cpu.inst.rd
+        rs_value = cpu.ReadRegister(cpu.inst.rs)
+        rt_value = cpu.ReadRegister(cpu.inst.rt)
+
+    let value = rs_value - rt_value
+    cpu.WriteRegister(rd, value)
+    
 
 proc Function_ADDU(cpu: Cpu): Cycles =
     let 
@@ -416,5 +438,15 @@ proc Op_ANDI(cpu: Cpu): Cycles =
         rt = cpu.inst.rt
         rs = cpu.inst.rs
         value = cpu.ReadRegister(rs) and cpu.inst.imm16.zero_extend
+        
+    cpu.WriteRegister(rt, value)
+
+
+proc Op_SLTI(cpu: Cpu): Cycles =
+    let
+        rt = cpu.inst.rt
+        rs = cpu.inst.rs
+        test = cast[int32](cpu.ReadRegister(rs)) < cast[int32](cpu.inst.imm16.sign_extend)
+        value = if test: 0b1'u32 else: 0'u32
         
     cpu.WriteRegister(rt, value)
