@@ -20,8 +20,13 @@ logChannels ["cpu"]
 type
     CpuRegisterIndex* = 0..31
 
+    CpuDelayedRegister* = object
+        value: uint32
+        available_at_cycle: Cycles
+
     CpuStats* = object
         instruction_count*: int64
+        cycle_count: Cycles
 
     Cpu* = ref object
         regs    *: array[CpuRegisterIndex, uint32]
@@ -34,6 +39,9 @@ type
         inst_is_branch *: bool # if current instruction is a branch instruction
 
         cop0  *: Cop0
+
+        hi*: CpuDelayedRegister
+        lo*: CpuDelayedRegister
 
         stats *: CpuStats
         mmu   *: Mmu
@@ -74,6 +82,16 @@ proc WriteRegisterDebug*(self: Cpu, r: CpuRegisterIndex, v: uint32) =
     self.regs[0] = 0
 
 
+proc WriteHiRegister*(cpu: Cpu, value: uint32, cycles: uint64) =
+    cpu.hi.value = value
+    cpu.hi.available_at_cycle = cpu.stats.cycle_count + cycles
+
+
+proc WriteLoRegister*(cpu: Cpu, value: uint32, cycles: uint64) =
+    cpu.lo.value = value
+    cpu.lo.available_at_cycle = cpu.stats.cycle_count + cycles
+
+
 import operations # NOTE: import here so Cpu type is defined and ready within operations module
 
 
@@ -90,15 +108,25 @@ proc Reset*(self: Cpu) =
     self.pc = CPU_RESET_ENTRY_POINT
     self.pc_next = CPU_RESET_ENTRY_POINT
 
+    self.regs.reset()
+    self.lo.reset()
+    self.hi.reset()
+
     self.inst = nop
     self.inst_pc = CPU_RESET_ENTRY_POINT
     self.inst_is_branch = false
     self.inst_in_delay = false
 
-    self.stats.instruction_count = -1
+    self.stats.reset()
+    # we always execute a NOP instruction at the beginning
+    self.stats.instruction_count = -1 
 
     self.cop0.Reset()
     warn "Reset: CPU State not fully initialized."
+
+
+proc AddCycles(self: Cpu, cycles: Cycles) =
+    self.stats.cycle_count += cycles
 
 
 proc RunNext*(self: Cpu) =
@@ -112,13 +140,13 @@ proc RunNext*(self: Cpu) =
     # instruction after the entry point (a NOP) which
     # it doesn't hurt anyways...
 
-    discard self.Execute() # TODO: don't discard cycles
-    self.Fetch()
-
+    self.AddCycles self.Execute()
+    inc self.stats.instruction_count
+    
     self.inst_in_delay = self.inst_is_branch
     self.inst_is_branch = false
 
-    inc self.stats.instruction_count
+    self.Fetch()
 
 
 proc Fetch(self: Cpu) =
