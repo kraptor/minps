@@ -57,6 +57,17 @@ proc Reset*(self: Mmu) =
     warn "MMU Reset not fully implemented!"
 
 
+const
+    MMU_ERROR_BEFORE_ER1  = "No device found before Expansion Region 1"
+    MMU_ERROR_BEFORE_MC1  = "No device found before MemoryControl 1"
+    MMU_ERROR_BEFORE_IC   = "No device found before Interrupt Control"
+    MMU_ERROR_BEFORE_SPU  = "No device found before SPU"
+    MMU_ERROR_BEFORE_ER2  = "No device found before Expansion Region 2"
+    MMU_ERROR_BEFORE_BIOS = "No device found before BIOS"
+    # other errors
+    MMU_ERROR_BIOS_NOT_WRITABLE = "BIOS is not writable!"
+
+
 proc ReadImpl[T: uint32|uint16|uint8](self: Mmu, address: Address): T =
     block CheckKSEG2Addresses:
         # KSEG2 addresses are NOT mapped to KUSEG, so we have to test for them first
@@ -68,20 +79,20 @@ proc ReadImpl[T: uint32|uint16|uint8](self: Mmu, address: Address): T =
         trace fmt"read[{$T}] ka={ka}"
 
         if   ka <= RAM_END   : return Read[T](self.ram, ka)
-        elif ka <  ER1_START : error "No device found before Expansion Region 1"
+        elif ka <  ER1_START : error MMU_ERROR_BEFORE_ER1
         elif ka <= ER1_END   : return Read[T](self.er1, ka)
-        elif ka <  MC1_START : error "No device found before MemoryControl 1"
+        elif ka <  MC1_START : error MMU_ERROR_BEFORE_MC1
         elif ka <= MC1_END   : return Read[T](self.mc, ka)
-        elif ka <  IC_START  : error "No device found before Interrupt Control"
+        elif ka <  IC_START  : error MMU_ERROR_BEFORE_IC
         elif ka <= IC_END    : return Read[T](self.ic, ka)       
-        elif ka <  SPU_START : error "No device found before SPU"
+        elif ka <  SPU_START : error MMU_ERROR_BEFORE_SPU
         elif ka <= SPU_END   : return Read[T](self.spu, ka)
-        elif ka <  ER2_START : error "No device found before Expansion Region 2"
+        elif ka <  ER2_START : error MMU_ERROR_BEFORE_ER2
         elif ka <= ER2_END   : return Read[T](self.er2, ka)
-        elif ka <  BIOS_START: error "No device found before BIOS"
+        elif ka <  BIOS_START: error MMU_ERROR_BEFORE_BIOS
         elif ka <= BIOS_END  : return Read[T](self.bios, ka)
 
-        NOT_IMPLEMENTED fmt"MMU Read: No device found at address: {address}"
+        NOT_IMPLEMENTED "MMU Read: No device found at address: {address}"
 
 
 proc WriteImpl*[T: uint32|uint16|uint8](self: Mmu, address: Address, value: T) =
@@ -96,18 +107,18 @@ proc WriteImpl*[T: uint32|uint16|uint8](self: Mmu, address: Address, value: T) =
         trace fmt"write[{$T}] ka={ka} value={value:08x}"
 
         if   ka <= RAM_END   : Write(self.ram, ka, value); return
-        elif ka <  ER1_START : error "No device found before Expansion Region 1"
+        elif ka <  ER1_START : error MMU_ERROR_BEFORE_ER1
         elif ka <= ER1_END   : Write(self.er1, ka, value); return
-        elif ka <  MC1_START : error "No device found before MemoryControl 1"
+        elif ka <  MC1_START : error MMU_ERROR_BEFORE_MC1
         elif ka <= MC1_END   : Write(self.mc, ka, value); return
-        elif ka <  IC_START  : error "No device found before Interrupt Control"
+        elif ka <  IC_START  : error MMU_ERROR_BEFORE_IC
         elif ka <= IC_END    : Write(self.ic, ka, value); return
-        elif ka <  SPU_START : error "No device found before SPU"
+        elif ka <  SPU_START : error MMU_ERROR_BEFORE_SPU
         elif ka <= SPU_END   : Write(self.spu, ka, value); return
-        elif ka <  ER2_START : error "No device found before Expansion Region 2"
+        elif ka <  ER2_START : error MMU_ERROR_BEFORE_ER2
         elif ka <= ER2_END   : Write(self.er2, ka, value); return
-        elif ka <  BIOS_START: error "No device found before BIOS"
-        elif ka <= BIOS_END  : error "BIOS is not writable!"
+        elif ka <  BIOS_START: error MMU_ERROR_BEFORE_BIOS
+        elif ka <= BIOS_END  : error MMU_ERROR_BIOS_NOT_WRITABLE
 
         NOT_IMPLEMENTED fmt"MMU Write: No device found at address: {address}"
 
