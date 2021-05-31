@@ -44,7 +44,6 @@ type
 
     InstructionPart = object
         mode: InstructionPartMode
-        alias: string
         case kind: InstructionPartType
         of MemoryAddressIndirect:
             base_register: uint32
