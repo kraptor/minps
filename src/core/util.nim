@@ -21,3 +21,7 @@ template NOT_IMPLEMENTED*(message: string = "") =
         error NOT_IMPLEMENTED_PREFIX & message
         raise NotImplementedDefect(msg: message)
 
+
+proc divmod*(x, y: SomeSignedInt): tuple[quotent, remainder: SomeSignedInt] {.inline.} =
+    # TODO: make sure this is fused into one instruction!
+    return (x div y, x mod y)
