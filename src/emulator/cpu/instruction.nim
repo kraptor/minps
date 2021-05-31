@@ -9,6 +9,8 @@ import strformat
 
 
 type
+    Cycles* = uint64
+
     Opcode* {.pure.} =  enum
         SPECIAL = 0x00, BCONDZ = 0x01, J     = 0x02, JAL   = 0x03, 
         BEQ     = 0x04, BNE    = 0x05, BLEZ  = 0x06, BGTZ  = 0x07, 

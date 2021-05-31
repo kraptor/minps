@@ -87,6 +87,7 @@ const FUNCTIONS = block:
     f[ord Function.JALR] = Function_JALR
     f[ord Function.SUBU] = Function_SUBU
     f[ord Function.SRA ] = Function_SRA
+    f[ord Function.DIV ] = Function_DIV
     f # return the array
 
 
@@ -111,15 +112,14 @@ proc Execute*(cpu: Cpu): Cycles =
     debug fmt"Execute: {cpu.inst.DisasmAsText(cpu)}"
     logIndent:
         result = OPCODES[ord cpu.inst.opcode] cpu
-    
 
 
 proc Op_Special(cpu: Cpu): Cycles =
-    FUNCTIONS[ord cpu.inst.function] cpu
+    result = FUNCTIONS[ord cpu.inst.function] cpu
 
 
 proc Op_COP0(cpu: Cpu): Cycles = 
-    COP0_OPCODES[ord cpu.inst.rs.Cop0Opcode] cpu
+    result = COP0_OPCODES[ord cpu.inst.rs.Cop0Opcode] cpu
 
 
 proc Op_LUI(cpu: Cpu): Cycles = 
@@ -128,6 +128,7 @@ proc Op_LUI(cpu: Cpu): Cycles =
         value = cpu.inst.imm16.zero_extend shl 16
 
     cpu.WriteRegister(rt, value)
+    result = 1
     
 
 proc Op_ORI(cpu: Cpu): Cycles =
@@ -137,6 +138,7 @@ proc Op_ORI(cpu: Cpu): Cycles =
         value = cpu.ReadRegister(rs) or cpu.inst.imm16.zero_extend
 
     cpu.WriteRegister(rt, value)
+    result = 1
 
 
 proc Op_Store[T: uint8|uint16|uint32](cpu: Cpu): Cycles =
@@ -156,6 +158,7 @@ proc Op_Store[T: uint8|uint16|uint32](cpu: Cpu): Cycles =
 
     # TODO: account for write to memory cycles?
     Write[T](cpu.mmu, address, value)
+    result = 1
 
 
 proc Op_LW(cpu: Cpu): Cycles =
@@ -175,6 +178,7 @@ proc Op_LW(cpu: Cpu): Cycles =
 
     # TODO: LW data loaded into register is delayed 1 instruction
     cpu.WriteRegister(cpu.inst.rt, value)
+    result = 1
 
 
 proc Op_LB(cpu: Cpu): Cycles =
@@ -194,6 +198,7 @@ proc Op_LB(cpu: Cpu): Cycles =
 
     # TODO: LB data loaded into register is delayed 1 instruction
     cpu.WriteRegister(cpu.inst.rt, value)
+    result = 1
 
 
 proc Op_LBU(cpu: Cpu): Cycles =
@@ -213,6 +218,7 @@ proc Op_LBU(cpu: Cpu): Cycles =
 
     # TODO: LB data loaded into register is delayed 1 instruction
     cpu.WriteRegister(cpu.inst.rt, value)
+    result = 1
 
 
 proc Function_SLL(cpu: Cpu): Cycles =
@@ -222,6 +228,7 @@ proc Function_SLL(cpu: Cpu): Cycles =
         value = cpu.ReadRegister(rt) shl cpu.inst.shamt
 
     cpu.WriteRegister(rd, value)
+    result = 1
 
 
 proc Function_SRA(cpu: Cpu): Cycles =
@@ -231,6 +238,7 @@ proc Function_SRA(cpu: Cpu): Cycles =
         value = cast[int32](cpu.ReadRegister(rt)) shr cpu.inst.shamt
 
     cpu.WriteRegister(rd, cast[uint32](value))
+    result = 1
 
 
 proc Function_SLTU(cpu: Cpu): Cycles =
@@ -241,6 +249,7 @@ proc Function_SLTU(cpu: Cpu): Cycles =
             
     let value = if rs_value < rt_value: 1'u32  else: 0'u32
     cpu.WriteRegister(rd, value)
+    result = 1
 
 
 proc Function_SUBU(cpu: Cpu): Cycles =
@@ -251,6 +260,7 @@ proc Function_SUBU(cpu: Cpu): Cycles =
 
     let value = rs_value - rt_value
     cpu.WriteRegister(rd, value)
+    result = 1
     
 
 proc Function_ADDU(cpu: Cpu): Cycles =
@@ -261,6 +271,7 @@ proc Function_ADDU(cpu: Cpu): Cycles =
 
     let value = rs_value + rt_value
     cpu.WriteRegister(rd, value)
+    result = 1
 
 
 proc Op_ADDIU(cpu: Cpu): Cycles =
@@ -270,17 +281,20 @@ proc Op_ADDIU(cpu: Cpu): Cycles =
 
     let value = cpu.ReadRegister(rs) + cpu.inst.imm16.sign_extend
     cpu.WriteRegister(rt, value)
+    result = 1
 
 
 proc Op_J(cpu: Cpu): Cycles =
     let target = (cpu.inst.target shl 2) or (0xF000_0000'u32 and cpu.pc + 4)
     cpu.BranchWithDelaySlotTo(cast[Address](target))
+    result = 1
 
 
 proc Op_JAL(cpu: Cpu): Cycles =
     let target = (cpu.inst.target shl 2) or (0xF000_0000'u32 and cpu.pc + 4)
     cpu.BranchWithDelaySlotTo(cast[Address](target))
     cpu.WriteRegister(31, cpu.inst_pc + 8)
+    result = 1
 
 
 proc Function_JALR(cpu: Cpu): Cycles =
@@ -294,6 +308,7 @@ proc Function_JALR(cpu: Cpu): Cycles =
 
     cpu.BranchWithDelaySlotTo(cast[Address](target))
     cpu.WriteRegister(cpu.inst.rd, cpu.inst_pc + 8)
+    result = 1
 
 
 proc Op_BCONDZ(cpu: Cpu): Cycles =
@@ -313,6 +328,8 @@ proc Op_BCONDZ(cpu: Cpu): Cycles =
         if is_link:
             cpu.WriteRegister(31, cpu.inst_pc + 8)
 
+    result = 1
+
 
 proc Function_JR(cpu: Cpu): Cycles =
     let target = cpu.ReadRegister(cpu.inst.rs)
@@ -321,6 +338,7 @@ proc Function_JR(cpu: Cpu): Cycles =
         NOT_IMPLEMENTED "JR: raise Address Error Exception"
 
     cpu.BranchWithDelaySlotTo(cast[Address](target))
+    result = 1
 
 
 proc Function_OR(cpu: Cpu): Cycles = 
@@ -331,6 +349,7 @@ proc Function_OR(cpu: Cpu): Cycles =
         value = cpu.ReadRegister(rs) or cpu.ReadRegister(rt)
 
     cpu.WriteRegister(rd, value)
+    result = 1
 
 
 proc Function_AND(cpu: Cpu): Cycles =
@@ -341,6 +360,7 @@ proc Function_AND(cpu: Cpu): Cycles =
         value = cpu.ReadRegister(rs) and cpu.ReadRegister(rt)
 
     cpu.WriteRegister(rd, value)
+    result = 1
 
 
 proc Op_MTC0(cpu: Cpu): Cycles =
@@ -350,6 +370,7 @@ proc Op_MTC0(cpu: Cpu): Cycles =
         value = cpu.ReadRegister(rt)
 
     cpu.cop0.WriteRegister(rd, value)
+    result = 1
 
 
 proc Op_MFC0(cpu: Cpu): Cycles =
@@ -360,6 +381,7 @@ proc Op_MFC0(cpu: Cpu): Cycles =
 
     # TODO: implement LOAD DELAY
     cpu.WriteRegister(rt, value)
+    result = 1
 
 
 proc Op_BNE(cpu: Cpu): Cycles =
@@ -373,6 +395,8 @@ proc Op_BNE(cpu: Cpu): Cycles =
             address = cpu.pc + offset
         cpu.BranchWithDelaySlotTo(address)
 
+    result = 1
+
 
 proc Op_BEQ(cpu: Cpu): Cycles =
     let
@@ -385,6 +409,8 @@ proc Op_BEQ(cpu: Cpu): Cycles =
             address = cpu.pc + offset
         cpu.BranchWithDelaySlotTo(address)
 
+    result = 1
+
 
 proc Op_BGTZ(cpu: Cpu): Cycles =
     let
@@ -395,6 +421,8 @@ proc Op_BGTZ(cpu: Cpu): Cycles =
             offset = (cpu.inst.imm16 shl 2).sign_extend
             address = cpu.pc + offset
         cpu.BranchWithDelaySlotTo(address)
+
+    result = 1
 
 
 proc Op_BLEZ(cpu: Cpu): Cycles =
@@ -407,6 +435,8 @@ proc Op_BLEZ(cpu: Cpu): Cycles =
             address = cpu.pc + offset
         cpu.BranchWithDelaySlotTo(address)
 
+    result = 1
+
 
 proc Op_ADDI(cpu: Cpu): Cycles =
     let
@@ -418,6 +448,8 @@ proc Op_ADDI(cpu: Cpu): Cycles =
         cpu.WriteRegister(rt, cast[uint32](value))
     except:
         NOT_IMPLEMENTED "Arithmetic ADDI Exception not handled."
+
+    result = 1
 
 
 proc Function_ADD(cpu: Cpu): Cycles =
@@ -432,6 +464,8 @@ proc Function_ADD(cpu: Cpu): Cycles =
     except:
         NOT_IMPLEMENTED "Arithmetic ADD Exception not handled."
 
+    result = 1
+
 
 proc Op_ANDI(cpu: Cpu): Cycles =
     let
@@ -440,6 +474,7 @@ proc Op_ANDI(cpu: Cpu): Cycles =
         value = cpu.ReadRegister(rs) and cpu.inst.imm16.zero_extend
         
     cpu.WriteRegister(rt, value)
+    result = 1
 
 
 proc Op_SLTI(cpu: Cpu): Cycles =
@@ -450,3 +485,17 @@ proc Op_SLTI(cpu: Cpu): Cycles =
         value = if test: 0b1'u32 else: 0'u32
         
     cpu.WriteRegister(rt, value)
+    result = 1
+
+
+proc Function_DIV(cpu: Cpu): Cycles =
+    let 
+        rs = cpu.inst.rs
+        rt = cpu.inst.rt
+        rs_value = cast[int32](cpu.ReadRegister(rs))
+        rt_value = cast[int32](cpu.ReadRegister(rt))
+        (quotent, remainder) = divmod(rs_value, rt_value)
+
+    cpu.WriteHiRegister(cast[uint32](quotent), 36'u32)
+    cpu.WriteLoRegister(cast[uint32](remainder), 36'u32)
+    result = 1
