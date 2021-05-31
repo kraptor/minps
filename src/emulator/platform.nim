@@ -57,6 +57,5 @@ proc RunFor*(self: Platform, number_of_instructions: int64) =
 
 
 proc RunProgram*(self: Platform, program: Program) =
-    self.Reset()
     self.mmu.bios = Bios.FromProgram(program)
     self.RunFor(program.len)    
