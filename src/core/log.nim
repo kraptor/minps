@@ -6,6 +6,7 @@
 {.experimental: "codeReordering".}
 
 import times
+import locks
 import macros
 import terminal
 import strutils
@@ -23,14 +24,11 @@ const
 
 var
     logfile_handle = stdout
-    stream {.threadvar.} : OutputStream
     current_indentation = 0
 
-import locks
-
-
-var
+    stream {.threadvar.} : OutputStream
     stream_lock: Lock
+
 
 stream = fileOutput(logfile_handle)
 stream_lock.initLock()
@@ -186,6 +184,9 @@ template logIndent*(body) =
 
 
 proc logFile*(filename: string = ":stdout") =
+    if loglevel_channels == "":
+        return
+
     stream_lock.acquire()
     
     block:
@@ -214,6 +215,9 @@ logChannels [""]
 
 
 proc logFinalize* =
+    if loglevel_channels == "":
+        return
+    
     stream_lock.acquire()
     if stream != nil:
         stream.flush()
