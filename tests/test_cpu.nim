@@ -95,7 +95,7 @@ suite "Instruction execution correctness":
         cpu.stats.cycle_count = 2
 
     test "SLL":
-        cpu.WriteRegister(11, 0b1)
+        cpu.WriteRegisterDebug(11, 0b1)
         p.RunProgram(@[
             SLL(10, 11, 1),
             SLL(11, 11, 2),
@@ -125,7 +125,7 @@ suite "Instruction execution correctness":
         
 
     test "OR":
-        cpu.WriteRegister(11, 1)
+        cpu.WriteRegisterDebug(11, 1)
         
         p.RunProgram(@[
             OR(10, 10, 11),
@@ -142,7 +142,7 @@ suite "Instruction execution correctness":
 
 
     test "MTC0":
-        cpu.WriteRegister(1, 100)
+        cpu.WriteRegisterDebug(1, 100)
 
         p.RunProgram(@[
             MTC0(1, SR)
@@ -150,3 +150,6 @@ suite "Instruction execution correctness":
 
         check cpu.cop0.ReadRegisterDebug(SR) == 100
         assert cpu.stats.cycle_count == 1
+
+
+    
