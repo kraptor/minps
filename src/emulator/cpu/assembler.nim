@@ -34,36 +34,29 @@ proc JType(opcode: Opcode, target_26: uint32): Instruction =
     result.J.opcode = opcode
     result.J.target = target_26
 
-
-proc LUI*(target: CpuRegisterIndex, imm: uint16): Instruction = 
-    IType(Opcode.LUI, target, 0, imm)
-
-
-proc ORI*(target, source: CpuRegisterIndex, imm: uint16): Instruction =
-    IType(Opcode.ORI, target, source, imm)
+proc Bxx(opcode: Opcode, a, b: CpuRegisterIndex, offset: int16): Instruction =
+    IType(opcode, a, b, cast[uint16](offset) shr 2)
 
 
-proc SLL*(target, source: CpuRegisterIndex, amount: 0..0b11111): Instruction =
-    RType(Function.SLL, 0, source, target, amount)
+proc LUI  *(target        : CpuRegisterIndex,  value: uint16): Instruction = IType(Opcode.LUI  , target,      0, value)
+proc ORI  *(target, source: CpuRegisterIndex,  value: uint16): Instruction = IType(Opcode.ORI  , target, source, value)
+proc ADDIU*(target, source: CpuRegisterIndex,  value: uint16): Instruction = IType(Opcode.ADDIU, target, source, value)
+proc SW   *(source,   base: CpuRegisterIndex, offset:  int16): Instruction = IType(Opcode.SW   , source,   base, cast[uint16](offset))
+proc BEQ*  (a, b: CpuRegisterIndex, offset:  int16): Instruction = Bxx(Opcode.BEQ , a, b, offset)
+proc BNE*  (a, b: CpuRegisterIndex, offset:  int16): Instruction = Bxx(Opcode.BNE , a, b, offset)
+proc BLEZ* (a   : CpuRegisterIndex, offset:  int16): Instruction = Bxx(Opcode.BLEZ, a, 0, offset)
+proc BGTZ* (a   : CpuRegisterIndex, offset:  int16): Instruction = Bxx(Opcode.BGTZ, a, 0, offset)
+
+proc SLL*(target, source: CpuRegisterIndex, amount: 0..0b11111): Instruction = RType(Function.SLL, 0, source, target, amount)
+proc OR *(target, a, b: CpuRegisterIndex): Instruction = RType(Function.OR, a, b, target, 0)
+
+proc J*(target: uint32) : Instruction = JType(Opcode.J, target shr 2)
 
 
-proc ADDIU*(target, source, imm: uint16): Instruction =
-    IType(Opcode.ADDIU, target, source, imm)
-
-
-proc OR*(target, source_a, source_b: CpuRegisterIndex): Instruction =
-    RType(Function.OR, source_a, source_b, target, 0)
-
-
-proc SW*(source, base: CpuRegisterIndex, offset: uint16) : Instruction =
-    IType(Opcode.SW, source, base, offset)
-
-proc J*(target: uint32) : Instruction =
-    JType(Opcode.J, target shr 2)
-    
 proc MTC0*(source: CpuRegisterIndex, target: Cop0RegisterName): Instruction =
     result.R.opcode = Opcode.COP0
     result.R.rs = Cop0Opcode.MTC.ord
     result.R.rt = cast[uint8](source)
     result.R.rd = cast[uint8](target)
-    
+
+
