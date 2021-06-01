@@ -299,6 +299,37 @@ suite "Instruction execution correctness":
             cpu.stats.cycle_count == 3
             cpu.stats.instruction_count == 3
 
+    test "JR":
+        let start = cpu.pc
+
+        cpu.WriteRegisterDebug(20, start + 12)
+
+        p.RunProgramToPc(@[
+            JR(20),     # start    --+ 
+            ADDIU( 1, 0, 100), # start+4    | : executed (DS)
+            ADDIU(10, 0, 100), # start+8    | : not executed
+            ADDIU(11, 0, 100), # start+12 <-+ : executed
+        ],
+            start + 16
+        )
+
+        check:
+            cpu.ReadRegisterDebug( 1) == 100
+            cpu.ReadRegisterDebug(10) == 0
+            cpu.ReadRegisterDebug(11) == 100
+            cpu.stats.cycle_count == 3
+            cpu.stats.instruction_count == 3
+
+    test "JR - unaligned address":
+        let start = cpu.pc
+
+        cpu.WriteRegisterDebug(20, start + 1)
+
+        expect NotImplementedDefect:
+            p.RunProgram(@[
+                JR(20),
+            ])        
+
     test "JAL":
         let start = cpu.pc
 
