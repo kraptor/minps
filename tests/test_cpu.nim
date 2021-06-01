@@ -7,6 +7,7 @@ import unittest
 import strformat
 
 import core/log
+import core/util
 import emulator/cpu/cpu
 import emulator/platform
 import emulator/cpu/instruction
@@ -74,6 +75,36 @@ suite "Instruction execution correctness":
         ])
         check ReadDebug[uint32](cpu.mmu, 0.Address) == 0xFFFF_FFFF'u32
         check cpu.stats.instruction_count == 1
+        check cpu.stats.cycle_count == 1
+
+    test "SW - unaligned store":
+        expect NotImplementedDefect:
+            p.RunProgram(@[
+                SW(10, 0, 0b01)
+            ])
+
+    test "LW":
+        cpu.mmu.WriteDebug( 0.Address, 0xDEADBEEF'u32)
+        cpu.mmu.WriteDebug(16.Address, 0xAABBCCDD'u32)
+        cpu.WriteRegisterDebug(1, 16)
+        
+        p.RunProgram(@[
+            LW(10, 0,  0), # read at 0x0
+            LW(11, 0, 16), # read at 0x0 + 10
+            LW(12, 1,  0), # read at  16 +  0
+        ])
+        
+        check cpu.ReadRegisterDebug(10) == 0xDEADBEEF'u32
+        check cpu.ReadRegisterDebug(11) == 0xAABBCCDD'u32
+        check cpu.ReadRegisterDebug(12) == 0xAABBCCDD'u32
+        check cpu.stats.instruction_count == 3
+        check cpu.stats.cycle_count == 3
+
+    test "LW - unaligned load":
+        expect NotImplementedDefect:
+            p.RunProgram(@[
+                LW(10, 0, 0b01)
+            ])
 
     test "NOP":
         p.RunProgram(@[
@@ -93,6 +124,34 @@ suite "Instruction execution correctness":
         check cpu.ReadRegisterDebug(10) == 1
         check cpu.ReadRegisterDebug(20) == 0
         cpu.stats.cycle_count = 2
+
+    test "ADDI":
+        p.RunProgram(@[
+            ADDI( 1, 0, -1), # 0 + (-1) = -1
+            ADDI( 2, 0,  1), # 0 + 1 = 1
+        ])
+
+        check cast[int32](cpu.ReadRegisterDebug(1)) == -1
+        check cast[int32](cpu.ReadRegisterDebug(2)) == 1
+        cpu.stats.cycle_count = 2
+
+    test "ADDI - overflow":
+        cpu.WriteRegisterDebug(10, cast[uint32](int32.high))
+        
+        # TODO: once implemented check for CPU exception, etc.
+        expect NotImplementedDefect:
+            p.RunProgram(@[
+                ADDI( 1, 10, 1), # high + 1 = overflow exception
+            ])
+
+    test "ADDI - underflow":
+        cpu.WriteRegisterDebug(10, cast[uint32](int32.low))
+        
+        # TODO: once implemented check for CPU exception, etc.
+        expect NotImplementedDefect:
+            p.RunProgram(@[
+                ADDI( 1, 10, -1), # high + 1 = overflow exception
+            ])
 
     test "SLL":
         cpu.WriteRegisterDebug(11, 0b1)
@@ -122,7 +181,6 @@ suite "Instruction execution correctness":
         check cpu.ReadRegisterDebug(11) == 100
         check cpu.stats.cycle_count == 3
         check cpu.stats.instruction_count == 3
-        
 
     test "OR":
         cpu.WriteRegisterDebug(11, 1)
@@ -140,7 +198,6 @@ suite "Instruction execution correctness":
         check cpu.ReadRegisterDebug(13) == 1
         check cpu.stats.cycle_count == 4
 
-
     test "MTC0":
         cpu.WriteRegisterDebug(1, 100)
 
@@ -150,7 +207,6 @@ suite "Instruction execution correctness":
 
         check cpu.cop0.ReadRegisterDebug(SR) == 100
         assert cpu.stats.cycle_count == 1
-
 
     test "BNE":
         let start = cpu.pc
