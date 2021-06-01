@@ -51,8 +51,8 @@ proc LB   *(target,   base: CpuRegisterIndex, offset:  int16): Instruction = ITy
 proc ADDI* (target, source: CpuRegisterIndex,  value:  int16): Instruction = IType(Opcode.ADDI , target, source, cast[uint16](value))
 proc BEQ*  (a, b: CpuRegisterIndex, offset:  int16): Instruction = Bxx(Opcode.BEQ , a, b, offset)
 proc BNE*  (a, b: CpuRegisterIndex, offset:  int16): Instruction = Bxx(Opcode.BNE , a, b, offset)
-proc BLEZ* (a   : CpuRegisterIndex, offset:  int16): Instruction = Bxx(Opcode.BLEZ, a, 0, offset)
-proc BGTZ* (a   : CpuRegisterIndex, offset:  int16): Instruction = Bxx(Opcode.BGTZ, a, 0, offset)
+proc BLEZ* (a   : CpuRegisterIndex, offset:  int16): Instruction = Bxx(Opcode.BLEZ, 0, a, offset)
+proc BGTZ* (a   : CpuRegisterIndex, offset:  int16): Instruction = Bxx(Opcode.BGTZ, 0, a, offset)
 
 proc SLL *(target, source: CpuRegisterIndex, amount: 0..0b11111): Instruction = RType(Function.SLL, 0, source, target, amount)
 proc OR  *(target, a, b: CpuRegisterIndex): Instruction = RType(Function.OR  , a, b, target, 0)
