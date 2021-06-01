@@ -148,45 +148,51 @@ suite "Instruction execution correctness":
                 LW(10, 0, 0b01)
             ])
 
-    # test "LH":
-    #     cpu.mmu.WriteDebug( 0.Address, 0xDEADBEEF'u32)
-    #     cpu.mmu.WriteDebug( 4.Address, 0xAABBCCDD'u32)
-    #     cpu.WriteRegisterDebug(1, 16)
-        
-    #     p.RunProgram(@[
-    #         LH(10, 0, 0), # read at 0x0
-    #         LH(11, 0, 6), # read at 0x0 + 6
-    #     ])
-        
-    #     check:
-    #         cpu.ReadRegisterDebug(10) == 0xBEEF'u32
-    #         cpu.ReadRegisterDebug(11) == 0xAABB'u32
-    #         cpu.stats.instruction_count == 2
-    #         cpu.stats.cycle_count == 2
+    test "LH":
+        skip()
 
-    # test "LH - unaligned load":
-    #     expect NotImplementedDefect:
-    #         p.RunProgram(@[
-    #             LH(10, 0, 0b01)
-    #         ])
+        # cpu.mmu.WriteDebug( 0.Address, 0xDEADBEEF'u32)
+        # cpu.mmu.WriteDebug( 4.Address, 0xAABBCCDD'u32)
+        # cpu.WriteRegisterDebug(1, 16)
+        
+        # p.RunProgram(@[
+        #     LH(10, 0, 0), # read at 0x0
+        #     LH(11, 0, 6), # read at 0x0 + 6
+        # ])
+        
+        # check:
+        #     cpu.ReadRegisterDebug(10) == 0xBEEF'u32
+        #     cpu.ReadRegisterDebug(11) == 0xAABB'u32
+        #     cpu.stats.instruction_count == 2
+        #     cpu.stats.cycle_count == 2
 
-    # test "LB":
-    #     cpu.mmu.WriteDebug( 0.Address, 0xDEADBEEF'u32)
-    #     cpu.mmu.WriteDebug( 4.Address, 0xAABBCCDD'u32)
-    #     cpu.WriteRegisterDebug(1, 16)
+    test "LH - unaligned load":
+        skip()
+
+        # expect NotImplementedDefect:
+        #     p.RunProgram(@[
+        #         LH(10, 0, 0b01)
+        #     ])
+
+    test "LB":
+        skip()
         
-    #     p.RunProgram(@[
-    #         LB(10, 0, 0), # read at 0x0
-    #         LB(11, 0, 6), # read at 0x0 + 6
-    #         LB(12, 0, 7), # read at 0x0 + 6
-    #     ])
+        # cpu.mmu.WriteDebug( 0.Address, 0xDEADBEEF'u32)
+        # cpu.mmu.WriteDebug( 4.Address, 0xAABBCCDD'u32)
+        # cpu.WriteRegisterDebug(1, 16)
         
-    #     check:
-    #         cpu.ReadRegisterDebug(10) == 0xEF'u32
-    #         cpu.ReadRegisterDebug(11) == 0xBB'u32
-    #         cpu.ReadRegisterDebug(12) == 0xAA'u32
-    #         cpu.stats.instruction_count == 3
-    #         cpu.stats.cycle_count == 3
+        # p.RunProgram(@[
+        #     LB(10, 0, 0), # read at 0x0
+        #     LB(11, 0, 6), # read at 0x0 + 6
+        #     LB(12, 0, 7), # read at 0x0 + 6
+        # ])
+        
+        # check:
+        #     cpu.ReadRegisterDebug(10) == 0xEF'u32
+        #     cpu.ReadRegisterDebug(11) == 0xBB'u32
+        #     cpu.ReadRegisterDebug(12) == 0xAA'u32
+        #     cpu.stats.instruction_count == 3
+        #     cpu.stats.cycle_count == 3
 
     test "NOP":
         p.RunProgram(@[
