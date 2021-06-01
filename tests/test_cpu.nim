@@ -240,7 +240,40 @@ suite "Instruction execution correctness":
         # TODO: once implemented check for CPU exception, etc.
         expect NotImplementedDefect:
             p.RunProgram(@[
-                ADDI( 1, 10, -1), # high + 1 = overflow exception
+                ADDI( 1, 10, -1), # low - 1 = underflow exception
+            ])
+
+    test "ADD":
+        cpu.WriteRegisterDebug(10, cast[uint32](-1))
+        cpu.WriteRegisterDebug(11, 1)
+        p.RunProgram(@[
+            ADD(1, 0, 10), # 0 + (-1) = -1
+            ADD(2, 0, 11), # 0 + 1 = 1
+        ])
+
+        check:
+            cast[int32](cpu.ReadRegisterDebug(1)) == -1
+            cast[int32](cpu.ReadRegisterDebug(2)) == 1
+            cpu.stats.cycle_count == 2
+
+    test "ADD - overflow":
+        cpu.WriteRegisterDebug(10, cast[uint32](int32.high))
+        cpu.WriteRegisterDebug(11, 1)
+        
+        # TODO: once implemented check for CPU exception, etc.
+        expect NotImplementedDefect:
+            p.RunProgram(@[
+                ADD(1, 10, 11), # high + 1 = overflow exception
+            ])
+
+    test "ADD - underflow":
+        cpu.WriteRegisterDebug(10, cast[uint32](int32.low))
+        cpu.WriteRegisterDebug(11, cast[uint32](-1))
+        
+        # TODO: once implemented check for CPU exception, etc.
+        expect NotImplementedDefect:
+            p.RunProgram(@[
+                ADD( 1, 10, 11), # low - 1 = underflow exception
             ])
 
     test "ADDU":
@@ -260,7 +293,7 @@ suite "Instruction execution correctness":
 
     test "ANDI":
         cpu.WriteRegisterDebug(1, 0b01)
-        # cpu.WriteRegisterDebug(2, 0b10)
+        
         p.RunProgram(@[
             ANDI(10, 1, 0b01),
             ANDI(11, 0, 0b00),
@@ -276,7 +309,7 @@ suite "Instruction execution correctness":
     test "AND":
         cpu.WriteRegisterDebug(1, 0b101)
         cpu.WriteRegisterDebug(2, 0b010)
-        # cpu.WriteRegisterDebug(2, 0b10)
+        
         p.RunProgram(@[
             AND(10, 1, 1),
             AND(11, 0, 0),
