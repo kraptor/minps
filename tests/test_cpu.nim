@@ -163,6 +163,22 @@ suite "Instruction execution correctness":
                 ADDI( 1, 10, -1), # high + 1 = overflow exception
             ])
 
+    test "ADDU":
+        cpu.WriteRegisterDebug(10, 10)
+        cpu.WriteRegisterDebug(11, 0xFFFF_FFFF'u32)
+
+        p.RunProgram(@[
+            ADDU(1, 10,  0), # $2 = 10
+            ADDU(2, 10, 10), # $2 = 20
+            ADDU(3, 10, 11), # $2 = 9 -- overflow
+        ])
+
+        check:
+            cpu.ReadRegisterDebug(1) == 10
+            cpu.ReadRegisterDebug(2) == 20
+            cpu.ReadRegisterDebug(3) == 9
+
+
     test "SLL":
         cpu.WriteRegisterDebug(11, 0b1)
         p.RunProgram(@[
@@ -261,4 +277,3 @@ suite "Instruction execution correctness":
             cpu.ReadRegisterDebug(12) == 0
             cpu.ReadRegisterDebug(13) == 1
 
-    
