@@ -88,6 +88,42 @@ suite "Instruction execution correctness":
                 SW(10, 0, 0b01)
             ])
 
+    test "SH":
+        cpu.WriteRegisterDebug(10, 0xFFFF_FFFF'u32)
+
+        p.RunProgram(@[
+            SH(10, 0, 0), # aligned % 4 - 32bits
+            SH(10, 0, 6)  # aligned % 2 - 16bits
+        ])
+
+        check:
+            ReadDebug[uint32](cpu.mmu, 0.Address) == 0xFFFF'u32
+            ReadDebug[uint16](cpu.mmu, 6.Address) == 0xFFFF'u16
+            cpu.stats.instruction_count == 2
+            cpu.stats.cycle_count == 2
+
+    test "SH - unaligned store":
+        expect NotImplementedDefect:
+            p.RunProgram(@[
+                SH(10, 0, 0b01)
+            ])
+
+    test "SB":
+        cpu.WriteRegisterDebug(10, 0xFFFF_FFFF'u32)
+
+        p.RunProgram(@[
+            SB(10, 0, 0), # aligned % 4 - 32bits
+            SB(10, 0, 6), # aligned % 2 - 16bits
+            SB(10, 0, 9), # aligned % 1 - 16bits
+        ])
+
+        check:
+            ReadDebug[uint8](cpu.mmu, 0.Address) == 0xFF'u32
+            ReadDebug[uint8](cpu.mmu, 6.Address) == 0xFF'u16
+            ReadDebug[uint8](cpu.mmu, 9.Address) == 0xFF'u16
+            cpu.stats.instruction_count == 3
+            cpu.stats.cycle_count == 3
+
     test "LW":
         cpu.mmu.WriteDebug( 0.Address, 0xDEADBEEF'u32)
         cpu.mmu.WriteDebug(16.Address, 0xAABBCCDD'u32)
@@ -111,6 +147,46 @@ suite "Instruction execution correctness":
             p.RunProgram(@[
                 LW(10, 0, 0b01)
             ])
+
+    # test "LH":
+    #     cpu.mmu.WriteDebug( 0.Address, 0xDEADBEEF'u32)
+    #     cpu.mmu.WriteDebug( 4.Address, 0xAABBCCDD'u32)
+    #     cpu.WriteRegisterDebug(1, 16)
+        
+    #     p.RunProgram(@[
+    #         LH(10, 0, 0), # read at 0x0
+    #         LH(11, 0, 6), # read at 0x0 + 6
+    #     ])
+        
+    #     check:
+    #         cpu.ReadRegisterDebug(10) == 0xBEEF'u32
+    #         cpu.ReadRegisterDebug(11) == 0xAABB'u32
+    #         cpu.stats.instruction_count == 2
+    #         cpu.stats.cycle_count == 2
+
+    # test "LH - unaligned load":
+    #     expect NotImplementedDefect:
+    #         p.RunProgram(@[
+    #             LH(10, 0, 0b01)
+    #         ])
+
+    # test "LB":
+    #     cpu.mmu.WriteDebug( 0.Address, 0xDEADBEEF'u32)
+    #     cpu.mmu.WriteDebug( 4.Address, 0xAABBCCDD'u32)
+    #     cpu.WriteRegisterDebug(1, 16)
+        
+    #     p.RunProgram(@[
+    #         LB(10, 0, 0), # read at 0x0
+    #         LB(11, 0, 6), # read at 0x0 + 6
+    #         LB(12, 0, 7), # read at 0x0 + 6
+    #     ])
+        
+    #     check:
+    #         cpu.ReadRegisterDebug(10) == 0xEF'u32
+    #         cpu.ReadRegisterDebug(11) == 0xBB'u32
+    #         cpu.ReadRegisterDebug(12) == 0xAA'u32
+    #         cpu.stats.instruction_count == 3
+    #         cpu.stats.cycle_count == 3
 
     test "NOP":
         p.RunProgram(@[
