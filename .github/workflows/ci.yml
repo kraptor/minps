@@ -38,4 +38,4 @@ jobs:
         if: runner.os == 'Windows'
         run: dir bin
       - name: Run all tests
-        run: nimble test
+        run: nimble --silent test
