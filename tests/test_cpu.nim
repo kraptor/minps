@@ -152,4 +152,21 @@ suite "Instruction execution correctness":
         assert cpu.stats.cycle_count == 1
 
 
-    
+    test "BNE":
+        let start = cpu.pc
+        cpu.WriteRegisterDebug(1, 100)
+
+        p.RunProgramToPc(@[
+            BNE(   0, 1,  +8), # start    --+ : pc at ds + 8 = 12
+            ADDIU( 1, 0, 100), # start+4    | : executed (DS)
+            ADDIU(10, 0, 100), # start+8    | : not executed
+            ADDIU(11, 0, 100), # start+12 <-+ : executed
+        ],
+            start + 16
+        )
+
+        check cpu.ReadRegisterDebug( 1) == 100
+        check cpu.ReadRegisterDebug(10) == 0
+        check cpu.ReadRegisterDebug(11) == 100
+        check cpu.stats.cycle_count == 3
+        check cpu.stats.instruction_count == 3
