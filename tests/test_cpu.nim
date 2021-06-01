@@ -4,6 +4,7 @@
 # https://opensource.org/licenses/MIT
 
 import unittest
+import strformat
 
 import core/log
 import emulator/cpu/cpu
@@ -12,6 +13,8 @@ import emulator/cpu/instruction
 import emulator/cpu/assembler
 import emulator/cpu/cop0
 
+import emulator/mmu
+import emulator/address
 
 logChannels ["testing"]
 
@@ -51,12 +54,9 @@ suite "Instruction execution correctness":
         check cpu.stats.instruction_count == program.len
         check cpu.ReadRegisterDebug(10) == 0xF0000'u32
         check cpu.ReadRegisterDebug(11) == 0xFFFF0000'u32
-
+        check cpu.stats.cycle_count == 2
 
     test "ORI":
-        check cpu.ReadRegisterDebug(10) == 0
-        check cpu.ReadRegisterDebug(11) == 0
-                
         cpu.WriteRegisterDebug(21, 1'u32)
         p.RunProgram(@[
             ORI(10, 11, 0xF),
@@ -65,23 +65,25 @@ suite "Instruction execution correctness":
 
         check cpu.ReadRegisterDebug(10) == 0xF
         check cpu.ReadRegisterDebug(20) == 1
+        check cpu.stats.cycle_count == 2
 
-    test "SLL":
-        check cpu.ReadRegisterDebug(10) == 0
-        check cpu.ReadRegisterDebug(11) == 0
-
-        cpu.WriteRegister(11, 0b1)
+    test "SW":
+        cpu.WriteRegisterDebug(10, 0xFFFF_FFFF'u32)
         p.RunProgram(@[
-            SLL(10, 11, 1),
-            SLL(11, 11, 2),
+            SW(10, 0, 0) 
         ])
+        check ReadDebug[uint32](cpu.mmu, 0.Address) == 0xFFFF_FFFF'u32
+        check cpu.stats.instruction_count == 1
 
-        check cpu.ReadRegisterDebug(10) == 0b10
-        check cpu.ReadRegisterDebug(11) == 0b100
+    test "NOP":
+        p.RunProgram(@[
+            NOP
+        ])
+        check cpu.stats.cycle_count == 1
 
     test "ADDIU":
-        cpu.WriteRegister(11, 1)
-        cpu.WriteRegister(21, 0xFFFF_FFFF'u32)
+        cpu.WriteRegisterDebug(11, 1)
+        cpu.WriteRegisterDebug(21, 0xFFFF_FFFF'u32)
 
         p.RunProgram(@[
             ADDIU(10, 11, 0),
@@ -90,15 +92,47 @@ suite "Instruction execution correctness":
 
         check cpu.ReadRegisterDebug(10) == 1
         check cpu.ReadRegisterDebug(20) == 0
+        cpu.stats.cycle_count = 2
 
+    test "SLL":
+        cpu.WriteRegister(11, 0b1)
+        p.RunProgram(@[
+            SLL(10, 11, 1),
+            SLL(11, 11, 2),
+        ])
+
+        check cpu.ReadRegisterDebug(10) == 0b10
+        check cpu.ReadRegisterDebug(11) == 0b100
+        check cpu.stats.cycle_count == 2
+
+    test "J":
+        let start = cpu.pc
+
+        p.RunProgramToPc(@[
+            # <---- start is pointing here
+            J(start + 12),     # start    --+  :
+            ADDIU( 1, 0, 100), # start+4    | : executed (DS)
+            ADDIU(10, 0, 100), # start+8    | : not executed
+            ADDIU(11, 0, 100), # start+12 <-+ : executed
+        ],
+            start + 16
+        )
+
+        check cpu.ReadRegisterDebug( 1) == 100
+        check cpu.ReadRegisterDebug(10) == 0
+        check cpu.ReadRegisterDebug(11) == 100
+        check cpu.stats.cycle_count == 3
+        check cpu.stats.instruction_count == 3
+
+        
 
     test "OR":
         cpu.WriteRegister(11, 1)
         
         p.RunProgram(@[
             OR(10, 10, 11),
-            OR(11, 11, 0),
-            OR(12, 0, 0),
+            OR(11, 11,  0),
+            OR(12,  0,  0),
             OR(13, 11, 11),
         ])
 
@@ -106,4 +140,7 @@ suite "Instruction execution correctness":
         check cpu.ReadRegisterDebug(11) == 1
         check cpu.ReadRegisterDebug(12) == 0
         check cpu.ReadRegisterDebug(13) == 1
+        check cpu.stats.cycle_count == 4
+
+
 
