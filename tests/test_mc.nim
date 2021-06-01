@@ -11,12 +11,14 @@ import emulator/mc
 suite "Test MemoryControl 1 types":
 
     test "Union sizes":
-        check sizeof(DelaySizeRegister) == sizeof(uint32)
-        check sizeof(DelaySizeRegisterParts) == sizeof(uint32)
-        check sizeof(RamSizeRegisterParts) == sizeof(uint32)
-        check sizeof(ComDelayRegisterParts) == sizeof(uint32)
+        check:
+            sizeof(DelaySizeRegister) == sizeof(uint32)
+            sizeof(DelaySizeRegisterParts) == sizeof(uint32)
+            sizeof(RamSizeRegisterParts) == sizeof(uint32)
+            sizeof(ComDelayRegisterParts) == sizeof(uint32)
 
 suite "Test MemoryControl 3 types":
     test "Union sizes":
-        check sizeof(CacheControlRegisterParts) == sizeof(uint32)
-        check sizeof(CacheControlRegister) == sizeof(uint32)
+        check:
+            sizeof(CacheControlRegisterParts) == sizeof(uint32)
+            sizeof(CacheControlRegister) == sizeof(uint32)

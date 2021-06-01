@@ -8,4 +8,5 @@ import core/version
 
 suite "version":
     test "version value":
-        check version.Version == "devel"
+        check:
+            version.Version == "devel"
