@@ -184,13 +184,17 @@ proc ReadRegisterDebug*(self: var Cop0, r: Cop0RegisterIndex): uint32 =
     case r.Cop0RegisterName:
     of r0, r1, r2, r4, r10:
         # TODO: raise a Reserved Instruction Exception (excode=0Ah)
-        NOT_IMPLEMENTED
+        NOT_IMPLEMENTED fmt"cop0[{r.Cop0RegisterName}] read."
     of r16 .. r31:
         # TODO: return garbage, but don't trigger exception
-        NOT_IMPLEMENTED
+        NOT_IMPLEMENTED fmt"cop0[{r.Cop0RegisterName}] read."
     else:
         warn fmt"cop0[{r.Cop0RegisterName}] read."
         return self.regs[r]
+
+
+proc WriteRegisterDebug*(self: var Cop0, r: Cop0RegisterName, v: uint32) =
+    WriteRegisterDebug(self, r.ord, v)
 
 
 proc WriteRegisterDebug*(self: var Cop0, r: Cop0RegisterIndex, v: uint32) =
