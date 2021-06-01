@@ -42,13 +42,15 @@ proc LUI  *(target        : CpuRegisterIndex,  value: uint16): Instruction = ITy
 proc ORI  *(target, source: CpuRegisterIndex,  value: uint16): Instruction = IType(Opcode.ORI  , target, source, value)
 proc ADDIU*(target, source: CpuRegisterIndex,  value: uint16): Instruction = IType(Opcode.ADDIU, target, source, value)
 proc SW   *(source,   base: CpuRegisterIndex, offset:  int16): Instruction = IType(Opcode.SW   , source,   base, cast[uint16](offset))
+proc LW   *(target,   base: CpuRegisterIndex, offset:  int16): Instruction = IType(Opcode.LW   , target,   base, cast[uint16](offset))
+proc ADDI* (target, source: CpuRegisterIndex,  value:  int16): Instruction = IType(Opcode.ADDI , target, source, cast[uint16](value))
 proc BEQ*  (a, b: CpuRegisterIndex, offset:  int16): Instruction = Bxx(Opcode.BEQ , a, b, offset)
 proc BNE*  (a, b: CpuRegisterIndex, offset:  int16): Instruction = Bxx(Opcode.BNE , a, b, offset)
 proc BLEZ* (a   : CpuRegisterIndex, offset:  int16): Instruction = Bxx(Opcode.BLEZ, a, 0, offset)
 proc BGTZ* (a   : CpuRegisterIndex, offset:  int16): Instruction = Bxx(Opcode.BGTZ, a, 0, offset)
 
 proc SLL*(target, source: CpuRegisterIndex, amount: 0..0b11111): Instruction = RType(Function.SLL, 0, source, target, amount)
-proc OR *(target, a, b: CpuRegisterIndex): Instruction = RType(Function.OR, a, b, target, 0)
+proc OR *(target, a, b: CpuRegisterIndex): Instruction = RType(Function.OR  , a, b, target, 0)
 
 proc J*(target: uint32) : Instruction = JType(Opcode.J, target shr 2)
 
@@ -58,5 +60,6 @@ proc MTC0*(source: CpuRegisterIndex, target: Cop0RegisterName): Instruction =
     result.R.rs = Cop0Opcode.MTC.ord
     result.R.rt = cast[uint8](source)
     result.R.rd = cast[uint8](target)
+
 
 
