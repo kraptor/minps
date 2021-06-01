@@ -22,7 +22,6 @@ logChannels ["cpu", "ops"]
 
 
 type
-    Cycles = uint64
     OperationProc = proc(cpu: Cpu): Cycles {.gcsafe.}
 
 
@@ -88,6 +87,7 @@ const FUNCTIONS = block:
     f[ord Function.SUBU] = Function_SUBU
     f[ord Function.SRA ] = Function_SRA
     f[ord Function.DIV ] = Function_DIV
+    f[ord Function.MFLO] = Function_MFLO
     f # return the array
 
 
@@ -491,11 +491,45 @@ proc Op_SLTI(cpu: Cpu): Cycles =
 proc Function_DIV(cpu: Cpu): Cycles =
     let 
         rs = cpu.inst.rs
+        num = cast[int32](cpu.ReadRegister(rs))
         rt = cpu.inst.rt
-        rs_value = cast[int32](cpu.ReadRegister(rs))
-        rt_value = cast[int32](cpu.ReadRegister(rt))
-        (quotent, remainder) = divmod(rs_value, rt_value)
+        den = cast[int32](cpu.ReadRegister(rt))
+        
+    #[ Division by 0, -1 cases:
+        Opcode  Rs (num)        Rt(num)      Hi/Remainder  Lo/Result
+        div     0..+7FFFFFFFh    0      -->  Rs(num)       -1
+        div     -80000000h..-1   0      -->  Rs(num)       +1
+        div     -80000000h      -1      -->  0             -80000000h
+    ]#
 
-    cpu.WriteHiRegister(cast[uint32](quotent), 36'u32)
-    cpu.WriteLoRegister(cast[uint32](remainder), 36'u32)
+    const timing_cycles = 36
+
+    if den == 0: # division by 0
+        if num >= 0: # num in [0 .. +7FFF_FFFFh]
+            # cpu.WriteLoRegister(cast[uint32](-1) , timing_cycles)
+            cpu.WriteLoRegister(0xFFFF_FFFF'u32  , timing_cycles)
+            cpu.WriteHiRegister(cast[uint32](num), timing_cycles)
+        else: # num in [-8000_0000h .. -1]
+            cpu.WriteLoRegister(1, timing_cycles)
+            cpu.WriteHiRegister(cast[uint32](num), timing_cycles)
+
+    elif num == -0x8000_0000 and den == -1:
+        # non-representable 32-bit value
+        cpu.WriteLoRegister(cast[uint32](-0x8000_0000), timing_cycles)
+        cpu.WriteHiRegister(0, 0)
+
+    else:
+        let (quotent, remainder) = divmod(num, den)
+        cpu.WriteLoRegister(cast[uint32](quotent)  , timing_cycles)
+        cpu.WriteHiRegister(cast[uint32](remainder), timing_cycles)
+
     result = 1
+
+
+proc Function_MFLO(cpu: Cpu): Cycles =
+    let
+        rd = cpu.inst.rd
+        (value, remaining_cycles) = cpu.ReadLoRegister()
+
+    cpu.WriteRegister(rd, value)
+    result = 1 + remaining_cycles
