@@ -175,24 +175,22 @@ suite "Instruction execution correctness":
         #     ])
 
     test "LB":
-        skip()
+        cpu.mmu.WriteDebug( 0.Address, 0xDEADBEEF'u32)
+        cpu.mmu.WriteDebug( 4.Address, 0xAABBCCDD'u32)
+        cpu.WriteRegisterDebug(1, 16)
         
-        # cpu.mmu.WriteDebug( 0.Address, 0xDEADBEEF'u32)
-        # cpu.mmu.WriteDebug( 4.Address, 0xAABBCCDD'u32)
-        # cpu.WriteRegisterDebug(1, 16)
+        p.RunProgram(@[
+            LB(10, 0, 0), # read at 0x0
+            LB(11, 0, 6), # read at 0x0 + 6
+            LB(12, 0, 7), # read at 0x0 + 7
+        ])
         
-        # p.RunProgram(@[
-        #     LB(10, 0, 0), # read at 0x0
-        #     LB(11, 0, 6), # read at 0x0 + 6
-        #     LB(12, 0, 7), # read at 0x0 + 6
-        # ])
-        
-        # check:
-        #     cpu.ReadRegisterDebug(10) == 0xEF'u32
-        #     cpu.ReadRegisterDebug(11) == 0xBB'u32
-        #     cpu.ReadRegisterDebug(12) == 0xAA'u32
-        #     cpu.stats.instruction_count == 3
-        #     cpu.stats.cycle_count == 3
+        check:
+            cpu.ReadRegisterDebug(10) == 0xFFFF_FFEF'u32
+            cpu.ReadRegisterDebug(11) == 0xFFFF_FFBB'u32
+            cpu.ReadRegisterDebug(12) == 0xFFFF_FFAA'u32
+            cpu.stats.instruction_count == 3
+            cpu.stats.cycle_count == 3
 
     test "NOP":
         p.RunProgram(@[
