@@ -41,6 +41,7 @@ proc Bxx(opcode: Opcode, a, b: CpuRegisterIndex, offset: int16): Instruction =
 proc LUI  *(target        : CpuRegisterIndex,  value: uint16): Instruction = IType(Opcode.LUI  , target,      0, value)
 proc ORI  *(target, source: CpuRegisterIndex,  value: uint16): Instruction = IType(Opcode.ORI  , target, source, value)
 proc ADDIU*(target, source: CpuRegisterIndex,  value: uint16): Instruction = IType(Opcode.ADDIU, target, source, value)
+proc ANDI *(target, source: CpuRegisterIndex,  value: uint16): Instruction = IType(Opcode.ANDI , target, source, value)
 proc SW   *(source,   base: CpuRegisterIndex, offset:  int16): Instruction = IType(Opcode.SW   , source,   base, cast[uint16](offset))
 proc SH   *(source,   base: CpuRegisterIndex, offset:  int16): Instruction = IType(Opcode.SH   , source,   base, cast[uint16](offset))
 proc SB   *(source,   base: CpuRegisterIndex, offset:  int16): Instruction = IType(Opcode.SB   , source,   base, cast[uint16](offset))
