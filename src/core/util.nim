@@ -4,7 +4,7 @@
 # https://opensource.org/licenses/MIT
 
 type
-    NotImplementedDefect = ref object of Defect
+    NotImplementedDefect* = ref object of Defect
 
 const 
     NOT_IMPLEMENTED_PREFIX = "[NOT IMPLEMENTED] "
