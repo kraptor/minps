@@ -8,6 +8,7 @@
 import strformat
 
 import ../core/[log]
+import address
 import cpu/cpu
 import cpu/assembler
 import cpu/disassembler
@@ -56,6 +57,18 @@ proc RunFor*(self: Platform, number_of_instructions: int64) =
             self.cpu.RunNext()
 
 
+proc RunToPc*(self: Platform, pc: Address) =
+    while self.cpu.pc != pc:
+        notice fmt"[CPU] {self.cpu.pc}: {self.cpu.inst.DisasmAsText(self.cpu)}"
+        logIndent:
+            self.cpu.RunNext()
+
+
 proc RunProgram*(self: Platform, program: Program) =
     self.mmu.bios = Bios.FromProgram(program)
-    self.RunFor(program.len)    
+    self.RunFor(program.len)
+
+
+proc RunProgramToPc*(self: Platform, program: Program, pc: Address) =
+    self.mmu.bios = Bios.FromProgram(program)
+    self.RunToPc(pc)
