@@ -286,6 +286,27 @@ suite "Instruction execution correctness":
             cpu.stats.cycle_count == 3
             cpu.stats.instruction_count == 3
 
+    test "JAL":
+        let start = cpu.pc
+
+        p.RunProgramToPc(@[
+            JAL(start + 12),   # start    --+ 
+            ADDIU( 1, 0, 100), # start+4    | : executed (DS)
+            ADDIU(10, 0, 100), # start+8    | : not executed
+            ADDIU(11, 0, 100), # start+12 <-+ : executed
+        ],
+            start + 16
+        )
+
+        check:
+            cpu.ReadRegisterDebug( 1) == 100
+            cpu.ReadRegisterDebug(10) == 0
+            cpu.ReadRegisterDebug(11) == 100
+            cpu.ReadRegisterDebug(31) == start + 8
+            cpu.stats.cycle_count == 3
+            cpu.stats.instruction_count == 3
+
+
     test "OR":
         cpu.WriteRegisterDebug(11, 1)
         
