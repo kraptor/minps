@@ -7,7 +7,7 @@ import cpu
 import instruction
 
 let
-    nop* = Instruction.New(0'u32)
+    NOP* = Instruction.New(0'u32)
 
 type
     Program* = seq[Instruction]
@@ -29,7 +29,7 @@ proc R(function: Function, rs, rt, rd: CpuRegisterIndex, amount: 0..0b11111): In
     result.R.shamt = amount.uint8
 
 
-proc LUI*(target: CpuRegisterIndex, imm: uint16): Instruction =
+proc LUI*(target: CpuRegisterIndex, imm: uint16): Instruction = 
     I(Opcode.LUI, target, 0, imm)
 
 
@@ -47,3 +47,12 @@ proc ADDIU*(target, source, imm: uint16): Instruction =
 
 proc OR*(target, source_a, source_b: CpuRegisterIndex): Instruction =
     R(Function.OR, source_a, source_b, target, 0)
+
+
+proc SW*(source, base: CpuRegisterIndex, offset: uint16) : Instruction =
+    I(Opcode.SW, source, base, offset)
+
+proc J*(target: uint32) : Instruction =
+    result.J.opcode = Opcode.J
+    result.J.target = target shr 2
+    
