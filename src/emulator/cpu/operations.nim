@@ -416,7 +416,7 @@ proc Op_BGTZ(cpu: Cpu): Cycles =
     let
         rs = cpu.inst.rs
 
-    if cast[uint32](cpu.ReadRegister(rs)) > 0:
+    if cast[int32](cpu.ReadRegister(rs)) > 0:
         let 
             offset = (cpu.inst.imm16 shl 2).sign_extend
             address = cpu.pc + offset
@@ -429,7 +429,7 @@ proc Op_BLEZ(cpu: Cpu): Cycles =
     let
         rs = cpu.inst.rs
 
-    if cast[uint32](cpu.ReadRegister(rs)) <= 0:
+    if cast[int32](cpu.ReadRegister(rs)) <= 0:
         let 
             offset = (cpu.inst.imm16 shl 2).sign_extend
             address = cpu.pc + offset
