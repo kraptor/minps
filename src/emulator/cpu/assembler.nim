@@ -71,4 +71,8 @@ proc MTC0*(source: CpuRegisterIndex, target: Cop0RegisterName): Instruction =
     result.R.rd = cast[uint8](target)
 
 
-
+proc MFC0*(target: CpuRegisterIndex, source: Cop0RegisterName): Instruction =
+    result.R.opcode = Opcode.COP0
+    result.R.rs = Cop0Opcode.MFC.ord
+    result.R.rt = cast[uint8](target)
+    result.R.rd = cast[uint8](source)
