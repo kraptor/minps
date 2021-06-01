@@ -41,7 +41,7 @@ type
         regs*: Cop0RegisterArray
         parts*: Cop0RegistersParts
 
-    Cop0RegisterName {.pure.} = enum
+    Cop0RegisterName* {.pure.} = enum
         r0, r1, r2, BPC, r4, BDA, JUMPDEST, DCIC,
         BadVaddr, BDAM, r10, BPCM, SR, CAUSE, EPC, PRID,
         r16, r17, r18, r19, r20, r21, r22, r23,
@@ -174,7 +174,11 @@ proc GetCop0RegisterAlias*(r: Cop0RegisterIndex): string =
         "$16"     , "$17" , "$18", "$19" , "$20", "$21"  , "$22"     , "$23", 
         "$24"     , "$25" , "$26", "$27" , "$28", "$29"  , "$30"     , "$31"]
     COP0_REGISTER_TO_ALIAS[r]
-    
+
+
+proc ReadRegisterDebug*(self: var Cop0, r: Cop0RegisterName): uint32 =
+    ReadRegisterDebug(self, r.ord)
+
 
 proc ReadRegisterDebug*(self: var Cop0, r: Cop0RegisterIndex): uint32 = 
     case r.Cop0RegisterName:
