@@ -254,6 +254,19 @@ suite "Instruction execution correctness":
             cpu.ReadRegisterDebug(2) == 20
             cpu.ReadRegisterDebug(3) == 9
 
+    test "ANDI":
+        cpu.WriteRegisterDebug(1, 0b01)
+        # cpu.WriteRegisterDebug(2, 0b10)
+        p.RunProgram(@[
+            ANDI(10, 1, 0b01),
+            ANDI(11, 0, 0b00),
+            ANDI(12, 1, 0b10),
+        ])
+
+        check:
+            cpu.ReadRegisterDebug(10) == 1
+            cpu.ReadRegisterDebug(11) == 0
+            cpu.ReadRegisterDebug(12) == 0
 
     test "SLL":
         cpu.WriteRegisterDebug(11, 0b1)
@@ -292,7 +305,7 @@ suite "Instruction execution correctness":
         p.RunProgramToPc(@[
             JAL(start + 12),   # start    --+ 
             ADDIU( 1, 0, 100), # start+4    | : executed (DS)
-            ADDIU(10, 0, 100), # start+8    | : not executed
+            ADDIU(10, 0, 100), # start+8    | : not executed, but address set in 31
             ADDIU(11, 0, 100), # start+12 <-+ : executed
         ],
             start + 16
