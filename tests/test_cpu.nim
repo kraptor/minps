@@ -109,8 +109,7 @@ suite "Instruction execution correctness":
         let start = cpu.pc
 
         p.RunProgramToPc(@[
-            # <---- start is pointing here
-            J(start + 12),     # start    --+  :
+            J(start + 12),     # start    --+ 
             ADDIU( 1, 0, 100), # start+4    | : executed (DS)
             ADDIU(10, 0, 100), # start+8    | : not executed
             ADDIU(11, 0, 100), # start+12 <-+ : executed
@@ -123,7 +122,6 @@ suite "Instruction execution correctness":
         check cpu.ReadRegisterDebug(11) == 100
         check cpu.stats.cycle_count == 3
         check cpu.stats.instruction_count == 3
-
         
 
     test "OR":
@@ -143,4 +141,12 @@ suite "Instruction execution correctness":
         check cpu.stats.cycle_count == 4
 
 
+    test "MTC0":
+        cpu.WriteRegister(1, 100)
 
+        p.RunProgram(@[
+            MTC0(1, SR)
+        ])
+
+        check cpu.cop0.ReadRegisterDebug(SR) == 100
+        assert cpu.stats.cycle_count == 1
