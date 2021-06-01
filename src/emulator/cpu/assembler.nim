@@ -58,6 +58,7 @@ proc SLL *(target, source: CpuRegisterIndex, amount: 0..0b11111): Instruction = 
 proc OR  *(target, a, b: CpuRegisterIndex): Instruction = RType(Function.OR  , a, b, target, 0)
 proc SLTU*(target, a, b: CpuRegisterIndex): Instruction = RType(Function.SLTU, a, b, target, 0)
 proc ADDU*(target, a, b: CpuRegisterIndex): Instruction = RType(Function.ADDU, a, b, target, 0)
+proc AND *(target, a, b: CpuRegisterIndex): Instruction = RType(Function.AND , a, b, target, 0)
 
 proc J  *(target: uint32) : Instruction = JType(Opcode.J  , target shr 2)
 proc JAL*(target: uint32) : Instruction = JType(Opcode.JAL, target shr 2)

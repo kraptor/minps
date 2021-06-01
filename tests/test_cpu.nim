@@ -272,6 +272,23 @@ suite "Instruction execution correctness":
             cpu.ReadRegisterDebug(11) == 0
             cpu.ReadRegisterDebug(12) == 0
 
+
+    test "AND":
+        cpu.WriteRegisterDebug(1, 0b101)
+        cpu.WriteRegisterDebug(2, 0b010)
+        # cpu.WriteRegisterDebug(2, 0b10)
+        p.RunProgram(@[
+            AND(10, 1, 1),
+            AND(11, 0, 0),
+            AND(12, 1, 2),
+        ])
+
+        check:
+            cpu.ReadRegisterDebug(10) == 0b101
+            cpu.ReadRegisterDebug(11) == 0
+            cpu.ReadRegisterDebug(12) == 0
+    
+
     test "SLL":
         cpu.WriteRegisterDebug(11, 0b1)
         p.RunProgram(@[
