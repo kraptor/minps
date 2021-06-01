@@ -192,6 +192,24 @@ suite "Instruction execution correctness":
             cpu.stats.instruction_count == 3
             cpu.stats.cycle_count == 3
 
+    test "LBU":
+        cpu.mmu.WriteDebug( 0.Address, 0xDEADBEEF'u32)
+        cpu.mmu.WriteDebug( 4.Address, 0xAABBCCDD'u32)
+        cpu.WriteRegisterDebug(1, 16)
+        
+        p.RunProgram(@[
+            LBU(10, 0, 0), # read at 0x0
+            LBU(11, 0, 6), # read at 0x0 + 6
+            LBU(12, 0, 7), # read at 0x0 + 7
+        ])
+        
+        check:
+            cpu.ReadRegisterDebug(10) == 0xEF'u32
+            cpu.ReadRegisterDebug(11) == 0xBB'u32
+            cpu.ReadRegisterDebug(12) == 0xAA'u32
+            cpu.stats.instruction_count == 3
+            cpu.stats.cycle_count == 3    
+
     test "NOP":
         p.RunProgram(@[
             NOP
