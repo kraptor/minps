@@ -61,6 +61,7 @@ proc ADDU*(target, a, b: CpuRegisterIndex): Instruction = RType(Function.ADDU, a
 
 proc J  *(target: uint32) : Instruction = JType(Opcode.J  , target shr 2)
 proc JAL*(target: uint32) : Instruction = JType(Opcode.JAL, target shr 2)
+proc JR *(target: CpuRegisterIndex) : Instruction = RType(Function.JR, target, 0, 0, 0)
 
 
 proc MTC0*(source: CpuRegisterIndex, target: Cop0RegisterName): Instruction =
