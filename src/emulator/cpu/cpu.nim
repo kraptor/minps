@@ -26,7 +26,7 @@ type
 
     CpuStats* = object
         instruction_count*: int64
-        cycle_count: Cycles
+        cycle_count*: Cycles
 
     Cpu* = ref object
         regs    *: array[CpuRegisterIndex, uint32]
@@ -82,14 +82,28 @@ proc WriteRegisterDebug*(self: Cpu, r: CpuRegisterIndex, v: uint32) =
     self.regs[0] = 0
 
 
-proc WriteHiRegister*(cpu: Cpu, value: uint32, cycles: uint64) =
+proc WriteHiRegister*(cpu: Cpu, value: uint32, cycles: int64) =
     cpu.hi.value = value
     cpu.hi.available_at_cycle = cpu.stats.cycle_count + cycles
 
 
-proc WriteLoRegister*(cpu: Cpu, value: uint32, cycles: uint64) =
+proc WriteLoRegister*(cpu: Cpu, value: uint32, cycles: int64) =
     cpu.lo.value = value
     cpu.lo.available_at_cycle = cpu.stats.cycle_count + cycles
+
+
+proc ReadLoRegister*(cpu: Cpu): tuple[value: uint32, cycles: int64] =
+    return (
+        cpu.lo.value,
+        max(cast[Cycles](0), cpu.lo.available_at_cycle - cpu.stats.cycle_count)
+    )
+
+
+proc ReadHiRegister*(cpu: Cpu): tuple[value: uint32, cycles: int64] =
+    return (
+        cpu.hi.value,
+        max(cast[Cycles](0), cpu.hi.available_at_cycle - cpu.stats.cycle_count)
+    )
 
 
 import operations # NOTE: import here so Cpu type is defined and ready within operations module
@@ -97,10 +111,7 @@ import operations # NOTE: import here so Cpu type is defined and ready within op
 
 proc New*(T: type Cpu, mmu: Mmu): Cpu =
     debug "Creating CPU..."
-    result = Cpu(
-        mmu: mmu,
-        inst: nop
-    )
+    result = Cpu(mmu: mmu)
     result.Reset()
 
 
@@ -112,7 +123,7 @@ proc Reset*(self: Cpu) =
     self.lo.reset()
     self.hi.reset()
 
-    self.inst = nop
+    self.inst = NOP
     self.inst_pc = CPU_RESET_ENTRY_POINT
     self.inst_is_branch = false
     self.inst_in_delay = false
@@ -120,6 +131,7 @@ proc Reset*(self: Cpu) =
     self.stats.reset()
     # we always execute a NOP instruction at the beginning
     self.stats.instruction_count = -1 
+    self.stats.cycle_count = -1
 
     self.cop0.Reset()
     warn "Reset: CPU State not fully initialized."
