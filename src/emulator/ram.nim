@@ -57,6 +57,9 @@ proc Read*[T: uint8|uint16|uint32](self: Ram, address: KusegAddress): T =
     when T is uint32:        
         return self.data.u32[offset shr 2]
 
+    when T is uint16:
+        return self.data.u16[offset shr 1]
+
     when T is uint8:
         return self.data.u8[offset]
 
@@ -75,6 +78,10 @@ proc Write*[T: uint8|uint16|uint32](self: Ram, address: KusegAddress, value: T) 
     
     when T is uint32:
         self.data.u32[offset shr 2] = value
+        return
+
+    when T is uint16:
+        self.data.u16[offset shr 1] = value
         return
 
     when T is uint8:
