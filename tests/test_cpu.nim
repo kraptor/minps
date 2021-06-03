@@ -444,7 +444,6 @@ suite "Instruction execution correctness":
             cpu.stats.cycle_count == 3
             cpu.stats.instruction_count == 3
 
-
     test "OR":
         cpu.WriteRegisterDebug(11, 1)
         
@@ -566,7 +565,6 @@ suite "Instruction execution correctness":
             cpu.stats.cycle_count == 3
             cpu.stats.instruction_count == 3
 
-
     test "SLTU":
         cpu.WriteRegisterDebug(1, 10)
         cpu.WriteRegisterDebug(2, 0)
@@ -584,4 +582,106 @@ suite "Instruction execution correctness":
             cpu.ReadRegisterDebug(11) == 1
             cpu.ReadRegisterDebug(12) == 0
             cpu.ReadRegisterDebug(13) == 1
+
+    test "BLTZ":
+        let start = cpu.pc
+        cpu.WriteRegisterDebug(1, cast[uint32](-1'i32))
+
+        p.RunProgramToPc(@[
+            BLTZ(  1, +8     ), # start    --+ : pc at ds + 8 = 12
+            ADDIU( 1,  0, 100), # start+4    | : executed (DS)
+            ADDIU(10,  0, 100), # start+8    | : not executed
+            ADDIU(11,  0, 100), # start+12 <-+ : executed
+        ],
+            start + 16
+        )
+
+        check:
+            cpu.ReadRegisterDebug( 1) == 100
+            cpu.ReadRegisterDebug(10) == 0
+            cpu.ReadRegisterDebug(11) == 100
+            cpu.ReadRegisterDebug(31) == 0 # no link
+            cpu.stats.cycle_count == 3
+            cpu.stats.instruction_count == 3
+
+    test "BGEZ":
+        let start = cpu.pc
+        cpu.WriteRegisterDebug(1, cast[uint32](1'i32))
+
+        p.RunProgramToPc(@[
+            BGEZ(  1, +8     ), # start    --+ : pc at ds + 8 = 12
+            ADDIU( 1,  0, 100), # start+4    | : executed (DS)
+            ADDIU(10,  0, 100), # start+8    | : not executed
+            ADDIU(11,  0, 100), # start+12 <-+ : executed
+        ],
+            start + 16
+        )
+
+        check:
+            cpu.ReadRegisterDebug( 1) == 100
+            cpu.ReadRegisterDebug(10) == 0
+            cpu.ReadRegisterDebug(11) == 100
+            cpu.ReadRegisterDebug(31) == 0 # no link
+            cpu.stats.cycle_count == 3
+            cpu.stats.instruction_count == 3
+
+    test "BLTZAL":
+        let start = cpu.pc
+        cpu.WriteRegisterDebug(1, cast[uint32](-1'i32))
+
+        p.RunProgramToPc(@[
+            BLTZAL(1, +8     ), # start    --+ : pc at ds + 8 = 12
+            ADDIU( 1,  0, 100), # start+4    | : executed (DS)
+            ADDIU(10,  0, 100), # start+8    | : not executed, links $31 here
+            ADDIU(11,  0, 100), # start+12 <-+ : executed
+        ],
+            start + 16
+        )
+
+        check:
+            cpu.ReadRegisterDebug( 1) == 100
+            cpu.ReadRegisterDebug(10) == 0
+            cpu.ReadRegisterDebug(11) == 100
+            cpu.ReadRegisterDebug(31) == start + 8 # links
+            cpu.stats.cycle_count == 3
+            cpu.stats.instruction_count == 3
+
+    test "BGEZAL":
+        let start = cpu.pc
+        cpu.WriteRegisterDebug(1, cast[uint32](1'i32))
+
+        p.RunProgramToPc(@[
+            BGEZAL(1, +8     ), # start    --+ : pc at ds + 8 = 12
+            ADDIU( 1,  0, 100), # start+4    | : executed (DS)
+            ADDIU(10,  0, 100), # start+8    | : not executed, links $31 here
+            ADDIU(11,  0, 100), # start+12 <-+ : executed
+        ],
+            start + 16
+        )
+
+        check:
+            cpu.ReadRegisterDebug( 1) == 100
+            cpu.ReadRegisterDebug(10) == 0
+            cpu.ReadRegisterDebug(11) == 100
+            cpu.ReadRegisterDebug(31) == start + 8 # links
+            cpu.stats.cycle_count == 3
+            cpu.stats.instruction_count == 3
+
+    test "SLTI":
+        skip()
+
+    test "SUBU":
+        skip()
+
+    test "SRA":
+        skip()
+
+    test "DIV":
+        skip()
+
+    test "MFLO":
+        skip()
+
+    test "MFHI":
+        skip()
 
