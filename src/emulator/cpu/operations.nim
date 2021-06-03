@@ -312,19 +312,21 @@ proc Function_JALR(cpu: Cpu): Cycles =
 
 
 proc Op_BCONDZ(cpu: Cpu): Cycles =
-    let target = (cpu.inst.target shl 2) or (0xF000_0000'u32 and cpu.pc + 4)
-
-    if unlikely(not is_aligned[uint32](target)):
-        NOT_IMPLEMENTED "BCONDZ: raise Address Error Exception"
-
     let 
         is_bgez = (cpu.inst.value shr 16) and 0b1
         is_link = ((cpu.inst.value shr 20) and 0b1) != 0
-        ge_zero = cpu.ReadRegister(cpu.inst.rs) >= 0
+        ge_zero = cast[int32](cpu.ReadRegister(cpu.inst.rs)) >= 0
         test = if is_bgez == 1: ge_zero else: not ge_zero
 
     if test:
-        cpu.BranchWithDelaySlotTo(cast[Address](target))
+        let
+            offset = (cpu.inst.imm16 shl 2).sign_extend
+            base = cpu.pc # cp.pc here is already the pc at the DS = cpu.inst_pc + 4
+            target = base + offset
+
+        # NOTE: target is always 32-bit aligned because offset is shifted by 2
+        cpu.BranchWithDelaySlotTo(target)
+
         if is_link:
             cpu.WriteRegister(31, cpu.inst_pc + 8)
 
