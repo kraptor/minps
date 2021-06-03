@@ -35,17 +35,6 @@ proc JType(opcode: Opcode, target_26: uint32): Instruction =
     result.J.target = target_26
 
 
-proc BCond(op: BCondZ, rs: CpuRegisterIndex, offset: uint16): Instruction =
-    result.I.opcode = Opcode.BCONDZ
-    result.I.rs = cast[uint8](rs)
-    result.I.rt = cast[uint8](op)
-    result.I.imm16 = offset
-
-
-proc Bxx(opcode: Opcode, a, b: CpuRegisterIndex, offset: int16): Instruction =
-    IType(opcode, a, b, cast[uint16](offset) shr 2)
-
-
 proc LUI  *(target        : CpuRegisterIndex,  value: uint16): Instruction = IType(Opcode.LUI  , target,      0, value)
 proc ORI  *(target, source: CpuRegisterIndex,  value: uint16): Instruction = IType(Opcode.ORI  , target, source, value)
 proc ADDIU*(target, source: CpuRegisterIndex,  value: uint16): Instruction = IType(Opcode.ADDIU, target, source, value)
@@ -58,6 +47,12 @@ proc LH   *(target,   base: CpuRegisterIndex, offset:  int16): Instruction = ITy
 proc LB   *(target,   base: CpuRegisterIndex, offset:  int16): Instruction = IType(Opcode.LB   , target,   base, cast[uint16](offset))
 proc LBU  *(target,   base: CpuRegisterIndex, offset:  int16): Instruction = IType(Opcode.LBU  , target,   base, cast[uint16](offset))
 proc ADDI *(target, source: CpuRegisterIndex,  value:  int16): Instruction = IType(Opcode.ADDI , target, source, cast[uint16](value))
+
+
+proc Bxx(opcode: Opcode, a, b: CpuRegisterIndex, offset: int16): Instruction =
+    IType(opcode, a, b, cast[uint16](offset) shr 2)
+
+
 proc BEQ  *(a, b: CpuRegisterIndex, offset:  int16): Instruction = Bxx(Opcode.BEQ , a, b, offset)
 proc BNE  *(a, b: CpuRegisterIndex, offset:  int16): Instruction = Bxx(Opcode.BNE , a, b, offset)
 proc BLEZ *(a   : CpuRegisterIndex, offset:  int16): Instruction = Bxx(Opcode.BLEZ, 0, a, offset)
@@ -75,10 +70,19 @@ proc JR  *(target: CpuRegisterIndex) : Instruction = RType(Function.JR, target, 
 proc JAL *(target: uint32) : Instruction = JType(Opcode.JAL, target shr 2)
 proc JALR*(target, source: CpuRegisterIndex): Instruction = RType(Function.JALR, source, 0, target, 0)
 
-proc BLTZ  *(rs: CpuRegisterIndex, offset: uint16): Instruction = BCond(BCondZ.BLTZ  , rs, offset)
-proc BGEZ  *(rs: CpuRegisterIndex, offset: uint16): Instruction = BCond(BCondZ.BGEZ  , rs, offset)
-proc BLTZAL*(rs: CpuRegisterIndex, offset: uint16): Instruction = BCond(BCondZ.BLTZAL, rs, offset)
-proc BGEZAL*(rs: CpuRegisterIndex, offset: uint16): Instruction = BCond(BCondZ.BGEZAL, rs, offset)
+
+proc BCond(op: BCondZ, rs: CpuRegisterIndex, offset: int16): Instruction =
+    result.I.opcode = Opcode.BCONDZ
+    result.I.rs = cast[uint8](rs)
+    result.I.rt = cast[uint8](op)
+    result.I.imm16 = cast[uint16](offset) shr 2
+
+
+proc BLTZ  *(rs: CpuRegisterIndex, offset: int16): Instruction = BCond(BCondZ.BLTZ  , rs, offset)
+proc BGEZ  *(rs: CpuRegisterIndex, offset: int16): Instruction = BCond(BCondZ.BGEZ  , rs, offset)
+proc BLTZAL*(rs: CpuRegisterIndex, offset: int16): Instruction = BCond(BCondZ.BLTZAL, rs, offset)
+proc BGEZAL*(rs: CpuRegisterIndex, offset: int16): Instruction = BCond(BCondZ.BGEZAL, rs, offset)
+
 
 proc MTC0*(source: CpuRegisterIndex, target: Cop0RegisterName): Instruction =
     result.R.opcode = Opcode.COP0
