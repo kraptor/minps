@@ -668,10 +668,34 @@ suite "Instruction execution correctness":
             cpu.stats.instruction_count == 3
 
     test "SLTI":
-        skip()
+        cpu.WriteRegisterDebug(1, 10)
+        cpu.WriteRegisterDebug(2, cast[uint32](-10))
+
+        p.RunProgram(@[
+            SLTI(10, 1, -1), #  10 < -1 = false
+            SLTI(11, 2, -1), # -10 < -1 = true
+            SLTI(12, 0,  0), #   0 <  0 = false
+        ])
+
+        check:
+            cpu.ReadRegisterDebug(10) == 0
+            cpu.ReadRegisterDebug(11) == 1
+            cpu.ReadRegisterDebug(12) == 0
 
     test "SUBU":
-        skip()
+        cpu.WriteRegisterDebug(10, 10)
+        cpu.WriteRegisterDebug(11, 1)
+
+        p.RunProgram(@[
+            SUBU(1, 10,  0), # 10 - 0 = 10
+            SUBU(2, 10, 10), # 10 - 10 = 0
+            SUBU(3,  0, 11), #  0 - 10 = 0xFFFF_FFFF  # underflow
+        ])
+
+        check:
+            cpu.ReadRegisterDebug(1) == 10
+            cpu.ReadRegisterDebug(2) == 0
+            cpu.ReadRegisterDebug(3) == 0xFFFF_FFFF'u32
 
     test "SRA":
         skip()
