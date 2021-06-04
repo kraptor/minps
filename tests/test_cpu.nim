@@ -698,7 +698,19 @@ suite "Instruction execution correctness":
             cpu.ReadRegisterDebug(3) == 0xFFFF_FFFF'u32
 
     test "SRA":
-        skip()
+        cpu.WriteRegisterDebug(10, cast[uint32](-1))
+        cpu.WriteRegisterDebug(11, cast[uint32](int32.high))
+
+        p.RunProgram(@[
+            SRA(1, 10, 1),
+            SRA(2,  0, 1),
+            SRA(3, 11, 1),
+        ])
+
+        check:
+            cpu.ReadRegisterDebug(1) == cast[uint32](-1 shr 1)
+            cpu.ReadRegisterDebug(2) == 0
+            cpu.ReadRegisterDebug(3) == cast[uint32](int32.high shr 1)
 
     test "DIV":
         skip()
