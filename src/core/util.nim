@@ -25,3 +25,8 @@ template NOT_IMPLEMENTED*(message: string = "") =
 proc divmod*(x, y: SomeSignedInt): tuple[quotent, remainder: SomeSignedInt] {.inline.} =
     # TODO: make sure this is fused into one instruction!
     return (x div y, x mod y)
+
+
+proc divmod*(x, y: SomeUnsignedInt): tuple[quotent, remainder: SomeUnsignedInt] {.inline.} =
+    # TODO: make sure this is fused into one instruction!
+    return (x div y, x mod y)
