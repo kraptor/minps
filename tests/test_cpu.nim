@@ -818,3 +818,16 @@ suite "Instruction execution correctness":
             cpu.ReadRegisterDebug(1) == 0b0
             cpu.ReadRegisterDebug(2) == 0x0FFF_FFFF
             cpu.ReadRegisterDebug(3) == 0xFFFF_FFFF'u32
+
+    test "SLTIU":
+        cpu.WriteRegisterDebug(10, 10)
+        p.RunProgram(@[
+            SLTIU(1, 10, 10), # $1 = 0 (10 < 10)
+            SLTIU(2, 10,  9), # $2 = 0 (10 <  9)
+            SLTIU(3, 10, 11), # $3 = 1 (10 < 11)
+        ])
+
+        check:
+            cpu.ReadRegisterDebug(1) == 0
+            cpu.ReadRegisterDebug(2) == 0
+            cpu.ReadRegisterDebug(3) == 1

@@ -70,6 +70,7 @@ const OPCODES = block:
     o[ord Opcode.LBU    ] = Op_LBU
     o[ord Opcode.BCONDZ ] = Op_BCONDZ
     o[ord Opcode.SLTI   ] = Op_SLTI
+    o[ord Opcode.SLTIU  ] = Op_SLTIU
     o # return the array
 
 
@@ -496,7 +497,18 @@ proc Op_SLTI(cpu: Cpu): Cycles =
         rt = cpu.inst.rt
         rs = cpu.inst.rs
         test = cast[int32](cpu.ReadRegister(rs)) < cast[int32](cpu.inst.imm16.sign_extend)
-        value = if test: 0b1'u32 else: 0'u32
+        value = if test: 1'u32 else: 0'u32
+        
+    cpu.WriteRegister(rt, value)
+    result = 1
+
+
+proc Op_SLTIU(cpu: Cpu): Cycles =
+    let
+        rt = cpu.inst.rt
+        rs = cpu.inst.rs
+        test = cpu.ReadRegister(rs) < cpu.inst.imm16.sign_extend
+        value = if test: 1'u32 else: 0'u32
         
     cpu.WriteRegister(rt, value)
     result = 1

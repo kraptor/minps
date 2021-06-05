@@ -28,7 +28,7 @@ type
         blez, lbu, jalr, bltz,
         bgez, bltzal, bgezal, 
         slti, subu, sra, `div`,
-        mflo, mfhi, srl
+        mflo, mfhi, srl, sltiu
 
     InstructionPartType {.pure.}  = enum
         CpuRegister
@@ -100,6 +100,7 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     of Opcode.BLEZ  : return inst.DisasmBxxZ(cpu, blez)
     of Opcode.LBU   : return inst.DisasmLBU(cpu)
     of Opcode.SLTI  : return inst.DisasmArithmeticImmediate(cpu, slti)
+    of Opcode.SLTIU : return inst.DisasmArithmeticImmediate(cpu, sltiu)
     of Opcode.BCONDZ: 
         case inst.rt.BCondZ:
         of BLTZ  : return inst.DisasmBxxZ(cpu, bltz)
@@ -124,6 +125,7 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
         of Function.DIV : return inst.DisasmDIV(cpu)
         of Function.MFLO: return inst.DisasmMFxx(cpu, mflo)
         of Function.MFHI: return inst.DisasmMFxx(cpu, mfhi)
+        
         else:
             NOT_IMPLEMENTED fmt"Missing disassembly for SPECIAL {inst}"
     else: 

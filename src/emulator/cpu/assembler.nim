@@ -48,6 +48,7 @@ proc LB   *(target,   base: CpuRegisterIndex, offset:  int16): Instruction = ITy
 proc LBU  *(target,   base: CpuRegisterIndex, offset:  int16): Instruction = IType(Opcode.LBU  , target,   base, cast[uint16](offset))
 proc ADDI *(target, source: CpuRegisterIndex,  value:  int16): Instruction = IType(Opcode.ADDI , target, source, cast[uint16](value))
 proc SLTI *(target, source: CpuRegisterIndex,  value:  int16): Instruction = IType(Opcode.SLTI , target, source, cast[uint16](value))
+proc SLTIU*(target, source: CpuRegisterIndex,  value: uint16): Instruction = IType(Opcode.SLTIU, target, source, value)
 
 
 proc Bxx(opcode: Opcode, a, b: CpuRegisterIndex, offset: int16): Instruction =
