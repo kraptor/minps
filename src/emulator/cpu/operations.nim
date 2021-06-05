@@ -92,6 +92,7 @@ const FUNCTIONS = block:
     f[ord Function.MFHI] = Function_MFHI
     f[ord Function.SRL ] = Function_SRL
     f[ord Function.DIVU] = Function_DIVU
+    f[ord Function.SLT ] = Function_SLT
     f # return the array
 
 
@@ -260,6 +261,17 @@ proc Function_SLTU(cpu: Cpu): Cycles =
         rd = cpu.inst.rd
         rs_value = cpu.ReadRegister(cpu.inst.rs)
         rt_value = cpu.ReadRegister(cpu.inst.rt)
+            
+    let value = if rs_value < rt_value: 1'u32  else: 0'u32
+    cpu.WriteRegister(rd, value)
+    result = 1
+
+
+proc Function_SLT(cpu: Cpu): Cycles =
+    let
+        rd = cpu.inst.rd
+        rs_value = cast[int32](cpu.ReadRegister(cpu.inst.rs))
+        rt_value = cast[int32](cpu.ReadRegister(cpu.inst.rt))
             
     let value = if rs_value < rt_value: 1'u32  else: 0'u32
     cpu.WriteRegister(rd, value)

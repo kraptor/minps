@@ -65,6 +65,7 @@ proc SRA *(target, source: CpuRegisterIndex, amount: 0..0b111111): Instruction =
 proc SRL *(target, source: CpuRegisterIndex, amount: 0..0b111111): Instruction = RType(Function.SRL, 0, source, target, amount)
 proc OR  *(target, a, b: CpuRegisterIndex): Instruction = RType(Function.OR  , a, b, target, 0)
 proc SLTU*(target, a, b: CpuRegisterIndex): Instruction = RType(Function.SLTU, a, b, target, 0)
+proc SLT *(target, a, b: CpuRegisterIndex): Instruction = RType(Function.SLT , a, b, target, 0)
 proc ADDU*(target, a, b: CpuRegisterIndex): Instruction = RType(Function.ADDU, a, b, target, 0)
 proc ADD *(target, a, b: CpuRegisterIndex): Instruction = RType(Function.ADD , a, b, target, 0)
 proc AND *(target, a, b: CpuRegisterIndex): Instruction = RType(Function.AND , a, b, target, 0)

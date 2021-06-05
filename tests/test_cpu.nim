@@ -583,6 +583,29 @@ suite "Instruction execution correctness":
             cpu.ReadRegisterDebug(12) == 0
             cpu.ReadRegisterDebug(13) == 1
 
+    test "SLT":
+        cpu.WriteRegisterDebug(1, 10)
+        cpu.WriteRegisterDebug(2, 0)
+        cpu.WriteRegisterDebug(3, cast[uint32](-1))
+        cpu.WriteRegisterDebug(4, cast[uint32](-2))
+
+        p.RunProgram(@[
+            SLT(10, 0, 0), # 0 <  0 ? --> false
+            SLT(11, 0, 1), # 0 < 10 ? --> true
+            SLT(12, 1, 0), # 10 < 0 ? --> false
+            SLT(13, 1, 3), # 10 < -1? --> false
+            SLT(14, 4, 3), # -2 < -1? --> true
+            SLT(15, 3, 4), # -1 < -2? --> false
+        ])
+
+        check:
+            cpu.ReadRegisterDebug(10) == 0
+            cpu.ReadRegisterDebug(11) == 1
+            cpu.ReadRegisterDebug(12) == 0
+            cpu.ReadRegisterDebug(13) == 0
+            cpu.ReadRegisterDebug(14) == 1
+            cpu.ReadRegisterDebug(15) == 0
+
     test "BLTZ":
         let start = cpu.pc
         cpu.WriteRegisterDebug(1, cast[uint32](-1'i32))
