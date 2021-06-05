@@ -131,8 +131,8 @@ macro doLog(level: static LogLevel, message: string, channels: static openArray[
         let enabled_channels = loglevel_channels.split(",")
         if "*" notin enabled_channels:
             # wildcard enables everything
-            for enabled in enabled_channels:
-                if enabled notin channels:
+            for ch in channels:
+                if ch notin enabled_channels:
                     return
 
     block:
