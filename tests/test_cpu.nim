@@ -831,3 +831,39 @@ suite "Instruction execution correctness":
             cpu.ReadRegisterDebug(1) == 0
             cpu.ReadRegisterDebug(2) == 0
             cpu.ReadRegisterDebug(3) == 1
+
+    test "DIVU":
+        let 
+            num = 10'u32
+            den =  3'u32
+        cpu.WriteRegisterDebug(10, num)
+        cpu.WriteRegisterDebug(11, den)
+
+        p.RunProgram(@[DIVU(10, 11)])
+
+        let 
+            (remainder, hi_cycles) = cpu.ReadHiRegister()
+            (quotient, lo_cycles) = cpu.ReadLoRegister()
+
+        check:
+            remainder == cast[uint32](1)
+            hi_cycles == 36 - 1
+            quotient == cast[uint32](3)
+            lo_cycles == 36 - 1
+
+    test "DIVU - Division by 0":
+        let 
+            num = 10'u32
+        cpu.WriteRegisterDebug(10, num)
+
+        p.RunProgram(@[DIVU(10, 0)])
+
+        let 
+            (remainder, hi_cycles) = cpu.ReadHiRegister()
+            (quotient, lo_cycles) = cpu.ReadLoRegister()
+
+        check:
+            remainder == num
+            hi_cycles == 36 - 1
+            quotient == 0xFFFF_FFFF'u32
+            lo_cycles == 36 - 1

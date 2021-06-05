@@ -69,7 +69,8 @@ proc ADDU*(target, a, b: CpuRegisterIndex): Instruction = RType(Function.ADDU, a
 proc ADD *(target, a, b: CpuRegisterIndex): Instruction = RType(Function.ADD , a, b, target, 0)
 proc AND *(target, a, b: CpuRegisterIndex): Instruction = RType(Function.AND , a, b, target, 0)
 proc SUBU*(target, a, b: CpuRegisterIndex): Instruction = RType(Function.SUBU, a, b, target, 0)
-proc DIV *(dividend, divisor: CpuRegisterIndex): Instruction = RType(Function.DIV, dividend, divisor, 0, 0)
+proc DIV *(dividend, divisor: CpuRegisterIndex): Instruction = RType(Function.DIV , dividend, divisor, 0, 0)
+proc DIVU*(dividend, divisor: CpuRegisterIndex): Instruction = RType(Function.DIVU, dividend, divisor, 0, 0)
 proc MFLO*(target: CpuRegisterIndex): Instruction = RType(Function.MFLO, 0, 0, target, 0)
 proc MFHI*(target: CpuRegisterIndex): Instruction = RType(Function.MFHI, 0, 0, target, 0)
 

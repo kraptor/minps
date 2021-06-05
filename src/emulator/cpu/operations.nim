@@ -91,6 +91,7 @@ const FUNCTIONS = block:
     f[ord Function.MFLO] = Function_MFLO
     f[ord Function.MFHI] = Function_MFHI
     f[ord Function.SRL ] = Function_SRL
+    f[ord Function.DIVU] = Function_DIVU
     f # return the array
 
 
@@ -555,6 +556,30 @@ proc Function_DIV(cpu: Cpu): Cycles =
         let (quotent, remainder) = divmod(num, den)
         cpu.WriteLoRegister(cast[uint32](quotent)  , timing_cycles)
         cpu.WriteHiRegister(cast[uint32](remainder), timing_cycles)
+
+    result = 1
+
+
+proc Function_DIVU(cpu: Cpu): Cycles =
+    let 
+        num = cpu.ReadRegister(cpu.inst.rs)
+        den = cpu.ReadRegister(cpu.inst.rt)
+        
+    #[ Division by 0 case:
+        Opcode  Rs (num)        Rt(den)      Hi/Remainder  Lo/Result
+        divu    0..FFFFFFFFh    0       -->  Rs            FFFFFFFFh
+    ]#
+
+    const 
+        timing_cycles = 36
+
+    if den == 0: # division by 0
+        cpu.WriteLoRegister(0xFFFF_FFFF'u32, timing_cycles)
+        cpu.WriteHiRegister(num, timing_cycles)
+    else:
+        let (quotent, remainder) = divmod(num, den)
+        cpu.WriteLoRegister(quotent, timing_cycles)
+        cpu.WriteHiRegister(remainder, timing_cycles)
 
     result = 1
 

@@ -28,7 +28,8 @@ type
         blez, lbu, jalr, bltz,
         bgez, bltzal, bgezal, 
         slti, subu, sra, `div`,
-        mflo, mfhi, srl, sltiu
+        mflo, mfhi, srl, sltiu,
+        divu
 
     InstructionPartType {.pure.}  = enum
         CpuRegister
@@ -125,6 +126,7 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
         of Function.DIV : return inst.DisasmDIV(cpu)
         of Function.MFLO: return inst.DisasmMFxx(cpu, mflo)
         of Function.MFHI: return inst.DisasmMFxx(cpu, mfhi)
+        of Function.DIVU: return inst.DisasmDIVU(cpu)
         
         else:
             NOT_IMPLEMENTED fmt"Missing disassembly for SPECIAL {inst}"
@@ -453,6 +455,16 @@ proc DisasmSRL(inst: Instruction, cpu: Cpu): DisassembledInstruction =
 proc DisasmDIV(inst: Instruction, cpu: Cpu): DisassembledInstruction = 
     return DisassembledInstruction(
         mnemonic: Mnemonic.`div`,
+        parts: @[
+            InstructionPart(mode: Source, kind: CpuRegister, value: inst.rs),
+            InstructionPart(mode: Source, kind: CpuRegister, value: inst.rt),
+        ]
+    )
+
+
+proc DisasmDIVU(inst: Instruction, cpu: Cpu): DisassembledInstruction = 
+    return DisassembledInstruction(
+        mnemonic: divu,
         parts: @[
             InstructionPart(mode: Source, kind: CpuRegister, value: inst.rs),
             InstructionPart(mode: Source, kind: CpuRegister, value: inst.rt),
