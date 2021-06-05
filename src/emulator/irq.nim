@@ -61,6 +61,14 @@ proc Reset*(self: InterruptControl) =
 
 proc Read*[T: uint8|uint16|uint32](self: InterruptControl, address: KusegAddress): T =
     assert is_aligned[T](address)
+
+    when T is uint32:
+        case address.uint32:
+        of 0x1F80_1074: 
+            return self.I_MASK.value
+        else:
+            discard
+
     NOT_IMPLEMENTED fmt"InterruptControl Read[{$T}]: address={address}"
 
 
