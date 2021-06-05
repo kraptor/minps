@@ -21,8 +21,10 @@ type
     CpuRegisterIndex* = 0..31
 
     CpuDelayedRegister* = object
-        value: uint32
-        available_at_cycle: Cycles
+        value    *: uint32 # value of the register, once timestamp + cycles is reached
+        cycles   *: Cycles # how many cycles to wait until available
+        timestamp*: Cycles # when the write happened to the register
+        
 
     CpuStats* = object
         instruction_count*: int64
@@ -77,6 +79,7 @@ proc ReadRegister*(self: Cpu, r: CpuRegisterIndex): uint32 =
 proc ReadRegisterDebug*(self: Cpu, r: CpuRegisterIndex): uint32 = 
     self.regs[r]
 
+
 proc WriteRegisterDebug*(self: Cpu, r: CpuRegisterIndex, v: uint32) =
     self.regs[r] = v
     self.regs[0] = 0
@@ -84,26 +87,30 @@ proc WriteRegisterDebug*(self: Cpu, r: CpuRegisterIndex, v: uint32) =
 
 proc WriteHiRegister*(cpu: Cpu, value: uint32, cycles: int64) =
     cpu.hi.value = value
-    cpu.hi.available_at_cycle = cpu.stats.cycle_count + cycles
+    cpu.hi.cycles = cycles
+    cpu.hi.timestamp = cpu.stats.cycle_count
 
 
 proc WriteLoRegister*(cpu: Cpu, value: uint32, cycles: int64) =
     cpu.lo.value = value
-    cpu.lo.available_at_cycle = cpu.stats.cycle_count + cycles
+    cpu.lo.cycles = cycles
+    cpu.lo.timestamp = cpu.stats.cycle_count
 
 
-proc ReadLoRegister*(cpu: Cpu): tuple[value: uint32, cycles: int64] =
-    return (
-        cpu.lo.value,
-        max(cast[Cycles](0), cpu.lo.available_at_cycle - cpu.stats.cycle_count)
-    )
+proc ReadHiRegister*(cpu: Cpu): tuple[value: uint32, cycles: Cycles] =
+    let 
+        target = cpu.hi.cycles + cpu.hi.timestamp
+        now = cpu.stats.cycle_count
+        cycles = if now >= target: 0'i64 else: target - now
+    return (cpu.hi.value, cycles)
 
 
-proc ReadHiRegister*(cpu: Cpu): tuple[value: uint32, cycles: int64] =
-    return (
-        cpu.hi.value,
-        max(cast[Cycles](0), cpu.hi.available_at_cycle - cpu.stats.cycle_count)
-    )
+proc ReadLoRegister*(cpu: Cpu): tuple[value: uint32, cycles: Cycles] =
+    let 
+        target = cpu.lo.cycles + cpu.lo.timestamp
+        now = cpu.stats.cycle_count
+        cycles = if now >= target: 0'i64 else: target - now
+    return (cpu.lo.value, cycles)
 
 
 import operations # NOTE: import here so Cpu type is defined and ready within operations module
