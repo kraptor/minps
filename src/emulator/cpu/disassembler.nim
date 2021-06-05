@@ -28,7 +28,7 @@ type
         blez, lbu, jalr, bltz,
         bgez, bltzal, bgezal, 
         slti, subu, sra, `div`,
-        mflo, mfhi
+        mflo, mfhi, srl
 
     InstructionPartType {.pure.}  = enum
         CpuRegister
@@ -120,6 +120,7 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
         of Function.JALR: return inst.DisasmJALR(cpu)
         of Function.SUBU: return inst.DisasmSpecialArithmetic(cpu, subu)
         of Function.SRA : return inst.DisasmSRA(cpu)
+        of Function.SRL : return inst.DisasmSRL(cpu)
         of Function.DIV : return inst.DisasmDIV(cpu)
         of Function.MFLO: return inst.DisasmMFxx(cpu, mflo)
         of Function.MFHI: return inst.DisasmMFxx(cpu, mfhi)
@@ -424,9 +425,21 @@ proc DisasmBxxZ(inst: Instruction, cpu: Cpu, mnemonic: Mnemonic): DisassembledIn
         metadata: metadata
     )
 
+
 proc DisasmSRA(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     return DisassembledInstruction(
         mnemonic: sra,
+        parts: @[
+            InstructionPart(mode: Target, kind: CpuRegister, value: inst.rd),
+            InstructionPart(mode: Source, kind: CpuRegister, value: inst.rt),
+            InstructionPart(mode: Source, kind: ShiftAmount, value: inst.shamt),
+        ]
+    )
+
+
+proc DisasmSRL(inst: Instruction, cpu: Cpu): DisassembledInstruction =
+    return DisassembledInstruction(
+        mnemonic: srl,
         parts: @[
             InstructionPart(mode: Target, kind: CpuRegister, value: inst.rd),
             InstructionPart(mode: Source, kind: CpuRegister, value: inst.rt),

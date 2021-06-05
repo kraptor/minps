@@ -779,7 +779,6 @@ suite "Instruction execution correctness":
             hi_cycles == 36 - 1
             lo_value == cast[uint32](minus_inf)
             lo_cycles == 36 - 1
-            
 
     test "MFLO/MFHI":
         let 
@@ -805,3 +804,17 @@ suite "Instruction execution correctness":
             cpu.ReadRegisterDebug(3) == 1
             cpu.ReadRegisterDebug(4) == 3
             cpu.ReadRegisterDebug(5) == 1
+
+    test "SRL":
+        cpu.WriteRegisterDebug(10, 0b1)
+        cpu.WriteRegisterDebug(11, 0xFFFF_FFFF'u32)
+        p.RunProgram(@[
+            SRL(1, 10, 1),
+            SRL(2, 11, 4),
+            SRL(3, 11, 0),
+        ])
+
+        check:
+            cpu.ReadRegisterDebug(1) == 0b0
+            cpu.ReadRegisterDebug(2) == 0x0FFF_FFFF
+            cpu.ReadRegisterDebug(3) == 0xFFFF_FFFF'u32

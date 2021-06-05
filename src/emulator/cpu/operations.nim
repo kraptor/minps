@@ -89,6 +89,7 @@ const FUNCTIONS = block:
     f[ord Function.DIV ] = Function_DIV
     f[ord Function.MFLO] = Function_MFLO
     f[ord Function.MFHI] = Function_MFHI
+    f[ord Function.SRL ] = Function_SRL
     f # return the array
 
 
@@ -239,6 +240,16 @@ proc Function_SRA(cpu: Cpu): Cycles =
         value = cast[int32](cpu.ReadRegister(rt)) shr cpu.inst.shamt
 
     cpu.WriteRegister(rd, cast[uint32](value))
+    result = 1
+
+
+proc Function_SRL(cpu: Cpu): Cycles =
+    let
+        rd = cpu.inst.rd
+        rt = cpu.inst.rt
+        value = cpu.ReadRegister(rt) shr cpu.inst.shamt
+
+    cpu.WriteRegister(rd, value)
     result = 1
 
 
