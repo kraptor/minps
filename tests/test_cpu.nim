@@ -722,13 +722,13 @@ suite "Instruction execution correctness":
         p.RunProgram(@[DIV(10, 11)])
 
         let 
-            (quotent, hi_cycles) = cpu.ReadHiRegister()
-            (remainder, lo_cycles) = cpu.ReadLoRegister()
+            (remainder, hi_cycles) = cpu.ReadHiRegister()
+            (quotient, lo_cycles) = cpu.ReadLoRegister()
 
         check:
-            quotent == cast[uint32](1)
+            remainder == cast[uint32](1)
             hi_cycles == 36 - 1
-            remainder == cast[uint32](3)
+            quotient == cast[uint32](3)
             lo_cycles == 36 - 1
 
     test "DIV - Positive division by 0":
@@ -781,9 +781,27 @@ suite "Instruction execution correctness":
             lo_cycles == 36 - 1
             
 
-    test "MFLO":
-        skip()
+    test "MFLO/MFHI":
+        let 
+            num = 10'u32
+            den =  3'u32
+        cpu.WriteRegisterDebug(10, num)
+        cpu.WriteRegisterDebug(11, den)
 
-    test "MFHI":
-        skip()
+        p.RunProgram(@[
+            MFLO(1),     #  1 cycle  | nothing set in the register, should be 0 and 1 cycle
+            DIV(10, 11), #  1 cycle  | should be 1 cycle by itself, but accessing HI/LO blocks cpu
+            MFLO(2),     # 36 cycles | quotent, should block for 35 cycles + 1 cycle for the instruction itself
+            MFHI(3),     #  1 cycle  | remainder, should not block, just 1 cycle
+            NOP,         #  1 cycle  | 1 extra cycle here to check past the delayed register timestamp
+            MFLO(4),     #  1 cycle  | past the target timestamp + cycles in LO
+            MFHI(5),     #  1 cycle  | past the target timestamp + cycles in HI
+        ])
 
+        check:
+            cpu.stats.cycle_count == 1 + 1 + 36 + 1 + 1 + 1 + 1
+            cpu.ReadRegisterDebug(1) == 0
+            cpu.ReadRegisterDebug(2) == 3
+            cpu.ReadRegisterDebug(3) == 1
+            cpu.ReadRegisterDebug(4) == 3
+            cpu.ReadRegisterDebug(5) == 1
