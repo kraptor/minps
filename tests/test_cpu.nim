@@ -712,8 +712,74 @@ suite "Instruction execution correctness":
             cpu.ReadRegisterDebug(2) == 0
             cpu.ReadRegisterDebug(3) == cast[uint32](int32.high shr 1)
 
-    test "DIV":
-        skip()
+    test "DIV - Standard division":
+        let 
+            num = 10'u32
+            den =  3'u32
+        cpu.WriteRegisterDebug(10, num)
+        cpu.WriteRegisterDebug(11, den)
+
+        p.RunProgram(@[DIV(10, 11)])
+
+        let 
+            (quotent, hi_cycles) = cpu.ReadHiRegister()
+            (remainder, lo_cycles) = cpu.ReadLoRegister()
+
+        check:
+            quotent == cast[uint32](1)
+            hi_cycles == 36 - 1
+            remainder == cast[uint32](3)
+            lo_cycles == 36 - 1
+
+    test "DIV - Positive division by 0":
+        let num = 10'u32
+        cpu.WriteRegisterDebug(10, num)
+
+        p.RunProgram(@[DIV(10, 0)])
+
+        let 
+            (hi_value, hi_cycles) = cpu.ReadHiRegister()
+            (lo_value, lo_cycles) = cpu.ReadLoRegister()
+
+        check:
+            hi_value == cast[uint32](num)
+            hi_cycles == 36 - 1
+            lo_value == cast[uint32](-1)
+            lo_cycles == 36 - 1
+
+    test "DIV - Negative division by 0":
+        let num = -1
+        cpu.WriteRegisterDebug(10, cast[uint32](num))
+
+        p.RunProgram(@[DIV(10, 0)])
+
+        let 
+            (hi_value, hi_cycles) = cpu.ReadHiRegister()
+            (lo_value, lo_cycles) = cpu.ReadLoRegister()
+
+        check:
+            hi_value == cast[uint32](num)
+            hi_cycles == 36 - 1
+            lo_value == cast[uint32](1)
+            lo_cycles == 36 - 1
+
+    test "DIV - (-80000000h div -1)":
+        let minus_inf = -0x8000_0000
+        cpu.WriteRegisterDebug(10, cast[uint32](minus_inf))
+        cpu.WriteRegisterDebug(11, cast[uint32](-1))
+
+        p.RunProgram(@[DIV(10, 11)])
+
+        let 
+            (hi_value, hi_cycles) = cpu.ReadHiRegister()
+            (lo_value, lo_cycles) = cpu.ReadLoRegister()
+
+        check:
+            hi_value == 0
+            hi_cycles == 36 - 1
+            lo_value == cast[uint32](minus_inf)
+            lo_cycles == 36 - 1
+            
 
     test "MFLO":
         skip()
