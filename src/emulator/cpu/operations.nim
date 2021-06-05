@@ -88,6 +88,7 @@ const FUNCTIONS = block:
     f[ord Function.SRA ] = Function_SRA
     f[ord Function.DIV ] = Function_DIV
     f[ord Function.MFLO] = Function_MFLO
+    f[ord Function.MFHI] = Function_MFHI
     f # return the array
 
 
@@ -539,6 +540,15 @@ proc Function_MFLO(cpu: Cpu): Cycles =
     let
         rd = cpu.inst.rd
         (value, remaining_cycles) = cpu.ReadLoRegister()
+
+    cpu.WriteRegister(rd, value)
+    result = 1 + remaining_cycles
+
+
+proc Function_MFHI(cpu: Cpu): Cycles =
+    let
+        rd = cpu.inst.rd
+        (value, remaining_cycles) = cpu.ReadHiRegister()
 
     cpu.WriteRegister(rd, value)
     result = 1 + remaining_cycles
