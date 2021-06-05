@@ -498,27 +498,34 @@ proc Function_DIV(cpu: Cpu): Cycles =
         den = cast[int32](cpu.ReadRegister(rt))
         
     #[ Division by 0, -1 cases:
-        Opcode  Rs (num)        Rt(num)      Hi/Remainder  Lo/Result
+        Opcode  Rs (num)        Rt(den)      Hi/Remainder  Lo/Result
         div     0..+7FFFFFFFh    0      -->  Rs(num)       -1
         div     -80000000h..-1   0      -->  Rs(num)       +1
         div     -80000000h      -1      -->  0             -80000000h
     ]#
 
-    const timing_cycles = 36
+    const 
+        timing_cycles = 36
+        minus_inf = -0x8000_0000
 
     if den == 0: # division by 0
-        if num >= 0: # num in [0 .. +7FFF_FFFFh]
+        if num >= 0: 
+            # Positive division by 0
+            # num in [0 .. +7FFF_FFFFh]
             # cpu.WriteLoRegister(cast[uint32](-1) , timing_cycles)
-            cpu.WriteLoRegister(0xFFFF_FFFF'u32  , timing_cycles)
+            cpu.WriteLoRegister(cast[uint32](-1) , timing_cycles)
             cpu.WriteHiRegister(cast[uint32](num), timing_cycles)
-        else: # num in [-8000_0000h .. -1]
+        else: 
+            # Negative division by 0
+            # num in [-8000_0000h .. -1]
             cpu.WriteLoRegister(1, timing_cycles)
             cpu.WriteHiRegister(cast[uint32](num), timing_cycles)
 
-    elif num == -0x8000_0000 and den == -1:
+    elif num == minus_inf and den == -1:
+        # 0x8000_0000 division by -1
         # non-representable 32-bit value
-        cpu.WriteLoRegister(cast[uint32](-0x8000_0000), timing_cycles)
-        cpu.WriteHiRegister(0, 0)
+        cpu.WriteLoRegister(cast[uint32](minus_inf), timing_cycles)
+        cpu.WriteHiRegister(0, timing_cycles)
 
     else:
         let (quotent, remainder) = divmod(num, den)
