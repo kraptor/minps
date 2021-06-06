@@ -29,7 +29,7 @@ type
         bgez, bltzal, bgezal, 
         slti, subu, sra, `div`,
         mflo, mfhi, srl, sltiu,
-        divu, slt
+        divu, slt, syscall
 
     InstructionPartType {.pure.}  = enum
         CpuRegister
@@ -112,23 +112,23 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
             NOT_IMPLEMENTED fmt"Missing disassembly for BcondZ {inst}"
     of Opcode.Special:
         case inst.function:
-        of Function.SLL : return inst.DisasmSLL(cpu)
-        of Function.OR  : return inst.DisasmSpecialArithmetic(cpu, Mnemonic.`or`)
-        of Function.SLTU: return inst.DisasmSpecialArithmetic(cpu, sltu)
-        of Function.ADDU: return inst.DisasmSpecialArithmetic(cpu, addu)
-        of Function.JR  : return inst.DisasmJR(cpu)
-        of Function.AND : return inst.DisasmSpecialArithmetic(cpu, Mnemonic.`and`)
-        of Function.ADD : return inst.DisasmSpecialArithmetic(cpu, Mnemonic.add)
-        of Function.JALR: return inst.DisasmJALR(cpu)
-        of Function.SUBU: return inst.DisasmSpecialArithmetic(cpu, subu)
-        of Function.SRA : return inst.DisasmSRA(cpu)
-        of Function.SRL : return inst.DisasmSRL(cpu)
-        of Function.DIV : return inst.DisasmDIV(cpu)
-        of Function.MFLO: return inst.DisasmMFxx(cpu, mflo)
-        of Function.MFHI: return inst.DisasmMFxx(cpu, mfhi)
-        of Function.DIVU: return inst.DisasmDIVU(cpu)
-        of Function.SLT : return inst.DisasmSpecialArithmetic(cpu, slt)
-        
+        of Function.SLL    : return inst.DisasmSLL(cpu)
+        of Function.OR     : return inst.DisasmSpecialArithmetic(cpu, Mnemonic.`or`)
+        of Function.SLTU   : return inst.DisasmSpecialArithmetic(cpu, sltu)
+        of Function.ADDU   : return inst.DisasmSpecialArithmetic(cpu, addu)
+        of Function.JR     : return inst.DisasmJR(cpu)
+        of Function.AND    : return inst.DisasmSpecialArithmetic(cpu, Mnemonic.`and`)
+        of Function.ADD    : return inst.DisasmSpecialArithmetic(cpu, Mnemonic.add)
+        of Function.JALR   : return inst.DisasmJALR(cpu)
+        of Function.SUBU   : return inst.DisasmSpecialArithmetic(cpu, subu)
+        of Function.SRA    : return inst.DisasmSRA(cpu)
+        of Function.SRL    : return inst.DisasmSRL(cpu)
+        of Function.DIV    : return inst.DisasmDIV(cpu)
+        of Function.MFLO   : return inst.DisasmMFxx(cpu, mflo)
+        of Function.MFHI   : return inst.DisasmMFxx(cpu, mfhi)
+        of Function.DIVU   : return inst.DisasmDIVU(cpu)
+        of Function.SLT    : return inst.DisasmSpecialArithmetic(cpu, slt)
+        of Function.Syscall: return inst.DisasmSyscall(cpu)
         else:
             NOT_IMPLEMENTED fmt"Missing disassembly for SPECIAL {inst}"
     else: 
@@ -479,4 +479,10 @@ proc DisasmMFxx(inst: Instruction, cpu: Cpu, mnemonic: Mnemonic): DisassembledIn
         parts: @[
             InstructionPart(mode: Target, kind: CpuRegister, value: inst.rd)
         ]
+    )
+
+
+proc DisasmSYSCALL(inst: Instruction, cpu: Cpu): DisassembledInstruction =
+    return DisassembledInstruction(
+        mnemonic: syscall
     )
