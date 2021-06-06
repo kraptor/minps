@@ -181,8 +181,8 @@ proc Op_LW(cpu: Cpu): Cycles =
 
     let value = cpu.mmu.Read32(address)
 
-    # TODO: LW data loaded into register is delayed 1 instruction
-    cpu.WriteRegister(cpu.inst.rt, value)
+    # loads are delayed by 1 cycle, so we initiate the load here
+    cpu.BeginLoad(cpu.inst.rt, value)
     result = 1
 
 
@@ -201,8 +201,8 @@ proc Op_LB(cpu: Cpu): Cycles =
 
     let value = cpu.mmu.Read8(address).sign_extend
 
-    # TODO: LB data loaded into register is delayed 1 instruction
-    cpu.WriteRegister(cpu.inst.rt, value)
+    # loads are delayed by 1 cycle, so we initiate the load here
+    cpu.BeginLoad(cpu.inst.rt, value)
     result = 1
 
 
@@ -221,8 +221,8 @@ proc Op_LBU(cpu: Cpu): Cycles =
 
     let value = cpu.mmu.Read8(address).zero_extend
 
-    # TODO: LB data loaded into register is delayed 1 instruction
-    cpu.WriteRegister(cpu.inst.rt, value)
+    # loads are delayed by 1 cycle, so we initiate the load here
+    cpu.BeginLoad(cpu.inst.rt, value)
     result = 1
 
 

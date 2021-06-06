@@ -24,7 +24,10 @@ type
         value    *: uint32 # value of the register, once timestamp + cycles is reached
         cycles   *: Cycles # how many cycles to wait until available
         timestamp*: Cycles # when the write happened to the register
-        
+
+    CpuPendingLoadRegister* = object
+        value *: uint32
+        cpu_register*: CpuRegisterIndex        
 
     CpuStats* = object
         instruction_count*: int64
@@ -39,6 +42,8 @@ type
         inst_pc        *: Address  # instruction address of the current excecuting instruction
         inst_in_delay  *: bool # if current instruction is in delay slot
         inst_is_branch *: bool # if current instruction is a branch instruction
+
+        pending_load   *: CpuPendingLoadRegister
 
         cop0  *: Cop0
 
@@ -113,6 +118,15 @@ proc ReadLoRegister*(cpu: Cpu): tuple[value: uint32, cycles: Cycles] =
     return (cpu.lo.value, cycles)
 
 
+proc BeginLoad*(cpu: Cpu, register: CpuRegisterIndex, value: uint32) =
+    cpu.pending_load.value = value
+    cpu.pending_load.cpu_register = register
+
+proc EndLoad*(cpu: Cpu) =
+    cpu.WriteRegister(cpu.pending_load.cpu_register, cpu.pending_load.value)
+    cpu.pending_load.reset()
+
+
 import operations # NOTE: import here so Cpu type is defined and ready within operations module
 
 
@@ -153,6 +167,9 @@ proc RunNext*(self: Cpu) =
 
     self.pc = self.pc_next
     self.pc_next = self.pc + INSTRUCTION_SIZE
+
+    # finalize pending delayed loads
+    self.EndLoad()
 
     # by executing then fetching, we can easily handle
     # delay slots at the expense of executing an extra

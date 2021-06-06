@@ -131,16 +131,21 @@ suite "Instruction execution correctness":
         
         p.RunProgram(@[
             LW(10, 0,  0), # read at 0x0
+            NOP,
             LW(11, 0, 16), # read at 0x0 + 10
+            NOP,
             LW(12, 1,  0), # read at  16 +  0
+            NOP,
+            LW(13, 0, 0 ), # read at 0x0 but not store the result (load delay)
         ])
         
         check:
             cpu.ReadRegisterDebug(10) == 0xDEADBEEF'u32
             cpu.ReadRegisterDebug(11) == 0xAABBCCDD'u32
             cpu.ReadRegisterDebug(12) == 0xAABBCCDD'u32
-            cpu.stats.instruction_count == 3
-            cpu.stats.cycle_count == 3
+            cpu.ReadRegisterDebug(13) == 0 # load delay didnt' store the data yet
+            cpu.stats.instruction_count == 7
+            cpu.stats.cycle_count == 7
 
     test "LW - unaligned load":
         expect NotImplementedDefect:
@@ -157,14 +162,18 @@ suite "Instruction execution correctness":
         
         # p.RunProgram(@[
         #     LH(10, 0, 0), # read at 0x0
+        #     NOP,
         #     LH(11, 0, 6), # read at 0x0 + 6
+        #     NOP,
+        #     LH(13, 0, 0), # read at 0x0
         # ])
         
         # check:
         #     cpu.ReadRegisterDebug(10) == 0xBEEF'u32
         #     cpu.ReadRegisterDebug(11) == 0xAABB'u32
-        #     cpu.stats.instruction_count == 2
-        #     cpu.stats.cycle_count == 2
+        #     cpu.ReadRegisterDebug(13) == 0
+        #     cpu.stats.instruction_count == 5
+        #     cpu.stats.cycle_count == 5
 
     test "LH - unaligned load":
         skip()
@@ -181,16 +190,21 @@ suite "Instruction execution correctness":
         
         p.RunProgram(@[
             LB(10, 0, 0), # read at 0x0
+            NOP,
             LB(11, 0, 6), # read at 0x0 + 6
+            NOP,
             LB(12, 0, 7), # read at 0x0 + 7
+            NOP,
+            LB(13, 0, 0), # test load delay
         ])
         
         check:
             cpu.ReadRegisterDebug(10) == 0xFFFF_FFEF'u32
             cpu.ReadRegisterDebug(11) == 0xFFFF_FFBB'u32
             cpu.ReadRegisterDebug(12) == 0xFFFF_FFAA'u32
-            cpu.stats.instruction_count == 3
-            cpu.stats.cycle_count == 3
+            cpu.ReadRegisterDebug(13) == 0
+            cpu.stats.instruction_count == 7
+            cpu.stats.cycle_count == 7
 
     test "LBU":
         cpu.mmu.WriteDebug( 0.Address, 0xDEADBEEF'u32)
@@ -199,16 +213,21 @@ suite "Instruction execution correctness":
         
         p.RunProgram(@[
             LBU(10, 0, 0), # read at 0x0
+            NOP,
             LBU(11, 0, 6), # read at 0x0 + 6
+            NOP,
             LBU(12, 0, 7), # read at 0x0 + 7
+            NOP,
+            LBU(13, 0, 0), # test load delay
         ])
         
         check:
             cpu.ReadRegisterDebug(10) == 0xEF'u32
             cpu.ReadRegisterDebug(11) == 0xBB'u32
             cpu.ReadRegisterDebug(12) == 0xAA'u32
-            cpu.stats.instruction_count == 3
-            cpu.stats.cycle_count == 3    
+            cpu.ReadRegisterDebug(13) == 0
+            cpu.stats.instruction_count == 7
+            cpu.stats.cycle_count == 7
 
     test "NOP":
         p.RunProgram(@[
