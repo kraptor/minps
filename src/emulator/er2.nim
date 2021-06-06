@@ -64,7 +64,9 @@ proc Write*[T: uint8|uint16|uint32](self: ExpansionRegion2, address: KusegAddres
         case cast[uint32](address):
         of 0x1F802041:
             self.post_led.status = value
-            notice fmt"POST/LED set to: {self.post_led.status:x}h."; return
+            echo fmt"POST/LED set to: {self.post_led.status:x}h." 
+            notice fmt"POST/LED set to: {self.post_led.status:x}h."
+            return
         else:
             discard
     
