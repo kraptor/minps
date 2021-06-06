@@ -68,16 +68,14 @@ proc GetCpuRegisterAlias*(r: CpuRegisterIndex): string {.inline.} =
 
 proc WriteRegister*(self: Cpu, r: CpuRegisterIndex, v: uint32) =
     let 
-        alias = GetCpuRegisterAlias(r)
         prev_value = self.regs[r]
 
+    trace fmt"write reg[{GetCpuRegisterAlias(r)}] {GetCpuRegisterAlias(r)}=${r} value={self.regs[r]:08x}h (was={prev_value:08x}h)"
     self.WriteRegisterDebug(r, v)
-    trace fmt"write reg[{alias}] {alias}=${r} value={self.regs[r]:08x}h (was={prev_value:08x}h)"
 
 
 proc ReadRegister*(self: Cpu, r: CpuRegisterIndex): uint32 = 
-    let alias = GetCpuRegisterAlias(r)
-    trace fmt"read reg[{alias}] {alias}=${r} value={self.regs[r]:08x}h"
+    trace fmt"read reg[{GetCpuRegisterAlias(r)}] {GetCpuRegisterAlias(r)}=${r} value={self.regs[r]:08x}h"
     ReadRegisterDebug(self, r)
 
 
