@@ -14,7 +14,7 @@ logChannels ["timers"]
 
 
 const
-    TIMERS_MAX_SIZE = 28 # 0x1f801128 - 0x1f801100
+    TIMERS_MAX_SIZE = 0x32 # 0x1f801132 - 0x1f801100
 
     # device regions (in kuseg when possible)
     TIMERS_START* = (Address 0x1F801100).toKUSEG()
@@ -146,6 +146,11 @@ proc Write*[T: uint8|uint16|uint32](self: Timers, address: KusegAddress, value: 
 
     when T is uint16:
         case address.uint32:
+        of 0x1f801100: # Timer 0 Current Value
+            self.timer0.value = value
+            warn fmt"TIMERS/0 Current value set to: {value:08x}h. Side.effects not implemented."
+            return
+
         of 0x1f801104: # Timer 0 Mode
             self.timer0.mode.value = value
             warn fmt"TIMERS/0 Mode set to value: {value:08x}h. Side.effects not implemented."
@@ -166,7 +171,18 @@ proc Write*[T: uint8|uint16|uint32](self: Timers, address: KusegAddress, value: 
                 warn fmt"NOT IMPLEMENTED: TIMERS/0 Interrupt request set to 1"
 
             return
-        of 0x1f801108: # Timer 1 Mode
+
+        of 0x1f801108: # Timer 0 Target Value
+            self.timer0.target_value = value
+            warn fmt"TIMERS/0 Target value set to: {value:08x}h. Side.effects not implemented."
+            return
+
+        of 0x1f801110: # Timer 1 Current Value
+            self.timer1.value = value
+            warn fmt"TIMERS/1 Current value set to: {value:08x}h. Side.effects not implemented."
+            return
+
+        of 0x1f801114: # Timer 1 Mode
             self.timer1.mode.value = value
             warn fmt"TIMERS/1 Mode set to value: {value:08x}h. Side.effects not implemented."
             notice fmt"- Sync. Enable     : {self.timer1.mode.parts.sync_enable}"
@@ -186,6 +202,43 @@ proc Write*[T: uint8|uint16|uint32](self: Timers, address: KusegAddress, value: 
                 warn fmt"NOT IMPLEMENTED: TIMERS/1 Interrupt request set to 1"
 
             return
+
+        of 0x1f801118: # Timer 1 Target Value
+            self.timer1.target_value = value
+            warn fmt"TIMERS/1 Target value set to: {value:08x}h. Side.effects not implemented."
+            return        
+
+        of 0x1f801120: # Timer 2 Current Value
+            self.timer2.value = value
+            warn fmt"TIMERS/2 Current value set to: {value:08x}h. Side.effects not implemented."
+            return
+
+        of 0x1f801124: # Timer 2 Mode
+            self.timer2.mode.value = value
+            warn fmt"TIMERS/2 Mode set to value: {value:08x}h. Side.effects not implemented."
+            notice fmt"- Sync. Enable     : {self.timer2.mode.parts.sync_enable}"
+            notice fmt"- Sync. Mode       : {self.timer2.mode.parts.sync_mode}"
+            notice fmt"- Reset Counter    : {self.timer2.mode.parts.reset_counter}"
+            notice fmt"- IRQ at target?   : {self.timer2.mode.parts.irq_at_target}"
+            notice fmt"- IRQ at wrap?     : {self.timer2.mode.parts.irq_at_wrap}"
+            notice fmt"- IRQ repeat mode  : {self.timer2.mode.parts.irq_repeat_mode}"
+            notice fmt"- IRQ toggle mode  : {self.timer2.mode.parts.irq_toggle_mode}"
+            notice fmt"- IRQ clock source : {self.timer2.mode.parts.clock_source}"
+            notice fmt"- Interrupt request: {self.timer2.mode.parts.interrupt_request}"
+            notice fmt"- Reached target?  : {self.timer2.mode.parts.reached_target}"
+            notice fmt"- Reached wrap?    : {self.timer2.mode.parts.reached_wrap}"
+
+            # NOTE: TimerInteruptRequest.No = 1
+            if self.timer2.mode.parts.interrupt_request == TimerInterruptRequest.No:
+                warn fmt"NOT IMPLEMENTED: TIMERS/2 Interrupt request set to 1"
+            
+            return
+
+        of 0x1f801128: # Timer 2 Target Value
+            self.timer2.target_value = value
+            warn fmt"TIMERS/2 Target value set to: {value:08x}h. Side.effects not implemented."
+            return        
+
         else:
             discard
             
