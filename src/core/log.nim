@@ -132,8 +132,9 @@ macro doLog(level: static LogLevel, message: string, channels: static openArray[
         if "*" notin enabled_channels:
             # wildcard enables everything
             for ch in channels:
-                if ch notin enabled_channels:
-                    return
+                if ch in enabled_channels:
+                    break check_enabled_channels
+            return
 
     block:
         # do not generate code for loglevels over the minimum allowed
