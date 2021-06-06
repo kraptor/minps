@@ -65,7 +65,7 @@ proc Read*[T: uint8|uint16|uint32](self: InterruptControl, address: KusegAddress
     when T is uint32:
         case address.uint32:
         of 0x1F80_1074: 
-            warn fmt"IC/I_MASK read: value={self.I_MASK:08x}"
+            warn fmt"IC/I_MASK read: value={self.I_MASK.value:08x}"
             return self.I_MASK.value
         else:
             discard
