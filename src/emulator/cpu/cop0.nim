@@ -28,18 +28,18 @@ type
         DCIC      : Cop0DCICRegister # Debug and Cache Invalidate Control Register
         BadVaddr  : uint32
         BDAM      : uint32 # Breakpoint on Data Access Mask Register
-        r10       : uint32
+        r10       : uint32 #
         BPCM      : uint32 # Breakpoint on Execute Mas Register
         SR        : Cop0SystemStatusRegister # System Status Register
         CAUSE     : Cop0CauseRegister # Exception Cause Register
-        EPC       : uint32
-        PRID      : uint32
+        EPC       : uint32 # Return address from exception
+        PRID      : uint32 # Processor ID
         r16, r17, r18, r19, r20, r21, r22, r23: uint32
         r24, r25, r26, r27, r28, r29, r30, r31: uint32
     
     Cop0* {.union.} = object
-        regs*: Cop0RegisterArray
-        parts*: Cop0RegistersParts
+        regs  *: Cop0RegisterArray
+        parts *: Cop0RegistersParts
 
     Cop0RegisterName* {.pure.} = enum
         r0, r1, r2, BPC, r4, BDA, JUMPDEST, DCIC,
@@ -48,11 +48,11 @@ type
         r24, r25, r26, r27, r28, r29, r30, r31
 
 type
-    InterruptEnableMode {.pure.} = enum
+    InterruptEnableMode* {.pure.} = enum
         Disabled = 0
         Enabled
 
-    KernelMode {.pure.} = enum
+    KernelUserMode* {.pure.} = enum
         Kernel = 0
         User
 
@@ -60,7 +60,7 @@ type
         Normal = 0
         Swapped
 
-    BootExceptionVectorLocation {.pure.} = enum
+    BootExceptionVectorLocation* {.pure.} = enum
         RAM_KSEG0
         ROM_KSEG1
 
@@ -71,32 +71,32 @@ type
         KernelAndUser
 
     Cop0SystemStatusRegister* {.packed.} = object   # APU Status Register
-        IEc     {.bitsize: 1.}: InterruptEnableMode # Current Interrupt Enable
-        KUc     {.bitsize: 1.}: KernelMode          # Current Kernel/User Mode
-        IEp     {.bitsize: 1.}: InterruptEnableMode # Previous Interrupt Enable
-        KUp     {.bitsize: 1.}: KernelMode          # Previous Kernel/User Mode
-        IEo     {.bitsize: 1.}: InterruptEnableMode # Old Interrupt Enable
-        KUo     {.bitsize: 1.}: KernelMode          # Old Kernel/User Mode
-        U_06_07 {.bitsize: 2.}: Unused8
-        Im      {.bitsize: 8.}: uint8               # 8bit Interrupt Mask
-        Isc     {.bitsize: 1.}: bool                # Isolate Cache
-        Swc     {.bitsize: 1.}: SwappedCacheMode    # Swapped cache mode
-        PZ      {.bitsize: 1.}: bool                # If set, parity bits are written as 0
-        CM      {.bitsize: 1.}: bool                # Shows the result of the last load operation with the D-cache
-                                                    #   isolated. It gets set if the cache really contained data
-                                                    #   for the addressed memory location.
-        PE      {.bitsize: 1.}: bool                # Cache parity error
-        TS      {.bitsize: 1.}: bool                # TLB shutdown. Gets set if a programm address simultaneously
-                                                    #   matches 2 TLB entries. (initial value on reset allows to 
-                                                    #   detect extended CPU version?)
-        BEV     {.bitsize: 1.}: BootExceptionVectorLocation
-        U_23_24 {.bitsize: 2.}: Unused8
-        RE      {.bitsize: 1.}: bool                # Reverse Endianess
-        U_26_27 {.bitsize: 2.}: Unused8
-        CU0     {.bitsize: 1.}: CoprocessorEnableMode
-        CU1     {.bitsize: 1.}: CoprocessorEnableMode
-        CU2     {.bitsize: 1.}: CoprocessorEnableMode
-        CU3     {.bitsize: 1.}: CoprocessorEnableMode
+        IEc     *{.bitsize: 1.}: InterruptEnableMode # Current Interrupt Enable
+        KUc     *{.bitsize: 1.}: KernelUserMode      # Current Kernel/User Mode
+        IEp     *{.bitsize: 1.}: InterruptEnableMode # Previous Interrupt Enable
+        KUp     *{.bitsize: 1.}: KernelUserMode      # Previous Kernel/User Mode
+        IEo     *{.bitsize: 1.}: InterruptEnableMode # Old Interrupt Enable
+        KUo     *{.bitsize: 1.}: KernelUserMode      # Old Kernel/User Mode
+        U_06_07 *{.bitsize: 2.}: Unused8
+        Im      *{.bitsize: 8.}: uint8               # 8bit Interrupt Mask
+        Isc     *{.bitsize: 1.}: bool                # Isolate Cache
+        Swc     *{.bitsize: 1.}: SwappedCacheMode    # Swapped cache mode
+        PZ      *{.bitsize: 1.}: bool                # If set, parity bits are written as 0
+        CM      *{.bitsize: 1.}: bool                # Shows the result of the last load operation with the D-cache
+                                                     #   isolated. It gets set if the cache really contained data
+                                                     #   for the addressed memory location.
+        PE      *{.bitsize: 1.}: bool                # Cache parity error
+        TS      *{.bitsize: 1.}: bool                # TLB shutdown. Gets set if a programm address simultaneously
+                                                     #   matches 2 TLB entries. (initial value on reset allows to 
+                                                     #   detect extended CPU version?)
+        BEV     *{.bitsize: 1.}: BootExceptionVectorLocation
+        U_23_24  {.bitsize: 2.}: Unused8
+        RE      *{.bitsize: 1.}: bool                # Reverse Endianess
+        U_26_27  {.bitsize: 2.}: Unused8
+        CU0     *{.bitsize: 1.}: CoprocessorEnableMode
+        CU1     *{.bitsize: 1.}: CoprocessorEnableMode
+        CU2     *{.bitsize: 1.}: CoprocessorEnableMode
+        CU3     *{.bitsize: 1.}: CoprocessorEnableMode
 
 
 type 
@@ -143,28 +143,34 @@ type
         CoprocesorUnusable         = 0x0B # Coprocesor unusable
         ArithmeticOverflow         = 0x0C # Arithmetic overflow
 
-    SoftwareInterruptCode {.pure.} = enum
+    SoftwareInterruptCode* {.pure.} = enum
         None = 0b00
         Sw1  = 0b01
         Sw2  = 0b10
         Sw1AndSw2 = 0b11
 
-    CoprocessorErrorCode {.pure.} = enum
+    CoprocessorErrorCode* {.pure.} = enum
         Cop0, Cop1, Cop2, Cop3
 
     Cop0CauseRegister* {.packed.} = object
-        RESERVED_00_01     {.bitsize:  1.}: uint8
-        ExceptionCode      {.bitsize:  5.}: ExceptionCode
-        RESERVED_06_07     {.bitsize:  1.}: uint8
-        SoftwareInterrupts {.bitsize:  2.}: SoftwareInterruptCode
-        InterruptPending   {.bitsize:  6.}: uint8
-        UNUSED_16_27       {.bitsize: 12.}: uint16
-        CoprocesorError    {.bitsize:  2.}: CoprocessorErrorCode
-        BranchTaken        {.bitsize:  1.}: bool
-        BranchDelay        {.bitsize:  1.}: bool
+        RESERVED_00_01      {.bitsize:  1.}: uint8
+        exception_code     *{.bitsize:  5.}: ExceptionCode
+        RESERVED_06_07      {.bitsize:  1.}: uint8
+        software_interrutps*{.bitsize:  2.}: SoftwareInterruptCode
+        interrupt_pending  *{.bitsize:  6.}: uint8
+        UNUSED_16_27       *{.bitsize: 12.}: uint16
+        coprocessor_error  *{.bitsize:  2.}: CoprocessorErrorCode
+        branch_taken       *{.bitsize:  1.}: bool
+        branch_delay       *{.bitsize:  1.}: bool
 
 
-proc IsolateCacheEnabled*(cop0: Cop0): bool = cop0.parts.SR.Isc
+proc CAUSE *(cop0: var Cop0): var Cop0CauseRegister = cop0.parts.CAUSE
+proc SR    *(cop0: var Cop0): var Cop0SystemStatusRegister = cop0.parts.SR
+proc `SR=` *(cop0: var Cop0, v: uint32) = cop0.parts.SR = cast[Cop0SystemStatusRegister](v)
+proc EPC   *(cop0: var Cop0): uint32 = cop0.parts.EPC
+proc `EPC=`*(cop0: var Cop0, v: uint32) = cop0.parts.EPC = v
+
+proc IsolateCacheEnabled*(cop0: var Cop0): bool = cop0.parts.SR.Isc
 
 
 proc GetCop0RegisterAlias*(r: Cop0RegisterIndex): string =
@@ -199,33 +205,33 @@ proc WriteRegisterDebug*(self: var Cop0, r: Cop0RegisterName, v: uint32) =
 
 proc WriteRegisterDebug*(self: var Cop0, r: Cop0RegisterIndex, v: uint32) =
     case r.Cop0RegisterName:
-    of BPC:
+    of Cop0RegisterName.BPC:
         self.regs[r] = v
         notice fmt"Cop0 BPC Register set to: {v:08x}h"
         warn fmt"cop0[{r.GetCop0RegisterAlias}] set to: {v:08x}h. Side-effects are not implemented."
-    of BDA:
+    of Cop0RegisterName.BDA:
         self.regs[r] = v
         notice fmt"Cop0 BDA Register set to: {v:08x}h"
         warn fmt"cop0[{r.GetCop0RegisterAlias}] set to: {v:08x}h. Side-effects are not implemented."
-    of JUMPDEST:
+    of Cop0RegisterName.JUMPDEST:
         # JUMPDEST is read-only
         # self.regs[r] = v
         warn fmt"cop0[{r.GetCop0RegisterAlias}] attempted write: value={v:08x}h. Ignored write."
-    of BDAM:
+    of Cop0RegisterName.BDAM:
         self.regs[r] = v
         notice fmt"Cop0 BDAM Register set to: {v:08x}h"
         warn fmt"cop0[{r.GetCop0RegisterAlias}] set to: {v:08x}h. Side-effects are not implemented."
-    of BPCM:
+    of Cop0RegisterName.BPCM:
         self.regs[r] = v
         notice fmt"Cop0 Breakpoint On Execute Mask Register set to: {v:08x}h."
         warn fmt"cop0[{r.GetCop0RegisterAlias}] set to: {v:08x}h. Side-effects are not implemented."
-    of CAUSE:
+    of Cop0RegisterName.CAUSE:
         notice fmt"Cop0 Exception Cause Register set to: {v:08x}h."
         # Only bits 8 and 9 are writable
         const WRITE_MASK = (0b11 shl 8)
         self.regs[r] = v and WRITE_MASK
         warn fmt"cop0[{r.GetCop0RegisterAlias}] set to: {v:08x}h. Side-effects are not implemented."
-    of SR:
+    of Cop0RegisterName.SR:
         self.regs[r] = v
         var sr = self.parts.SR
 
@@ -255,7 +261,7 @@ proc WriteRegisterDebug*(self: var Cop0, r: Cop0RegisterIndex, v: uint32) =
         notice fmt"- CU3 (COP3 Mode)  : {sr.CU3}"       
 
         warn fmt"cop0[{r.GetCop0RegisterAlias}] set to: {v:08x}h. Side-effects are not implemented."
-    of DCIC:
+    of Cop0RegisterName.DCIC:
         self.regs[r] = v
         var dcic = self.parts.DCIC
 
@@ -304,5 +310,7 @@ proc ReadRegister*(self: var Cop0, r: Cop0RegisterIndex): uint32 =
     ReadRegisterDebug(self, r)
 
 
-proc Reset*(self: Cop0) =
+proc Reset*(self: var Cop0) =
+    self.regs.reset()
+    # TODO: set PRID to initial value
     warn "Reset: COP0 State not fully initialized."
