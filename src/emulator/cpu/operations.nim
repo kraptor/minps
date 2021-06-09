@@ -5,6 +5,7 @@
 
 {.experimental:"codeReordering".}
 
+import bitops
 import strformat
 
 import ../../core/log
@@ -77,22 +78,23 @@ const OPCODES = block:
 const FUNCTIONS = block:
     var f: array[Function.high.ord, OperationProc]
     for x in f.mitems: x = ExecuteFunctionNotImplemented
-    f[ord Function.SLL ] = Function_SLL
-    f[ord Function.OR  ] = Function_OR
-    f[ord Function.SLTU] = Function_SLTU
-    f[ord Function.ADDU] = Function_ADDU
-    f[ord Function.JR  ] = Function_JR
-    f[ord Function.AND ] = Function_AND
-    f[ord Function.ADD ] = Function_ADD
-    f[ord Function.JALR] = Function_JALR
-    f[ord Function.SUBU] = Function_SUBU
-    f[ord Function.SRA ] = Function_SRA
-    f[ord Function.DIV ] = Function_DIV
-    f[ord Function.MFLO] = Function_MFLO
-    f[ord Function.MFHI] = Function_MFHI
-    f[ord Function.SRL ] = Function_SRL
-    f[ord Function.DIVU] = Function_DIVU
-    f[ord Function.SLT ] = Function_SLT
+    f[ord Function.SLL    ] = Function_SLL
+    f[ord Function.OR     ] = Function_OR
+    f[ord Function.SLTU   ] = Function_SLTU
+    f[ord Function.ADDU   ] = Function_ADDU
+    f[ord Function.JR     ] = Function_JR
+    f[ord Function.AND    ] = Function_AND
+    f[ord Function.ADD    ] = Function_ADD
+    f[ord Function.JALR   ] = Function_JALR
+    f[ord Function.SUBU   ] = Function_SUBU
+    f[ord Function.SRA    ] = Function_SRA
+    f[ord Function.DIV    ] = Function_DIV
+    f[ord Function.MFLO   ] = Function_MFLO
+    f[ord Function.MFHI   ] = Function_MFHI
+    f[ord Function.SRL    ] = Function_SRL
+    f[ord Function.DIVU   ] = Function_DIVU
+    f[ord Function.SLT    ] = Function_SLT
+    f[ord Function.Syscall] = Function_Syscall
     f # return the array
 
 
@@ -109,6 +111,52 @@ proc BranchWithDelaySlotTo*(cpu: Cpu, target: Address) =
     cpu.inst_is_branch = true
     cpu.pc_next = target
     trace fmt"CPU will branch to: {target} after the delay slot."
+
+
+proc RaiseException*(cpu: Cpu, exception_code: ExceptionCode) =
+    #[ 
+        When an exception happens, we need to update the following
+        cop0 registers:
+            - cop0.CAUSE: update the exception code
+            - cop0.SR: update IEc/KUc/IEp/KUp/IEo/KUo by shifting
+                their values to the left: IEc = IEp, KUc = KUp, etc.
+            - cop0.EPC: the PC when the exception happens, should
+                be adjusted when PC is withing a GTE instruction or
+                a in a Delay Slot.
+        Afterwards, we should jump to the corresponding exception 
+        vector, depending on the value of bit cop0.SR.BEV.
+    ]#
+    
+    cpu.cop0.CAUSE.exception_code = exception_code
+    cpu.cop0.CAUSE.branch_delay = cpu.inst_in_delay
+    
+    # TODO: adjust this if GTE instruction.
+    cpu.cop0.EPC = 
+        if cpu.inst_in_delay:
+            cpu.inst_pc - 4
+        else:
+            cpu.inst_pc
+
+    # Shift enable/mode and kerne/user mode bits
+    const 
+        mask = 0b111111'u32
+        
+    var sr = cast[uint32](cpu.cop0.SR)
+    let new_mode = (sr and mask) shl 2
+
+    sr.clearMask(mask)
+    cpu.cop0.SR = sr or new_mode
+
+    const
+        RAM_VECTOR = 0x8000_0000.Address
+        KERNEL_VECTOR = 0xBFC0_0180.Address
+    
+    let 
+        BEV = cpu.cop0.SR.BEV
+        exception_vector = if BEV == RAM_KSEG0: RAM_VECTOR else: KERNEL_VECTOR
+        
+    # jump direcly to the exception vector
+    cpu.pc_next = exception_vector
 
 
 proc Execute*(cpu: Cpu): Cycles =
@@ -612,3 +660,9 @@ proc Function_MFHI(cpu: Cpu): Cycles =
 
     cpu.WriteRegister(rd, value)
     result = 1 + remaining_cycles
+
+
+proc Function_Syscall(cpu: Cpu): Cycles =
+    # TODO: display BIOS function depending on register $4
+    cpu.RaiseException(ExceptionCode.Syscall)
+    result = 1

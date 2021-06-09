@@ -484,18 +484,18 @@ suite "Instruction execution correctness":
         cpu.WriteRegisterDebug(1, 100)
 
         p.RunProgram(@[
-            MTC0(1, SR)
+            MTC0(1, Cop0RegisterName.SR)
         ])
 
         check:
-            cpu.cop0.ReadRegisterDebug(SR) == 100
+            cpu.cop0.ReadRegisterDebug(Cop0RegisterName.SR) == 100
             cpu.stats.cycle_count == 1
 
     test "MFC0":
-        cpu.cop0.WriteRegisterDebug(SR, 100)
+        cpu.cop0.WriteRegisterDebug(Cop0RegisterName.SR, 100)
 
         p.RunProgram(@[
-            MFC0(1, SR)
+            MFC0(1, Cop0RegisterName.SR)
         ])
 
         check:
@@ -909,3 +909,51 @@ suite "Instruction execution correctness":
             hi_cycles == 36 - 1
             quotient == 0xFFFF_FFFF'u32
             lo_cycles == 36 - 1
+
+    test "Syscall - Exceptions":
+        let start = cpu.pc
+        cpu.cop0.SR.IEc = InterruptEnableMode.Enabled
+        cpu.cop0.SR.BEV = BootExceptionVectorLocation.ROM_KSEG1
+
+        p.RunProgram(@[
+            SYSCALL()
+        ])
+
+        check:
+            cpu.inst_in_delay == false
+            cpu.cop0.EPC == start
+            cpu.pc_next == 0xBFC0_0180.Address # exception vector (ROM)
+
+            cpu.cop0.CAUSE.branch_delay == false
+            cpu.cop0.SR.IEc == InterruptEnableMode.Disabled
+            cpu.cop0.SR.KUc == KernelUserMode.Kernel
+            cpu.cop0.SR.IEp == InterruptEnableMode.Enabled
+            cpu.cop0.SR.IEo == InterruptEnableMode.Disabled
+
+    test "Syscall - Exceptions in DELAY SLOT":
+        let start = cpu.pc
+
+        cpu.cop0.SR.BEV = BootExceptionVectorLocation.RAM_KSEG0
+
+        let program = @[
+            JR(0),
+            SYSCALL()
+        ]
+
+        p.SetProgram(program)
+        p.RunFor(1) # run JR
+        
+        check:
+            # test that SYSCALL is in a delay slot
+            cpu.inst.function == Function.SYSCALL
+            cpu.inst_is_branch == false
+            cpu.inst_in_delay == true
+
+        p.RunFor(1) # run SYSCALL
+
+        check:
+            cpu.pc == 0x8000_0000.Address # exception vector (RAM)
+            cpu.cop0.CAUSE.branch_delay == true
+            # in case of a delay slot, EPC should point to the jump instruction
+            cpu.cop0.EPC.Address == start 
+                    
