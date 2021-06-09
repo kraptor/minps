@@ -45,27 +45,35 @@ proc Reset*(self: Platform) =
 
 proc Run*(self: Platform) =
     while true:
-        notice fmt"[CPU] {self.cpu.pc}: {self.cpu.inst.DisasmAsText(self.cpu)}"
+        debug fmt"[CPU] {self.cpu.pc}: {self.cpu.inst.DisasmAsText(self.cpu)}"
         logIndent:
             self.cpu.RunNext()
 
 
 proc RunFor*(self: Platform, number_of_instructions: int64) =
-    while self.cpu.stats.instruction_count < number_of_instructions:
-        notice fmt"[CPU] {self.cpu.pc}: {self.cpu.inst.DisasmAsText(self.cpu)}"
+    let 
+        start = self.cpu.stats.instruction_count
+        target = start + number_of_instructions
+
+    while self.cpu.stats.instruction_count <= target:
+        debug fmt"[CPU] {self.cpu.pc}: {self.cpu.inst.DisasmAsText(self.cpu)}"
         logIndent:
             self.cpu.RunNext()
 
 
 proc RunToPc*(self: Platform, pc: Address) =
     while self.cpu.pc != pc:
-        notice fmt"[CPU] {self.cpu.pc}: {self.cpu.inst.DisasmAsText(self.cpu)}"
+        debug fmt"[CPU] {self.cpu.pc}: {self.cpu.inst.DisasmAsText(self.cpu)}"
         logIndent:
             self.cpu.RunNext()
 
 
-proc RunProgram*(self: Platform, program: Program) =
+proc SetProgram*(self: Platform, program: Program) =
     self.mmu.bios = Bios.FromProgram(program)
+
+
+proc RunProgram*(self: Platform, program: Program) =
+    self.SetProgram(program)
     self.RunFor(program.len)
 
 
