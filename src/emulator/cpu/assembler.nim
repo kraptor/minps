@@ -79,6 +79,7 @@ proc J   *(target: uint32) : Instruction = JType(Opcode.J  , target shr 2)
 proc JR  *(target: CpuRegisterIndex) : Instruction = RType(Function.JR, target, 0, 0, 0)
 proc JAL *(target: uint32) : Instruction = JType(Opcode.JAL, target shr 2)
 proc JALR*(target, source: CpuRegisterIndex): Instruction = RType(Function.JALR, source, 0, target, 0)
+proc SYSCALL*(): Instruction = RType(Function.SYSCALL, 0, 0, 0, 0)
 
 
 proc BCond(op: BCondZ, rs: CpuRegisterIndex, offset: int16): Instruction =
@@ -106,3 +107,4 @@ proc MFC0*(target: CpuRegisterIndex, source: Cop0RegisterName): Instruction =
     result.R.rs = Cop0Opcode.MFC.ord
     result.R.rt = cast[uint8](target)
     result.R.rd = cast[uint8](source)
+
