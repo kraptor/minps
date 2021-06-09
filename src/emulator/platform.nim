@@ -13,7 +13,7 @@ import cpu/cpu
 import cpu/assembler
 import cpu/disassembler
 import mmu
-import bios
+import bios/bios
 
 logChannels ["platform"]
 

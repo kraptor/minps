@@ -8,9 +8,9 @@
 import streams
 import strformat
 
-import ../core/[log, util]
-import address
-import cpu/instruction
+import ../../core/[log, util]
+import ../address
+import ../cpu/instruction
 
 logChannels ["bios"]
 

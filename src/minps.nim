@@ -9,7 +9,8 @@ include inc/profiler # NOTE: should be an include for it to work
 include inc/concept_check # NOTE: we want to check concepts asap
 
 import core/[log, version]
-import emulator/[config, bios, platform]
+import emulator/[config, platform]
+import emulator/bios/bios
 
 logFile "minps.log"
 logChannels ["main"]

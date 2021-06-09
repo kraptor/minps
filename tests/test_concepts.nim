@@ -6,10 +6,11 @@
 import unittest
 
 import emulator/[
-    concepts, mmu, bios, platform, mc, ram
+    concepts, mmu, platform, mc, ram
 ]
 
 import emulator/cpu/[cpu, cop0]
+import emulator/bios/bios
 
 
 suite "Test concepts":

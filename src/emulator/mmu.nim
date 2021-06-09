@@ -9,7 +9,7 @@ import strformat
 
 import ../core/[util, log]
 import address
-import bios
+import bios/bios
 import mc
 import ram
 import spu
@@ -99,7 +99,8 @@ proc ReadImpl[T: uint32|uint16|uint8](self: Mmu, address: Address): T =
         elif ka <  BIOS_START  : error MMU_ERROR_BEFORE_BIOS
         elif ka <= BIOS_END    : return Read[T](self.bios, ka)
 
-        NOT_IMPLEMENTED fmt"MMU Read[{$T}]: No device found at address: {address}"
+    # TODO: raise here Bus Error instead of NOT IMPLEMENTED (on devices not found)
+    NOT_IMPLEMENTED fmt"MMU Read[{$T}]: No device found at address: {address}"
 
 
 proc WriteImpl*[T: uint32|uint16|uint8](self: Mmu, address: Address, value: T) =
@@ -129,7 +130,8 @@ proc WriteImpl*[T: uint32|uint16|uint8](self: Mmu, address: Address, value: T) =
         elif ka <  BIOS_START  : error MMU_ERROR_BEFORE_BIOS
         elif ka <= BIOS_END    : error MMU_ERROR_BIOS_NOT_WRITABLE
 
-        NOT_IMPLEMENTED fmt"MMU Write[{$T}]: No device found at address: {address}"
+    # TODO: raise here Bus Error instead of NOT IMPLEMENTED (on devices not found)
+    NOT_IMPLEMENTED fmt"MMU Write[{$T}]: No device found at address: {address}"
 
 
 proc Read*[T: uint32|uint16|uint8](self: Mmu, address: Address): T {.inline.} =
