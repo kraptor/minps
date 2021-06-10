@@ -9,3 +9,4 @@
 /bin/
 
 /callgrind.out*
+/imgui.ini
