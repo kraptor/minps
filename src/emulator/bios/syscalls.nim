@@ -4,7 +4,6 @@
 # https://opensource.org/licenses/MIT
 
 import ../../core/log
-import ../../core/util
 import ../cpu/cpu
 import ../address
 
