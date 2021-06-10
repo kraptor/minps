@@ -31,6 +31,4 @@ proc SyscallFunctionName*(cpu: Cpu): string =
 
 
 proc logSyscallName*(cpu: Cpu) =
-    trace SyscallFunctionName(cpu)
-    echo "BIOS/SYS " & SyscallFunctionName(cpu)
-    # NOT_IMPLEMENTED
+    logEcho "BIOS/SYS " & SyscallFunctionName(cpu)

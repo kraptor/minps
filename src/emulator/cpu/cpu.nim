@@ -174,8 +174,7 @@ proc WriteBiosMessages(self: Cpu) =
         let c = self.ReadRegisterDebug(4).chr
         if c == '\n' or c == '\0':
             if len(self.bios_msg) > 0:
-                notice self.bios_msg
-                echo "> " & self.bios_msg
+                logEcho "> " & self.bios_msg
             self.bios_msg = ""
         else:
             self.bios_msg.add(c)
