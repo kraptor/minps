@@ -24,22 +24,18 @@ jobs:
       - uses: iffy/install-nim@v3.2.0
         with:
           version: ${{ matrix.nimversion }}
-      - name: Install dependencies - Linux
-        if: runner.os == 'Linux'
-        run: /
-          apt-get install libx11-dev
       - run: nim --version
       - name: Refresh packages + install dependencies
         run: |
           nimble refresh
           nimble install -d
-      - name: Build all versions
-        run: nimble build_all
-      - name: Display all built executables and sizes (unix)
-        if: runner.os != 'Windows'
-        run: ls -al bin
-      - name: Display all built executables and sizes (windows)
-        if: runner.os == 'Windows'
-        run: dir bin
+      # - name: Build all versions
+      #   run: nimble build_all
+      # - name: Display all built executables and sizes (unix)
+      #   if: runner.os != 'Windows'
+      #   run: ls -al bin
+      # - name: Display all built executables and sizes (windows)
+      #   if: runner.os == 'Windows'
+      #   run: dir bin
       - name: Run all tests
         run: nimble --silent test
