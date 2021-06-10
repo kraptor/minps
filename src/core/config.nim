@@ -23,7 +23,7 @@ proc New*(T: type Config, ini_file: string): Config =
     notice "Loading configuration from: " & ini_file
     logIndent:
         try:
-            result = to[Config](ini_file)
+            result = loadObject[Config](ini_file)
         except IOError as e:
             logEcho "Can't open config file: " & ini_file
             raise e
