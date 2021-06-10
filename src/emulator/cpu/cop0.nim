@@ -13,6 +13,8 @@ import ../../core/util
 
 logChannels ["cop0"]
 
+const
+    PRID_RESET_VALUE = 0x00000002
 
 type 
     Cop0RegisterIndex* = 0..31
@@ -312,5 +314,5 @@ proc ReadRegister*(self: var Cop0, r: Cop0RegisterIndex): uint32 =
 
 proc Reset*(self: var Cop0) =
     self.regs.reset()
-    # TODO: set PRID to initial value
+    self.parts.PRID = PRID_RESET_VALUE
     warn "Reset: COP0 State not fully initialized."
