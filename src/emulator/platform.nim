@@ -55,7 +55,7 @@ proc RunFor*(self: Platform, number_of_instructions: int64) =
         start = self.cpu.stats.instruction_count
         target = start + number_of_instructions
 
-    while self.cpu.stats.instruction_count <= target:
+    while self.cpu.stats.instruction_count < target:
         debug fmt"[CPU] {self.cpu.pc}: {self.cpu.inst.DisasmAsText(self.cpu)}"
         logIndent:
             self.cpu.RunNext()
@@ -74,7 +74,7 @@ proc SetProgram*(self: Platform, program: Program) =
 
 proc RunProgram*(self: Platform, program: Program) =
     self.SetProgram(program)
-    self.RunFor(program.len)
+    self.RunFor(program.len + 1) # pc will point right after the last instruction
 
 
 proc RunProgramToPc*(self: Platform, program: Program, pc: Address) =
