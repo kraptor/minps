@@ -25,7 +25,7 @@ jobs:
         with:
           version: ${{ matrix.nimversion }}
       - name: Install dependencies - Linux
-        if: runner.os != 'Linux'
+        if: runner.os == 'Linux'
         run: /
           apt-get install libx11-dev
       - run: nim --version
