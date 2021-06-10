@@ -18,6 +18,8 @@ import disassembler
 
 import ../mmu
 import ../address
+import ../bios/syscalls
+
 
 logChannels ["cpu", "ops"]
 
@@ -142,27 +144,32 @@ proc RaiseException*(cpu: Cpu, exception_code: ExceptionCode) =
         mask = 0b111111'u32
         
     var sr = cast[uint32](cpu.cop0.SR)
-    let new_mode = (sr and mask) shl 2
+    let new_mode = (sr shl 2) and mask
 
     sr.clearMask(mask)
     cpu.cop0.SR = sr or new_mode
 
     const
         RAM_VECTOR = 0x8000_0000.Address
-        KERNEL_VECTOR = 0xBFC0_0180.Address
+        ROM_VECTOR = 0xBFC0_0180.Address
     
     let 
         BEV = cpu.cop0.SR.BEV
-        exception_vector = if BEV == RAM_KSEG0: RAM_VECTOR else: KERNEL_VECTOR
+        exception_vector = if BEV == RAM_KSEG0: RAM_VECTOR else: ROM_VECTOR
         
     # jump direcly to the exception vector
-    cpu.pc_next = exception_vector
+    cpu.pc = exception_vector
+    # cpu.pc_next = exception_vector + 4
+    # cpu.inst = Instruction.New(cpu.mmu.Read32(cpu.pc))
+    # cpu.inst_pc = cpu.pc
 
 
 proc Execute*(cpu: Cpu): Cycles =
     # TODO: return number of cycles
     
     debug fmt"Execute: {cpu.inst.DisasmAsText(cpu)}"
+    if cpu.echo_intructions:
+        echo fmt"{cpu.inst_pc} - Execute: {cpu.inst.DisasmAsText(cpu)}"
     logIndent:
         result = OPCODES[ord cpu.inst.opcode] cpu
 
@@ -664,5 +671,6 @@ proc Function_MFHI(cpu: Cpu): Cycles =
 
 proc Function_Syscall(cpu: Cpu): Cycles =
     # TODO: display BIOS function depending on register $4
+    cpu.logSyscallName()
     cpu.RaiseException(ExceptionCode.Syscall)
     result = 1

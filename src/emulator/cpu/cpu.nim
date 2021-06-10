@@ -53,8 +53,8 @@ type
         stats *: CpuStats
         mmu   *: Mmu
 
-
-import assembler
+        echo_intructions*: bool
+        bios_msg: string
 
 
 proc GetCpuRegisterAlias*(r: CpuRegisterIndex): string {.inline.} =
@@ -64,6 +64,7 @@ proc GetCpuRegisterAlias*(r: CpuRegisterIndex): string {.inline.} =
         "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7", 
         "t8", "t9", "k0", "k1", "gp", "sp", "fp_s8", "ra"]
     CPU_REGISTER_TO_ALIAS[r]
+
 
 
 proc WriteRegister*(self: Cpu, r: CpuRegisterIndex, v: uint32) =
@@ -86,6 +87,10 @@ proc ReadRegisterDebug*(self: Cpu, r: CpuRegisterIndex): uint32 =
 proc WriteRegisterDebug*(self: Cpu, r: CpuRegisterIndex, v: uint32) =
     self.regs[r] = v
     self.regs[0] = 0
+
+
+import assembler
+import disassembler
 
 
 proc WriteHiRegister*(cpu: Cpu, value: uint32, cycles: int64) =
@@ -148,8 +153,9 @@ proc Reset*(self: Cpu) =
     self.inst_in_delay = false
 
     self.stats.reset()
-    # we always execute a NOP instruction at the beginning
-    self.stats.instruction_count = -1 
+    # we always execute a NOP instruction at the beginning, we need 
+    # to compensate it for the stats
+    self.stats.instruction_count = -1
     self.stats.cycle_count = -1
 
     self.cop0.Reset()
@@ -160,29 +166,48 @@ proc AddCycles(self: Cpu, cycles: Cycles) =
     self.stats.cycle_count += cycles
 
 
+proc WriteBiosMessages(self: Cpu) =
+    # HACK: display BIOS messages
+    let fun = self.ReadRegisterDebug(9);
+
+    if (self.inst_pc == 0xb0 and fun == 0x3d) or (self.inst_pc == 0xa0 and fun == 0x3c):
+        let c = self.ReadRegisterDebug(4).chr
+        if c == '\n' or c == '\0':
+            if len(self.bios_msg) > 0:
+                notice self.bios_msg
+                echo "> " & self.bios_msg
+            self.bios_msg = ""
+        else:
+            self.bios_msg.add(c)
+
+
 proc RunNext*(self: Cpu) =
     trace fmt"RunNext[pc={self.pc}]"
 
-    self.pc = self.pc_next
-    self.pc_next = self.pc + INSTRUCTION_SIZE
-
-    # finalize pending delayed loads
-    self.EndLoad()
+    self.WriteBiosMessages()
 
     # by executing then fetching, we can easily handle
     # delay slots at the expense of executing an extra
     # instruction after the entry point (a NOP) which
     # it doesn't hurt anyways...
 
+    # echo fmt"RunNext[pc={self.pc}] {DisasmAsText(self.inst, self)}"
+
+    # finalize pending delayed loads
+    self.EndLoad()
+
+    self.pc = self.pc_next
+    self.pc_next = self.pc + INSTRUCTION_SIZE
+
     self.AddCycles self.Execute()
-    inc self.stats.instruction_count
-    
+    inc self.stats.instruction_count    
+
     self.inst_in_delay = self.inst_is_branch
-    self.inst_is_branch = false
+    self.inst_is_branch = false  
+    
 
     self.Fetch()
 
-
-proc Fetch(self: Cpu) =
+proc Fetch*(self: Cpu) =
     self.inst = Instruction.New(self.mmu.Read32(self.pc))
     self.inst_pc = self.pc
