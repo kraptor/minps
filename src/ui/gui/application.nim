@@ -35,10 +35,7 @@ proc New*(t: type Application, config: var Config): Application =
         glfwWindowHint(GLFWOpenglForwardCompat, GLFW_TRUE) # Used for Mac
         glfwWindowHint(GLFWOpenglProfile, GLFW_OPENGL_CORE_PROFILE)
         glfwWindowHint(GLFWResizable, GLFW_FALSE)
-
-        echo $config.gui.window_width 
-        echo $config.gui.window_height
-
+        
         result.window = glfwCreateWindow(
             config.gui.window_width, 
             config.gui.window_height, 
