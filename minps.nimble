@@ -14,7 +14,7 @@ bin           = @[
 # Dependencies
 
 requires "nim >= 1.4.6"
-requires "sim >= 0.1.4"
+requires "sim >= 0.1.5"
 requires "faststreams >= 0.2.0"
 
 requires "nimgl >= 1.1.10"
