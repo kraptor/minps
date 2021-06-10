@@ -236,6 +236,7 @@ suite "Instruction execution correctness":
 
         check:
             cpu.stats.cycle_count == 1
+            cpu.stats.instruction_count == 1
 
     test "ADDIU":
         cpu.WriteRegisterDebug(11, 1)
@@ -376,17 +377,17 @@ suite "Instruction execution correctness":
 
         p.RunProgramToPc(@[
             J(start + 12),     # start    --+ 
-            ADDIU( 1, 0, 100), # start+4    | : executed (DS)
-            ADDIU(10, 0, 100), # start+8    | : not executed
-            ADDIU(11, 0, 100), # start+12 <-+ : executed
+            ADDIU( 1, 0, 100), # start+4    | : executed (DS): at=100
+            ADDIU( 2, 0, 100), # start+8    | : not executed : v0=100
+            ADDIU( 3, 0, 100), # start+12 <-+ : executed     : v1=100
         ],
             start + 16
         )
 
         check:
-            cpu.ReadRegisterDebug( 1) == 100
-            cpu.ReadRegisterDebug(10) == 0
-            cpu.ReadRegisterDebug(11) == 100
+            cpu.ReadRegisterDebug(1) == 100 # at
+            cpu.ReadRegisterDebug(2) == 0   # v0
+            cpu.ReadRegisterDebug(3) == 100 # v1
             cpu.stats.cycle_count == 3
             cpu.stats.instruction_count == 3
 
@@ -914,21 +915,32 @@ suite "Instruction execution correctness":
         let start = cpu.pc
         cpu.cop0.SR.IEc = InterruptEnableMode.Enabled
         cpu.cop0.SR.BEV = BootExceptionVectorLocation.ROM_KSEG1
+        cpu.echo_intructions = true
 
-        p.RunProgram(@[
-            SYSCALL()
-        ])
+        let program = @[
+            SYSCALL(),
+            ADDI(1, 0, 1)
+        ]
 
+        p.SetProgram(program)
+        p.RunFor(1) # execute implicit NOP
+        p.RunFor(1) # execute SYSCALL
+        
         check:
             cpu.inst_in_delay == false
             cpu.cop0.EPC == start
-            cpu.pc_next == 0xBFC0_0180.Address # exception vector (ROM)
+            cpu.pc == 0xBFC0_0180.Address # exception vector (ROM)
 
             cpu.cop0.CAUSE.branch_delay == false
             cpu.cop0.SR.IEc == InterruptEnableMode.Disabled
             cpu.cop0.SR.KUc == KernelUserMode.Kernel
             cpu.cop0.SR.IEp == InterruptEnableMode.Enabled
             cpu.cop0.SR.IEo == InterruptEnableMode.Disabled
+
+        p.RunFor(1) # execute next (shouldn't be ADDI)
+        check:
+            cpu.inst_in_delay == false
+            cpu.ReadRegisterDebug(1) == 0
 
     test "Syscall - Exceptions in DELAY SLOT":
         let start = cpu.pc
@@ -941,10 +953,12 @@ suite "Instruction execution correctness":
         ]
 
         p.SetProgram(program)
+        p.RunFor(1) # run implicit NOP
         p.RunFor(1) # run JR
         
         check:
-            # test that SYSCALL is in a delay slot
+            # at this point SYSCALL is loaded in cpu.inst, 
+            # but it's not executed yet
             cpu.inst.function == Function.SYSCALL
             cpu.inst_is_branch == false
             cpu.inst_in_delay == true
