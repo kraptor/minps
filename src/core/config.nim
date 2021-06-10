@@ -10,8 +10,13 @@ logChannels ["config"]
 
 
 type
+    GuiConfig* = object 
+        window_width  *{.defaultValue: 1024.} : int32
+        window_height *{.defaultValue:  400.} : int32
+
     Config* = object
-        bios_file* {.defaultValue: "bios.bin".}: string
+        bios_file *{.defaultValue: "bios.bin".}: string
+        gui *: GuiConfig
 
 
 proc New*(T: type Config, ini_file: string): Config =
@@ -20,9 +25,10 @@ proc New*(T: type Config, ini_file: string): Config =
         try:
             result = to[Config](ini_file)
         except IOError as e:
-            error "Can't open config file: " & ini_file
+            logEcho "Can't open config file: " & ini_file
             raise e
         except KeyError as e:
             # TODO: update this when https://github.com/ba0f3/sim.nim/pull/2 is merged
-            error "Invalid INI file contents: " & ini_file
+            logEcho "Invalid INI file contents: " & ini_file
+            logEcho "Reason: " & e.msg
             raise e
