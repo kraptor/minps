@@ -5,22 +5,20 @@
 
 {.experimental: "codeReordering".}
 
-import nimgl/[glfw, opengl]
-import nimgl/imgui, nimgl/imgui/[impl_opengl, impl_glfw]
-
-import ../../core/log
-import ../../core/config
-import ../../core/version
+include inc/imports
+import state
+import mainmenu
 
 logChannels ["gui", "app"]
 
 type
     Application* = object
-        window: GLFWWindow
-        context: ptr ImGuiContext
+        state*: State
 
 
-proc New*(t: type Application, config: var Config): Application =    
+proc New*(t: type Application, config: var Config): Application =
+    result.state.config = config
+
     notice "Initializing glfw..."
     logIndent:
         if not glfwInit():
@@ -36,17 +34,17 @@ proc New*(t: type Application, config: var Config): Application =
         glfwWindowHint(GLFWOpenglProfile, GLFW_OPENGL_CORE_PROFILE)
         glfwWindowHint(GLFWResizable, GLFW_FALSE)
         
-        result.window = glfwCreateWindow(
+        result.state.window = glfwCreateWindow(
             config.gui.window_width, 
             config.gui.window_height, 
             "minps - version: " & VersionString
         )
 
-        if result.window == nil:
+        if result.state.window == nil:
             error "Can't create window!"
             quit(-1)
         
-        result.window.makeContextCurrent()
+        result.state.window.makeContextCurrent()
         notice "done."
 
     notice "Initializing OpenGL..."
@@ -56,8 +54,8 @@ proc New*(t: type Application, config: var Config): Application =
             quit(-1)
 
     notice "Initialize Imgui..."
-    result.context = igCreateContext()
-    if not igGlfwInitForOpenGL(result.window, true):
+    result.state.context = igCreateContext()
+    if not igGlfwInitForOpenGL(result.state.window, true):
         error "Can't initialize Imgui!"
         quit(-1)
     
@@ -66,7 +64,7 @@ proc New*(t: type Application, config: var Config): Application =
     igStyleColorsCherry()
 
     debug "Setting up key callback..."
-    discard setKeyCallback(result.window, glfwKeyCallback)
+    discard setKeyCallback(result.state.window, glfwKeyCallback)
 
 
 proc Terminate*(app: var Application) =
@@ -75,10 +73,10 @@ proc Terminate*(app: var Application) =
         # imgui
         igOpenGL3Shutdown()
         igGlfwShutdown()
-        app.context.igDestroyContext()
+        app.state.context.igDestroyContext()
         
         # glfw
-        destroyWindow app.window
+        destroyWindow app.state.window
         glfwTerminate()
         notice "done."
 
@@ -94,7 +92,7 @@ proc Draw*(app: var Application) =
         igNewFrame()
         
         # TODO: draw here user interface
-        #igShowDemoWindow()
+        mainmenu.draw(app.state)
 
         igRender()
         igOpenGL3RenderDrawData(igGetDrawData())
@@ -105,11 +103,11 @@ proc ProcessEvents*(app: var Application) =
 
 
 proc IsClosing*(app: var Application): bool =
-    app.window.windowShouldClose()
+    app.state.window.windowShouldClose()
 
 
 proc Present*(app: var Application) =
-    app.window.swapBuffers()
+    app.state.window.swapBuffers()
 
 
 proc glfwKeyCallback(window: GLFWWindow, key: int32, scancode: int32, action: int32, mods: int32): void {.cdecl.} =
