@@ -7,6 +7,7 @@
 
 import ../../core/log
 import ../../core/util
+import ../address
 import ../mmu
 import cpu
 import cop0
@@ -108,8 +109,6 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
         of BGEZ  : return inst.DisasmBxxZ(cpu, bgez)
         of BLTZAL: return inst.DisasmBxxZ(cpu, bltzal)
         of BGEZAL: return inst.DisasmBxxZ(cpu, bgezal)
-        else:
-            NOT_IMPLEMENTED fmt"Missing disassembly for BcondZ {inst}"
     of Opcode.Special:
         case inst.function:
         of Function.SLL    : return inst.DisasmSLL(cpu)
@@ -325,7 +324,7 @@ proc DisasmSLL(inst: Instruction, cpu: Cpu): DisassembledInstruction =
 proc DisasmJ(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     let 
         delay_slot_pc = cpu.inst_pc + 4  # can't use next_pc, depends on call-site
-        target = (inst.target shl 2) or (0xF000_0000'u32 and delay_slot_pc)
+        target = (inst.target shl 2) or (0xF000_0000'u32 and delay_slot_pc.u32)
     return DisassembledInstruction(
         mnemonic: Mnemonic.j,
         parts: @[
@@ -337,7 +336,7 @@ proc DisasmJ(inst: Instruction, cpu: Cpu): DisassembledInstruction =
 proc DisasmJAL(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     let 
         delay_slot_pc = cpu.inst_pc + 4  # can't use next_pc, depends on call-site
-        target = (inst.target shl 2) or (0xF000_0000'u32 and delay_slot_pc)
+        target = (inst.target shl 2) or (0xF000_0000'u32 and delay_slot_pc.u32)
     return DisassembledInstruction(
         mnemonic: Mnemonic.jal,
         parts: @[
@@ -349,7 +348,7 @@ proc DisasmJAL(inst: Instruction, cpu: Cpu): DisassembledInstruction =
 proc DisasmJALR(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     let 
         delay_slot_pc = cpu.inst_pc + 4  # can't use next_pc, depends on call-site
-        target = (inst.target shl 2) or (0xF000_0000'u32 and delay_slot_pc)
+        target = (inst.target shl 2) or (0xF000_0000'u32 and delay_slot_pc.u32)
     return DisassembledInstruction(
         mnemonic: Mnemonic.jalr,
         parts: @[
@@ -397,7 +396,7 @@ proc DisasmCop0(inst: Instruction, cpu: Cpu): DisassembledInstruction =
 proc DisasmBxx(inst: Instruction, cpu: Cpu, mnemonic: Mnemonic): DisassembledInstruction =
     let 
         delay_slot_pc = cpu.inst_pc + 4  # can't use next_pc, depends on call-site
-        target = (inst.imm16 shl 2).sign_extend + delay_slot_pc
+        target = (inst.imm16 shl 2).sign_extend + delay_slot_pc.u32
         metadata = @[
             MetadataPart(kind: MemoryAddressMetadata, address: target)
         ]
@@ -416,7 +415,7 @@ proc DisasmBxx(inst: Instruction, cpu: Cpu, mnemonic: Mnemonic): DisassembledIns
 proc DisasmBxxZ(inst: Instruction, cpu: Cpu, mnemonic: Mnemonic): DisassembledInstruction =
     let 
         delay_slot_pc = cpu.inst_pc + 4  # can't use next_pc, depends on call-site
-        target = (inst.imm16 shl 2).sign_extend + delay_slot_pc
+        target = (inst.imm16 shl 2).sign_extend + delay_slot_pc.u32
         metadata = @[
             MetadataPart(kind: MemoryAddressMetadata, address: target)
         ]
