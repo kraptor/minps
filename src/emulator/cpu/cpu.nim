@@ -170,7 +170,7 @@ proc WriteBiosMessages(self: Cpu) =
     # HACK: display BIOS messages
     let fun = self.ReadRegisterDebug(9);
 
-    if (self.inst_pc == 0xb0 and fun == 0x3d) or (self.inst_pc == 0xa0 and fun == 0x3c):
+    if (self.inst_pc.u32 == 0xb0 and fun == 0x3d) or (self.inst_pc.u32 == 0xa0 and fun == 0x3c):
         let c = self.ReadRegisterDebug(4).chr
         if c == '\n' or c == '\0':
             if len(self.bios_msg) > 0:
