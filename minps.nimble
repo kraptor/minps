@@ -6,7 +6,7 @@ description   = "A wannabe PlayStation 1 emulator"
 license       = "MIT"
 srcDir        = "src"
 binDir        = "bin"
-backend       = "cpp"
+backend       = "c"
 bin           = @[
     "minps"
 ]
@@ -14,7 +14,7 @@ bin           = @[
 # Dependencies
 
 requires "nim >= 1.4.6"
-requires "sim >= 0.1.5"
+requires "sim >= 0.1.6"
 requires "faststreams >= 0.2.0"
 
 requires "nimgl >= 1.1.10"
@@ -75,3 +75,21 @@ task clean, "Clean all build files":
     rmDir binDir
     rmFile "profile_results.txt"
     exec "rm -f callgrind.out*"
+
+
+task build_cimgui, "Build cimgui dll":
+    let tmpdir = "__build_cimgui"
+
+    if dirExists(tmp_dir):
+        rmDir(tmp_dir)
+
+    exec("git clone --recursive https://github.com/cimgui/cimgui " & tmp_dir)
+        
+    withDir tmpdir:
+        exec("git pull")
+        exec("git checkout tags/1.82")
+        exec("git submodule update")        
+        exec("make")
+        cpFile("cimgui.so", "../bin/cimgui.so")
+
+    # rmDir(tmp_dir)
