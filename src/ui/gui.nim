@@ -3,10 +3,7 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
-import strformat
-
 import ../core/log
-import ../core/util
 import ../core/config
 
 import gui/application

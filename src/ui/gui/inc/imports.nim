@@ -10,3 +10,5 @@ import nimgl/imgui, nimgl/imgui/[impl_opengl, impl_glfw]
 import ../../../core/log
 import ../../../core/config
 import ../../../core/version
+
+{. warning[UnusedImport]:off .}
