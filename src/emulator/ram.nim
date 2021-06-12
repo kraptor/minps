@@ -54,16 +54,11 @@ proc Read*[T: uint8|uint16|uint32](self: Ram, address: KusegAddress): T =
 
     assert is_aligned[T](address)
 
-    when T is uint32:        
-        return self.data.u32[offset shr 2]
+    when T is uint32: result = self.data.u32[offset shr 2]
+    when T is uint16: result = self.data.u16[offset shr 1]
+    when T is  uint8: result = self.data.u8[offset]
 
-    when T is uint16:
-        return self.data.u16[offset shr 1]
-
-    when T is uint8:
-        return self.data.u8[offset]
-
-    NOT_IMPLEMENTED fmt"RAM Read[{$T}]: address={address}"
+    # NOT_IMPLEMENTED fmt"RAM Read[{$T}]: address={address}"
 
 
 proc Write8 *(self: Ram, address: KusegAddress, value: uint8 ) {.inline.} = Write[uint8 ](self, address, value)

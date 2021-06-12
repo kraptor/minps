@@ -135,9 +135,9 @@ proc RaiseException*(cpu: Cpu, exception_code: ExceptionCode) =
     # TODO: adjust this if GTE instruction.
     cpu.cop0.EPC = 
         if cpu.inst_in_delay:
-            cpu.inst_pc - 4
+            cpu.inst_pc.u32 - 4'u32)
         else:
-            cpu.inst_pc
+            cpu.inst_pc.u32
 
     # Shift enable/mode and kerne/user mode bits
     const 
@@ -225,7 +225,7 @@ proc Op_LW(cpu: Cpu): Cycles =
     let
         base = cpu.ReadRegister(cpu.inst.rs)
         offset = cpu.inst.imm16.sign_extend
-        address = Address offset + base
+        address = cast[Address](offset + base)
 
     if unlikely(not is_aligned[uint32](address)):
         NOT_IMPLEMENTED fmt"Address is not aligned: {address}"
@@ -366,15 +366,15 @@ proc Op_ADDIU(cpu: Cpu): Cycles =
 
 
 proc Op_J(cpu: Cpu): Cycles =
-    let target = (cpu.inst.target shl 2) or (0xF000_0000'u32 and cpu.pc + 4)
+    let target = (cpu.inst.target shl 2) or (0xF000_0000'u32 and (cpu.inst_pc.u32 + 4))
     cpu.BranchWithDelaySlotTo(cast[Address](target))
     result = 1
 
 
 proc Op_JAL(cpu: Cpu): Cycles =
-    let target = (cpu.inst.target shl 2) or (0xF000_0000'u32 and cpu.pc + 4)
+    let target = (cpu.inst.target shl 2) or (0xF000_0000'u32 and (cpu.inst_pc.u32 + 4))
     cpu.BranchWithDelaySlotTo(cast[Address](target))
-    cpu.WriteRegister(31, cpu.inst_pc + 8)
+    cpu.WriteRegister(31, cpu.inst_pc.u32 + 8)
     result = 1
 
 
@@ -388,7 +388,7 @@ proc Function_JALR(cpu: Cpu): Cycles =
         NOT_IMPLEMENTED "JALR: undefined behaviour"
 
     cpu.BranchWithDelaySlotTo(cast[Address](target))
-    cpu.WriteRegister(cpu.inst.rd, cpu.inst_pc + 8)
+    cpu.WriteRegister(cpu.inst.rd, cast[uint32](cpu.inst_pc + 8))
     result = 1
 
 
@@ -409,7 +409,7 @@ proc Op_BCONDZ(cpu: Cpu): Cycles =
         cpu.BranchWithDelaySlotTo(target)
 
         if is_link:
-            cpu.WriteRegister(31, cpu.inst_pc + 8)
+            cpu.WriteRegister(31, cpu.inst_pc.u32 + 8)
 
     result = 1
 
