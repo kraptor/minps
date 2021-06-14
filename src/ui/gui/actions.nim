@@ -40,6 +40,7 @@ proc New(
     Action(
         label: label,
         title: title,
+        callback: callback,
         shortcut: shortcut,
         isSelected: isSelected,
         isEnabled: isEnabled
