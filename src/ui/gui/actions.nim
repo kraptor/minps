@@ -16,7 +16,7 @@ type
 
     Action* = object
         label*: string
-        title*: string
+        help*: string
         shortcut*: string
         callback: CallbackProc
         isSelected: BoolActionProc
@@ -32,14 +32,14 @@ proc AlwaysFalse(state: var State): bool = false
 
 proc New(
         t: type Action, 
-        label, title: string, 
+        label, help: string, 
         callback: CallbackProc,
         shortcut: string = "", 
         isSelected: BoolActionProc = AlwaysFalse, 
         isEnabled: BoolActionproc = AlwaysTrue): Action =
     Action(
         label: label,
-        title: title,
+        help: help,
         callback: callback,
         shortcut: shortcut,
         isSelected: isSelected,
@@ -47,12 +47,33 @@ proc New(
     )
 
 
-let
+proc switch(value: var bool) = 
+    value = not value
+
+
+const
     gui_actions* = {
-        "quit": Action.New(
+        "debugger.window.toggle": Action.New(
+            "Debugger",
+            "Toggle Debugger window visibility",
+            proc(state: var State) = switch(state.config.debugger.window_visible),
+            isSelected = proc(state: var State): bool = state.config.debugger.window_visible
+        ),
+        "debugger.step": Action.New(
+            "Step",
+            "Step one instruction",
+            proc(state: var State) = state.platform.cpu.RunNext(),
+            "F5"
+        ),
+        "debugger.reset": Action.New(
+            "Reset",
+            "Reset platform to initial state",
+            proc(state: var State) = state.platform.cpu.Reset(),
+        ),
+        "app.quit": Action.New(
             "Quit", 
             "Quit application", 
-            proc(state: var State) = state.window.setWindowShouldClose(true),
+            (state: var State) => state.window.setWindowShouldClose(true),
             "Ctrl+q"
         ),
     }.toTable()
