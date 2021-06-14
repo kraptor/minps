@@ -10,8 +10,23 @@ import state
 import widgets
 
 
-proc draw*(state: var State) =
-    var state = state   
+proc Draw*(state: var State) =
+    
+    # FIXME: following var declaration is workaround for a compiler
+    #   bug. Remove it when not needed!
+    var s = state 
+
     menubar:
         menu "MinPS":
-            menuitem(state, "quit")
+            `----`
+            menuitem(state, "app.quit")
+
+        menu "Debugger":
+            menuitem(state, "debugger.step_one")
+            `----`
+            menuitem(state, "debugger.reset")
+
+        menu "Windows":
+            menuitem(state, "debugger.window.toggle")
+
+        
