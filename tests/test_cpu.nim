@@ -376,7 +376,7 @@ suite "Instruction execution correctness":
         let start = cpu.pc
 
         p.RunProgramToPc(@[
-            J(start + 12),     # start    --+ 
+            J(start.u32 + 12), # start    --+ 
             ADDIU( 1, 0, 100), # start+4    | : executed (DS): at=100
             ADDIU( 2, 0, 100), # start+8    | : not executed : v0=100
             ADDIU( 3, 0, 100), # start+12 <-+ : executed     : v1=100
@@ -394,7 +394,7 @@ suite "Instruction execution correctness":
     test "JR":
         let start = cpu.pc
 
-        cpu.WriteRegisterDebug(20, start + 12)
+        cpu.WriteRegisterDebug(20, start.u32 + 12)
 
         p.RunProgramToPc(@[
             JR(20),     # start    --+ 
@@ -415,7 +415,7 @@ suite "Instruction execution correctness":
     test "JR - unaligned address":
         let start = cpu.pc
 
-        cpu.WriteRegisterDebug(20, start + 1)
+        cpu.WriteRegisterDebug(20, start.u32 + 1)
 
         expect NotImplementedDefect:
             p.RunProgram(@[
@@ -426,10 +426,10 @@ suite "Instruction execution correctness":
         let start = cpu.pc
 
         p.RunProgramToPc(@[
-            JAL(start + 12),   # start    --+ 
-            ADDIU( 1, 0, 100), # start+4    | : executed (DS)
-            ADDIU(10, 0, 100), # start+8    | : not executed, but address set in 31
-            ADDIU(11, 0, 100), # start+12 <-+ : executed
+            JAL(start.u32 + 12), # start    --+ 
+            ADDIU( 1, 0, 100),   # start+4    | : executed (DS)
+            ADDIU(10, 0, 100),   # start+8    | : not executed, but address set in 31
+            ADDIU(11, 0, 100),   # start+12 <-+ : executed
         ],
             start + 16
         )
@@ -438,14 +438,14 @@ suite "Instruction execution correctness":
             cpu.ReadRegisterDebug( 1) == 100
             cpu.ReadRegisterDebug(10) == 0
             cpu.ReadRegisterDebug(11) == 100
-            cpu.ReadRegisterDebug(31) == start + 8
+            cpu.ReadRegisterDebug(31) == start.u32 + 8
             cpu.stats.cycle_count == 3
             cpu.stats.instruction_count == 3
 
     test "JALR":
         let start = cpu.pc
 
-        cpu.WriteRegisterDebug(2, start + 12)
+        cpu.WriteRegisterDebug(2, start.u32 + 12)
 
         p.RunProgramToPc(@[
             JALR(20, 2),       # start    --+ 
@@ -460,7 +460,7 @@ suite "Instruction execution correctness":
             cpu.ReadRegisterDebug( 1) == 100
             cpu.ReadRegisterDebug(10) == 0
             cpu.ReadRegisterDebug(11) == 100
-            cpu.ReadRegisterDebug(20) == start + 8
+            cpu.ReadRegisterDebug(20) == start.u32 + 8
             cpu.stats.cycle_count == 3
             cpu.stats.instruction_count == 3
 
@@ -685,7 +685,7 @@ suite "Instruction execution correctness":
             cpu.ReadRegisterDebug( 1) == 100
             cpu.ReadRegisterDebug(10) == 0
             cpu.ReadRegisterDebug(11) == 100
-            cpu.ReadRegisterDebug(31) == start + 8 # links
+            cpu.ReadRegisterDebug(31) == start.u32 + 8 # links
             cpu.stats.cycle_count == 3
             cpu.stats.instruction_count == 3
 
@@ -706,7 +706,7 @@ suite "Instruction execution correctness":
             cpu.ReadRegisterDebug( 1) == 100
             cpu.ReadRegisterDebug(10) == 0
             cpu.ReadRegisterDebug(11) == 100
-            cpu.ReadRegisterDebug(31) == start + 8 # links
+            cpu.ReadRegisterDebug(31) == start.u32 + 8 # links
             cpu.stats.cycle_count == 3
             cpu.stats.instruction_count == 3
 
@@ -928,7 +928,7 @@ suite "Instruction execution correctness":
         
         check:
             cpu.inst_in_delay == false
-            cpu.cop0.EPC == start
+            cpu.cop0.EPC == start.u32
             cpu.pc == 0xBFC0_0180.Address # exception vector (ROM)
 
             cpu.cop0.CAUSE.branch_delay == false
