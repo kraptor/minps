@@ -11,6 +11,18 @@ export state
 export actions
 
 
+template menubar*(body: untyped): untyped =
+    if igBeginMainMenuBar():
+        body
+        igEndMainMenuBar()
+
+
+template menu*(label: string, body: untyped): untyped =
+    if igBeginMenu(label):
+        body
+        igEndMenu()
+
+
 template menuitem*(state: var State, action_name: string) =
     let action = gui_actions[action_name]
     if igMenuItem(action.label, action.shortcut, action.IsSelected(state), action.IsEnabled(state)):

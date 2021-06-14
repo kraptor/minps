@@ -11,9 +11,7 @@ import widgets
 
 
 proc draw*(state: var State) =
-    var state = state
-    if igBeginMainMenuBar():
-        if igBeginMenu("MinPS"):
+    var state = state   
+    menubar:
+        menu "MinPS":
             menuitem(state, "quit")
-            igEndMenu()
-        igEndMainMenuBar()
