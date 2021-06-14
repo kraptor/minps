@@ -3,6 +3,8 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
+{.experimental:"codeReordering".}
+
 import sim
 import ../core/log
 
@@ -10,13 +12,18 @@ logChannels ["config"]
 
 
 type
-    GuiConfig* = object 
-        window_width  *{.defaultValue: 1024.} : int32
-        window_height *{.defaultValue:  400.} : int32
-
     Config* = object
         bios_file *{.defaultValue: "bios.bin".}: string
-        gui *: GuiConfig
+        gui*: GuiConfig
+        cpu*: CpuConfig
+
+type
+    GuiConfig* = object 
+        window_width  *{.defaultValue: 1024.}: int32
+        window_height *{.defaultValue:  400.}: int32
+
+    CpuConfig* = object
+        window_visible *{.defaultValue: false.}: bool
 
 
 proc New*(T: type Config, ini_file: string): Config =
