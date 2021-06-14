@@ -15,14 +15,14 @@ type
     Config* = object
         bios_file *{.defaultValue: "bios.bin".}: string
         gui*: GuiConfig
-        cpu*: CpuConfig
+        debugger*: DebuggerConfig
 
 type
     GuiConfig* = object 
         window_width  *{.defaultValue: 1024.}: int32
         window_height *{.defaultValue:  400.}: int32
 
-    CpuConfig* = object
+    DebuggerConfig* = object
         window_visible *{.defaultValue: false.}: bool
 
 
