@@ -5,6 +5,8 @@
 
 import ../core/log
 import ../core/config
+import ../emulator/platform
+import ../emulator/bios/bios
 
 import gui/application
 
@@ -14,7 +16,9 @@ logChannels ["gui", "main"]
 
 proc main*(config: var Config) = 
     notice "Initializing application..."
-    var app = Application.New(config)
+
+    var platform = Platform.New()
+    var app = Application.New(config, platform)
 
     while not app.IsClosing():
         app.ProcessEvents()

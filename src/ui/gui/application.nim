@@ -8,6 +8,7 @@
 include inc/imports
 import state
 import mainmenu
+import debugger
 
 logChannels ["gui", "app"]
 
@@ -16,8 +17,9 @@ type
         state*: State
 
 
-proc New*(t: type Application, config: var Config): Application =
+proc New*(t: type Application, config: var Config, platform: var Platform): Application =
     result.state.config = config
+    result.state.platform = platform
 
     notice "Initializing glfw..."
     logIndent:
@@ -92,7 +94,8 @@ proc Draw*(app: var Application) =
         igNewFrame()
         
         # TODO: draw here user interface
-        mainmenu.draw(app.state)
+        mainmenu.Draw(app.state)
+        debugger.Draw(app.state)
 
         igRender()
         igOpenGL3RenderDrawData(igGetDrawData())
