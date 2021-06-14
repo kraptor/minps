@@ -19,7 +19,7 @@ logChannels ["platform"]
 
 
 type
-    Platform* = ref object
+    Platform* = object
         cpu*: Cpu
         mmu*: Mmu
 
@@ -35,7 +35,7 @@ proc New*(T: type Platform, bios: Bios = nil): Platform =
         )
 
 
-proc Reset*(self: Platform) =
+proc Reset*(self: var Platform) =
     debug "Platform reset..."
     logIndent:
         self.cpu.Reset()
@@ -43,14 +43,18 @@ proc Reset*(self: Platform) =
         debug "Platform resetted."
 
 
-proc Run*(self: Platform) =
+proc RunNext*(self: var Platform) =
+    debug fmt"[CPU] {self.cpu.pc}: {self.cpu.inst.DisasmAsText(self.cpu)}"
+    logIndent:
+        self.cpu.RunNext()
+
+
+proc Run*(self: var Platform) =
     while true:
-        debug fmt"[CPU] {self.cpu.pc}: {self.cpu.inst.DisasmAsText(self.cpu)}"
-        logIndent:
-            self.cpu.RunNext()
+        RunNext(self)    
 
 
-proc RunFor*(self: Platform, number_of_instructions: int64) =
+proc RunFor*(self: var Platform, number_of_instructions: int64) =
     let 
         start = self.cpu.stats.instruction_count
         target = start + number_of_instructions
@@ -61,22 +65,22 @@ proc RunFor*(self: Platform, number_of_instructions: int64) =
             self.cpu.RunNext()
 
 
-proc RunToPc*(self: Platform, pc: Address) =
+proc RunToPc*(self: var Platform, pc: Address) =
     while self.cpu.pc != pc:
         debug fmt"[CPU] {self.cpu.pc}: {self.cpu.inst.DisasmAsText(self.cpu)}"
         logIndent:
             self.cpu.RunNext()
 
 
-proc SetProgram*(self: Platform, program: Program) =
+proc SetProgram*(self: var Platform, program: Program) =
     self.mmu.bios = Bios.FromProgram(program)
 
 
-proc RunProgram*(self: Platform, program: Program) =
+proc RunProgram*(self: var Platform, program: Program) =
     self.SetProgram(program)
     self.RunFor(program.len + 1) # pc will point right after the last instruction
 
 
-proc RunProgramToPc*(self: Platform, program: Program, pc: Address) =
+proc RunProgramToPc*(self: var Platform, program: Program, pc: Address) =
     self.mmu.bios = Bios.FromProgram(program)
     self.RunToPc(pc)
