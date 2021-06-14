@@ -135,7 +135,7 @@ proc RaiseException*(cpu: Cpu, exception_code: ExceptionCode) =
     # TODO: adjust this if GTE instruction.
     cpu.cop0.EPC = 
         if cpu.inst_in_delay:
-            cpu.inst_pc.u32 - 4'u32)
+            cpu.inst_pc.u32 - 4'u32
         else:
             cpu.inst_pc.u32
 
