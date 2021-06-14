@@ -10,5 +10,8 @@ import nimgl/imgui, nimgl/imgui/[impl_opengl, impl_glfw]
 import ../../../core/log
 import ../../../core/config
 import ../../../core/version
+import ../../../emulator/address
+import ../../../emulator/platform
+import ../../../emulator/cpu/cpu
 
 {. warning[UnusedImport]:off .}
