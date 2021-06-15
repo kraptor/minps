@@ -15,7 +15,7 @@ proc main*(config: var Config) =
     notice "minps started"
     
     var platform = Platform.New(
-        Bios.FromFile(config.bios_file)
+        Bios.FromFile(config.bios.file)
     )
     platform.Run()
     notice "minps stopped"
