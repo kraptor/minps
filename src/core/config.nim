@@ -13,14 +13,23 @@ logChannels ["config"]
 
 type
     Config* = object
-        bios_file *{.defaultValue: "bios.bin".}: string
+        bios*: BiosConfig
         gui*: GuiConfig
         debugger*: DebuggerConfig
 
 type
+    BiosConfig* = object
+        file *{.defaultValue: "bios.bin".}: string
+
+    FontConfig* = object
+        file *{.defaultValue:   "".}: string
+        size *{.defaultValue:   16.}: float32
+
     GuiConfig* = object 
         window_width  *{.defaultValue: 1024.}: int32
         window_height *{.defaultValue:  400.}: int32
+        ui_font       *: FontConfig
+        mono_font     *: FontConfig
 
     DebuggerConfig* = object
         window_visible *{.defaultValue: false.}: bool
