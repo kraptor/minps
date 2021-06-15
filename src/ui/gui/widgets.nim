@@ -80,7 +80,31 @@ template menuitem*(state: var State, action_name: string) =
         action.Run(state)
 
 
+template open_popup(name: string) = igOpenPopup(name)
+
+
+template close_current_popup() = igCloseCurrentPopup()
+
+
+template popup_modal(id: string, content: untyped) =
+    if igBeginPopupModal(id, nil, AlwaysAutoResize):
+        content
+        igEndPopup()
+
+
+proc not_implemented*(message: string): string =
+    result = "NOT IMPLEMENTED##" & message
+    popup_modal result:
+        text message
+        separator
+        button "ok":
+            close_current_popup()
+
+
 template address*(state: var State, a: Address) =
     font "mono":
+        let popup_id = not_implemented("Open memory viewer at: " & $a)
         button $a:
-            echo "Open memory viewer at: " & $a
+            open_popup(popup_id)
+
+        
