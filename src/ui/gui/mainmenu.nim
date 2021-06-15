@@ -12,8 +12,8 @@ import widgets
 
 proc Draw*(state: var State) =
     
-    # FIXME: following var declaration is workaround for a compiler
-    #   bug. Remove it when not needed!
+    # FIXME: following var declaration is a workaround for 
+    #   a compiler bug. Remove it when not needed!
     var s = state 
 
     menubar:
