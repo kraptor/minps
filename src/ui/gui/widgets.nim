@@ -7,11 +7,21 @@ include inc/imports
 
 import state
 import actions
+import fonts
+
 export state
 export actions
+export fonts
 
 const
     BUTTON_SIZE_DEFAULT = ImVec2(x: 0, y:0)
+
+
+template font*(font_name: string, body: untyped): untyped =
+    igPushFont(GetFont(font_name))
+    block:
+        body
+        defer: igPopFont()
 
 
 template separator*() = igSeparator()
@@ -71,5 +81,6 @@ template menuitem*(state: var State, action_name: string) =
 
 
 template address*(state: var State, a: Address) =
-    button $a:
-        echo "Open memory viewer at: " & $a
+    font "mono":
+        button $a:
+            echo "Open memory viewer at: " & $a
