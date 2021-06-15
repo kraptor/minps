@@ -3,12 +3,13 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
+import sugar
+import tables
+export tables # make sure callers have access to tables module
+
 include inc/imports
 
 import state
-import sugar
-import tables
-export tables
 
 type
     CallbackProc = proc(state: var State) {.closure.}
@@ -21,7 +22,6 @@ type
         callback: CallbackProc
         isSelected: BoolActionProc
         isEnabled : BoolActionProc
-
 
 proc Run*(action: Action, state: var State) = action.callback(state)
 proc IsSelected*(action: Action, state: var State): bool = action.isSelected(state)
@@ -52,7 +52,7 @@ proc switch(value: var bool) =
 
 
 const
-    gui_actions* = {
+    actions = {
         "debugger.window.toggle": Action.New(
             "Debugger",
             "Toggle Debugger window visibility",
@@ -77,3 +77,6 @@ const
             "Ctrl+q"
         ),
     }.toTable()
+
+
+proc GetAction*(name: string): Action = actions[name]
