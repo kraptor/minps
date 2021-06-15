@@ -22,7 +22,7 @@ proc Draw*(state: var State) =
             menuitem(state, "app.quit")
 
         menu "Debugger":
-            menuitem(state, "debugger.step_one")
+            menuitem(state, "debugger.step")
             `----`
             menuitem(state, "debugger.reset")
 
