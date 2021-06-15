@@ -9,6 +9,7 @@ include inc/imports
 import state
 import mainmenu
 import debugger
+import fonts
 
 logChannels ["gui", "app"]
 
@@ -67,6 +68,10 @@ proc New*(t: type Application, config: var Config, platform: var Platform): Appl
 
     debug "Setting up key callback..."
     discard setKeyCallback(result.state.window, glfwKeyCallback)
+
+    # load fonts
+    LoadFont("ui", config.gui.ui_font)
+    LoadFont("mono", config.gui.mono_font)
 
 
 proc Terminate*(app: var Application) =
