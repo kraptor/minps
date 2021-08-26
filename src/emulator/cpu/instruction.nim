@@ -50,16 +50,42 @@ type
     BCondZ* {.pure.} = enum
         BLTZ   = 0b00000
         BGEZ   = 0b00001
+        Unk01  = 0b00010
+        Unk02  = 0b00011
+        Unk03  = 0b00100
+        Unk04  = 0b00101
+        Unk05  = 0b00110
+        Unk06  = 0b00111
+        Unk07  = 0b01000
+        Unk08  = 0b01001
+        Unk09  = 0b01010
+        Unk10  = 0b01011
+        Unk11  = 0b01100
+        Unk12  = 0b01101
+        Unk13  = 0b01110
+        Unk14  = 0b01111
         BLTZAL = 0b10000
         BGEZAL = 0b10001
 
     Cop0Opcode* {.pure.} = enum
         MFC   = 0b00000
+        Unk01 = 0b00001
         CFC   = 0b00010
+        Unk02 = 0b00011
         MTC   = 0b00100
+        Unk03 = 0b00101
         CTC   = 0b00110
+        Unk04 = 0b00111
         BC    = 0b01000
+        Unk05 = 0b01001
+        Unk06 = 0b01010
+        Unk07 = 0b01011
+        Unk08 = 0b01100
+        Unk09 = 0b01101
+        Unk10 = 0b01110
+        Unk11 = 0b01111
         OTHER = 0b10000
+
 
     ImmediateInstruction* {.packed.} = object
         imm16  * {.bitsize: 16.}: uint16

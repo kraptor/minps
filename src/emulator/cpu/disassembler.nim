@@ -109,6 +109,8 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
         of BGEZ  : return inst.DisasmBxxZ(cpu, bgez)
         of BLTZAL: return inst.DisasmBxxZ(cpu, bltzal)
         of BGEZAL: return inst.DisasmBxxZ(cpu, bgezal)
+        else:
+            NOT_IMPLEMENTED fmt"Invalid BCONZ instruction {inst}"
     of Opcode.Special:
         case inst.function:
         of Function.SLL    : return inst.DisasmSLL(cpu)
