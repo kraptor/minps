@@ -4,7 +4,6 @@
 # https://opensource.org/licenses/MIT
 
 import unittest
-import strformat
 
 import core/log
 import core/util
