@@ -1,8 +1,13 @@
-# minps
+# `minps` - a wannabe PlayStation 1 emulator
 
-[![made-with-nim](https://img.shields.io/badge/Made%20with-Nim-ffc200.svg)](https://nim-lang.org/) ![Build](https://github.com/kraptor/minps/workflows/Build/badge.svg)
+[![made-with-nim](https://img.shields.io/badge/Made%20with-Nim-ffc200.svg)](https://nim-lang.org/)
+![Build](https://github.com/kraptor/minps/workflows/Build/badge.svg)
 
-`minps` - a wannabe PlayStation 1 emulator
+![License](https://img.shields.io/github/license/kraptor/minps?color=pink)
+![Total Lines](https://img.shields.io/tokei/lines/github/kraptor/minps?label=Total%20Lines)
+![Language](https://img.shields.io/github/languages/top/kraptor/minps?logo=Nim)
+![Languages](https://img.shields.io/github/languages/count/kraptor/minps?label=Languages)
+![Code Size](https://img.shields.io/github/languages/code-size/kraptor/minps)
 
 ## Building instructions
 
