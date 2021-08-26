@@ -34,7 +34,7 @@ template begin*(title: string, open: var bool, flags: ImGuiWindowFlags, body: un
     if not open:
         return        
     block:
-        if igBegin(title, open.addr, flags):
+        if igBegin(title.cstring, open.addr, flags):
             body
         defer: igEnd()
 
@@ -45,15 +45,15 @@ template begin*(title: string, open: var bool, body: untyped): untyped =
 
 
 template button*(label: string, body: untyped): untyped =
-    if igButton(label, BUTTON_SIZE_DEFAULT):
+    if igButton(label.cstring, BUTTON_SIZE_DEFAULT):
         body
 
 
 template button*(label, tooltip: string, body: untyped): untyped =
-    if igButton(label, BUTTON_SIZE_DEFAULT):
+    if igButton(label.cstring, BUTTON_SIZE_DEFAULT):
         body
     if igIsItemHovered():
-        igSetTooltip(tooltip)
+        igSetTooltip(tooltip.cstring)
 
 
 template button*(state: State, action_id: string): untyped =
@@ -69,25 +69,25 @@ template menubar*(body: untyped): untyped =
 
 
 template menu*(label: string, body: untyped): untyped =
-    if igBeginMenu(label):
+    if igBeginMenu(label.cstring):
         body
         igEndMenu()
 
 
 template menuitem*(state: var State, action_name: string) =
     let action = GetAction(action_name)
-    if igMenuItem(action.label, action.shortcut, action.IsSelected(state), action.IsEnabled(state)):
+    if igMenuItem(action.label.cstring, action.shortcut.cstring, action.IsSelected(state), action.IsEnabled(state)):
         action.Run(state)
 
 
-template open_popup(name: string) = igOpenPopup(name)
+template open_popup(name: string) = igOpenPopup(name.cstring)
 
 
 template close_current_popup() = igCloseCurrentPopup()
 
 
 template popup_modal(id: string, content: untyped) =
-    if igBeginPopupModal(id, nil, AlwaysAutoResize):
+    if igBeginPopupModal(id.cstring, nil, AlwaysAutoResize):
         content
         igEndPopup()
 

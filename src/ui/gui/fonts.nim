@@ -10,7 +10,7 @@ var
     fonts: Table[string, ptr ImFont]
 
 proc LoadFont*(name: string, font: FontConfig) =
-    fonts[name] = igGetIO().fonts.addFontFromFileTTF(font.file, font.size)
+    fonts[name] = igGetIO().fonts.addFontFromFileTTF(font.file.cstring, font.size)
 
 
 proc GetFont*(name: string): ptr ImFont =
