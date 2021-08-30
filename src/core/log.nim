@@ -11,8 +11,7 @@ import macros
 import terminal
 import strutils
 import strformat
-
-import faststreams/outputs
+import streams
 
 
 const
@@ -26,11 +25,11 @@ var
     logfile_handle = stdout
     current_indentation = 0
 
-    stream {.threadvar.} : OutputStream
+    stream {.threadvar.} : Stream
     stream_lock: Lock
 
 
-stream = fileOutput(logfile_handle)
+stream = newFileStream(logfile_handle)
 stream_lock.initLock()
 
 
@@ -68,6 +67,7 @@ proc getLevelColor(level: LogLevel): ForegroundColor =
             of LogLevel.Warning: fgYellow
             of LogLevel.Notice: fgGreen
             of LogLevel.None: fgDefault
+
 
 proc getLevelString(level: LogLevel): string =
     result = case level:
@@ -206,7 +206,7 @@ proc logFile*(filename: string = ":stdout") =
                 echo "Cannot open file: " & filename
                 quit QuitFailure
 
-        stream = fileOutput(logfile_handle)
+        stream = newFileStream(logfile_handle)
 
     stream_lock.release()
 
@@ -215,11 +215,14 @@ proc logFile*(filename: string = ":stdout") =
 logChannels [""]
 
 
-proc logFinalize* =
-    if loglevel_channels == "":
-        return
-    
+proc logFlush* =
     stream_lock.acquire()
     if stream != nil:
         stream.flush()
     stream_lock.release()
+
+
+proc logFinalize* =
+    if loglevel_channels == "":
+        return
+    logFlush()
