@@ -65,7 +65,8 @@ const
             "Debugger",
             "Toggle Debugger window visibility",
             proc(state: var State) = switch(state.config.debugger.window_visible),
-            isSelected = proc(state: var State): bool = state.config.debugger.window_visible
+            isSelected = proc(state: var State): bool = state.config.debugger.window_visible,
+            shortcut = "Super+D"
         ),
         "debugger.step": Action.New(
             "Step",
