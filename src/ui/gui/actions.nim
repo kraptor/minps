@@ -4,11 +4,12 @@
 # https://opensource.org/licenses/MIT
 
 import sugar
+import options
+import strutils
 import tables
 export tables # make sure callers have access to tables module
 
 include inc/imports
-
 import state
 
 type
@@ -23,21 +24,26 @@ type
         isSelected: BoolActionProc
         isEnabled : BoolActionProc
 
+
 proc Run*(action: Action, state: var State) = action.callback(state)
 proc IsSelected*(action: Action, state: var State): bool = action.isSelected(state)
 proc IsEnabled*(action: Action, state: var State): bool = action.isEnabled(state)
 
-proc AlwaysTrue(state: var State): bool = true
-proc AlwaysFalse(state: var State): bool = false
+
+proc AlwaysTrue*(state: var State): bool = true
+proc AlwaysFalse*(state: var State): bool = false
+proc DummyCallback(state: var State) = discard
+
 
 proc New(
         t: type Action, 
         label, help: string, 
-        callback: CallbackProc,
+        callback: CallbackProc = DummyCallback,
         shortcut: string = "", 
         isSelected: BoolActionProc = AlwaysFalse, 
         isEnabled: BoolActionproc = AlwaysTrue): Action =
-    Action(
+    
+    result = Action(
         label: label,
         help: help,
         callback: callback,
@@ -52,7 +58,9 @@ proc switch(value: var bool) =
 
 
 const
-    actions = {
+    NO_ACTION* = Action.New("no.action", "No action")
+
+    ACTIONS = {
         "debugger.window.toggle": Action.New(
             "Debugger",
             "Toggle Debugger window visibility",
@@ -62,8 +70,12 @@ const
         "debugger.step": Action.New(
             "Step",
             "Step one instruction",
-            proc(state: var State) = state.platform.cpu.RunNext(),
-            "F5"
+            proc(state: var State) = 
+                block:
+                    state.platform.cpu.RunNext()
+                    logFlush()
+            ,
+            "F10"
         ),
         "debugger.reset": Action.New(
             "Reset",
@@ -74,9 +86,19 @@ const
             "Quit", 
             "Quit application", 
             (state: var State) => state.window.setWindowShouldClose(true),
-            "Ctrl+q"
+            "Ctrl+Q"
         ),
     }.toTable()
 
 
-proc GetAction*(name: string): Action = actions[name]
+proc GetActionByName*(name: string): Action = 
+    if name in ACTIONS:
+        return ACTIONS[name]
+    NO_ACTION
+
+
+proc GetActionByShortcut*(shortcut: string): Action =
+    for action in ACTIONS.values:
+        if action.shortcut.toLowerAscii() == shortcut.toLowerAscii():
+            return action
+    NO_ACTION
