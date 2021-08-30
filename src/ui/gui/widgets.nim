@@ -57,9 +57,19 @@ template button*(label, tooltip: string, body: untyped): untyped =
 
 
 template button*(state: State, action_id: string): untyped =
-    let action = GetActionByName(action_id)
-    button(action.label, action.help):
+    let 
+        action = GetActionByName(action_id)
+        
+    button(action.label):
         action.Run(state)
+
+    if igIsItemHovered():
+        igBeginTooltip()
+        text action.help
+        if action.shortcut != "":
+            igSameLine()
+            text "(" & action.shortcut & ")"
+        igEndTooltip()
 
 
 template menubar*(body: untyped): untyped =
