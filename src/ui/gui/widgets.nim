@@ -57,7 +57,7 @@ template button*(label, tooltip: string, body: untyped): untyped =
 
 
 template button*(state: State, action_id: string): untyped =
-    let action = GetAction(action_id)
+    let action = GetActionByName(action_id)
     button(action.label, action.help):
         action.Run(state)
 
@@ -75,7 +75,7 @@ template menu*(label: string, body: untyped): untyped =
 
 
 template menuitem*(state: var State, action_name: string) =
-    let action = GetAction(action_name)
+    let action = GetActionByName(action_name)
     if igMenuItem(action.label.cstring, action.shortcut.cstring, action.IsSelected(state), action.IsEnabled(state)):
         action.Run(state)
 

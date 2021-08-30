@@ -5,11 +5,14 @@
 
 {.experimental: "codeReordering".}
 
+import strutils
+
 include inc/imports
 import state
 import mainmenu
 import debugger
 import fonts
+import actions
 
 logChannels ["gui", "app"]
 
@@ -46,6 +49,8 @@ proc New*(t: type Application, config: var Config, platform: var Platform): Appl
         if result.state.window == nil:
             error "Can't create window!"
             quit(-1)
+        
+        setWindowUserPointer(result.state.window, result.addr)
         
         result.state.window.makeContextCurrent()
         notice "done."
@@ -118,6 +123,38 @@ proc Present*(app: var Application) =
     app.state.window.swapBuffers()
 
 
-proc glfwKeyCallback(window: GLFWWindow, key: int32, scancode: int32, action: int32, mods: int32): void {.cdecl.} =
-    if key == GLFWKey.ESCAPE and action == GLFWPress:
-        window.setWindowShouldClose(true)
+proc GetShortcut(key, mods, action: int32): string =
+    if action == GLFWRelease:
+        return ""
+
+    let
+        is_shift = (mods and GLFWModShift) == GLFWModShift
+        is_ctrl = (mods and GLFWModControl) == GLFWModControl
+        is_super = (mods and GLFWModSuper) == GLFWModSuper
+        is_alt = (mods and GLFWModAlt) == GLFWModAlt
+
+    # # shortcuts need a modified
+    # if not(is_shift or is_ctrl or is_super or is_alt):
+    #     return ""
+
+    var shortcut: seq[string]
+    if is_shift: shortcut.add("shift")
+    if is_ctrl: shortcut.add("ctrl")
+    if is_super: shortcut.add("super")
+    if is_alt: shortcut.add("alt")
+
+    # FIXME: fix "enum with holes is unsafe" warning
+    shortcut.add($(key.GLFWKey))
+
+    return shortcut.join("+")
+
+
+proc glfwKeyCallback(window: GLFWWindow, key: int32, scancode: int32, action_press: int32, mods: int32): void {.cdecl.} =
+    var app = cast[ref Application](window.getWindowUserPointer())
+    let shortcut = GetShortcut(key, mods, action_press)
+
+    if shortcut != "":
+        var action = GetActionByShortcut(shortcut)
+        if action == NO_ACTION:
+            debug "Shortcut ignored: " & shortcut
+        action.Run(app.state)
