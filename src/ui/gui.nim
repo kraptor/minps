@@ -17,8 +17,9 @@ logChannels ["gui", "main"]
 proc main*(config: var Config) = 
     notice "Initializing application..."
 
-    var platform = Platform.New()
-    var app = Application.New(config, platform)
+    var 
+        platform = Platform.New(Bios.FromFile(config.bios.file))
+        app = Application.New(config, platform)
 
     while not app.IsClosing():
         app.ProcessEvents()
