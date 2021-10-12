@@ -27,7 +27,7 @@ template font*(font_name: string, body: untyped): untyped =
 template separator*() = igSeparator()
 template `----`*() = separator()
 template sameline*() = igSameLine()
-template text*(value: string) = igText(value)
+template text*(value: string) = igText(value.cstring)
 
 
 template begin*(title: string, open: var bool, flags: ImGuiWindowFlags, body: untyped): untyped =
