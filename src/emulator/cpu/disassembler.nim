@@ -30,7 +30,8 @@ type
         bgez, bltzal, bgezal, 
         slti, subu, sra, `div`,
         mflo, mfhi, srl, sltiu,
-        divu, slt, syscall
+        divu, slt, syscall,
+        UNKNOWN = "?????"
 
     InstructionPartType {.pure.}  = enum
         CpuRegister
@@ -59,6 +60,7 @@ type
         MemoryAssignment16
         MemoryAssignment8
         MemoryAddressMetadata
+        UnknownInstructionMetadata
 
     MetadataPart = object
         case kind: MetadataPartKind
@@ -73,6 +75,8 @@ type
             assign_value8: uint8
         of MemoryAddressMetadata:
             address: uint32
+        of UnknownInstructionMetadata:
+            unknown: string
     
     DisassembledInstruction = object
         mnemonic: Mnemonic
@@ -110,7 +114,7 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
         of BLTZAL: return inst.DisasmBxxZ(cpu, bltzal)
         of BGEZAL: return inst.DisasmBxxZ(cpu, bgezal)
         else:
-            NOT_IMPLEMENTED fmt"Invalid BCONZ instruction {inst}"
+            return inst.DisasmUnknown(cpu, "BCONZ")
     of Opcode.Special:
         case inst.function:
         of Function.SLL    : return inst.DisasmSLL(cpu)
@@ -131,9 +135,9 @@ proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
         of Function.SLT    : return inst.DisasmSpecialArithmetic(cpu, slt)
         of Function.Syscall: return inst.DisasmSyscall(cpu)
         else:
-            NOT_IMPLEMENTED fmt"Missing disassembly for SPECIAL {inst}"
+            return inst.DisasmUnknown(cpu, "SPECIAL")
     else: 
-        NOT_IMPLEMENTED fmt"Missing disassembly for {inst}"
+        return inst.DisasmUnknown(cpu)
 
 
 proc DisasmAsText*(inst: Instruction, cpu: Cpu): string = 
@@ -161,6 +165,8 @@ proc `$`*(metadata: seq[MetadataPart]): string =
                 result = result & fmt"{m.assign_target8:08x}h={m.assign_value8:02x}h "
             of MemoryAddressMetadata:
                 result = result & fmt"address={m.address:08x}h "
+            of UnknownInstructionMetadata:
+                result = result & m.unknown & " "
         result = fmt"[{result.strip}]"
 
 
@@ -175,6 +181,15 @@ proc `$`*(part: InstructionPart): string =
         return fmt"{part.offset:x}h({part.base_register.GetCpuRegisterAlias})"
     of ShiftAmount   : return fmt"{cast[int32](part.value)}"
     NOT_IMPLEMENTED "Disassembly part stringify not implemented for: " & $part.kind
+
+
+proc DisasmUnknown(inst: Instruction, cpu: Cpu, instruction_kind: string = ""): DisassembledInstruction =
+    return DisassembledInstruction(
+        mnemonic: Mnemonic.UNKNOWN,
+        metadata: @[
+            MetadataPart(kind: UnknownInstructionMetadata, unknown: instruction_kind & " " & $inst)
+        ]
+    )
 
 
 proc DisasmRtImmediate(inst: Instruction, cpu: Cpu, mnemonic: Mnemonic): DisassembledInstruction =
