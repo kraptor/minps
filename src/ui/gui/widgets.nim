@@ -97,9 +97,10 @@ template close_current_popup() = igCloseCurrentPopup()
 
 
 template popup_modal(id: string, content: untyped) =
-    if igBeginPopupModal(id.cstring, nil, AlwaysAutoResize):
-        content
-        igEndPopup()
+    font "ui":
+        if igBeginPopupModal(id.cstring, nil, AlwaysAutoResize):
+            content
+            igEndPopup()
 
 
 proc not_implemented*(message: string): string =
@@ -116,5 +117,3 @@ template address*(state: var State, a: Address) =
         let popup_id = not_implemented("Open memory viewer at: " & $a)
         button $a:
             open_popup(popup_id)
-
-        
