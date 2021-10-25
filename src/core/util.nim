@@ -4,7 +4,7 @@
 # https://opensource.org/licenses/MIT
 
 type
-    NotImplementedDefect* = ref object of Defect
+    NotImplementedDefect* = object of Defect
 
 const 
     NOT_IMPLEMENTED_PREFIX = "[NOT IMPLEMENTED] "
@@ -19,7 +19,7 @@ template NOT_IMPLEMENTED*(message: string = "") =
     # allocs/deallocs
     block:
         error NOT_IMPLEMENTED_PREFIX & message
-        raise NotImplementedDefect(msg: message)
+        raise newException(NotImplementedDefect, message)
 
 
 proc divmod*(x, y: SomeSignedInt): tuple[quotent, remainder: SomeSignedInt] {.inline.} =
