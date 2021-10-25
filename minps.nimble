@@ -11,6 +11,9 @@ bin           = @[
     "minps"
 ]
 
+# Library dependencies
+const cimgui_version = "1.82"
+
 # Dependencies
 
 requires "nim >= 1.4.6"
@@ -25,15 +28,6 @@ proc appendBinaries(postfix: string) =
         for binary in bin:
             mvFile(toExe(binary), toExe(binary & postfix))
 
-proc stripFile(path: string, filename: string) =
-    let strip_bin = findExe "strip"
-    if strip_bin != "":
-        echo "Running strip on: " & filename
-        withDir path:
-            exec strip_bin & " " & filename
-    else:
-        echo "******* WARNING: Missing 'strip' command. Skipped."
-
 # Tasks
 
 task build_debug, "Build debug version":
@@ -41,16 +35,15 @@ task build_debug, "Build debug version":
     appendBinaries "_debug"
 
 task build_release, "Build release version":
-    exec "nimble -d:danger --opt:speed --passC:-O3 -d:MINPS_RELEASE -d:Version:" & version & " build"
+    exec "nimble -d:danger --opt:speed -d:lto -d:strip -d:MINPS_RELEASE -d:Version:" & version & "-l:cimgui build"
     appendBinaries "_release"
-    stripFile binDir, toExe("minps_release")
 
 task build_callgrind, "Build callgrind version (callgrind)":
-    exec "nimble -d:danger --opt:speed --passC:-O3 -d:MINPS_RELEASE -d:MINPS_CALLGRIND -d:Version:" & version & " build"
+    exec "nimble -d:danger --opt:speed -d:MINPS_RELEASE -d:MINPS_CALLGRIND -d:Version:" & version & " build"
     appendBinaries "_callgrind"
 
 task build_release_stacktrace, "Build release version (with stacktraces)":
-    exec "nimble -d:danger --stackTrace:on --opt:speed --passC:-O3 -d:MINPS_RELEASE -d:Version:" & version & " build"
+    exec "nimble -d:danger --stackTrace:on --opt:speed -d:MINPS_RELEASE -d:Version:" & version & " build"
     appendBinaries "_release_stacktrace"
 
 task build_profiler, "Build with profiler":
@@ -86,7 +79,7 @@ task build_cimgui, "Build cimgui dll":
         
     withDir tmpdir:
         exec("git pull")
-        exec("git checkout tags/1.82")
+        exec("git checkout tags/" & cimgui_version)
         exec("git submodule update")        
         exec("make")
         cpFile("cimgui.so", "../bin/cimgui.so")
