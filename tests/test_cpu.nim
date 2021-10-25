@@ -396,7 +396,7 @@ suite "Instruction execution correctness":
         cpu.WriteRegisterDebug(20, start.u32 + 12)
 
         p.RunProgramToPc(@[
-            JR(20),     # start    --+ 
+            JR(20),            # start    --+ 
             ADDIU( 1, 0, 100), # start+4    | : executed (DS)
             ADDIU(10, 0, 100), # start+8    | : not executed
             ADDIU(11, 0, 100), # start+12 <-+ : executed
