@@ -168,8 +168,10 @@ proc Execute*(cpu: Cpu): Cycles =
     # TODO: return number of cycles
     
     debug fmt"Execute: {cpu.inst.DisasmAsText(cpu)}"
+    
     if cpu.echo_intructions:
         echo fmt"{cpu.inst_pc} - Execute: {cpu.inst.DisasmAsText(cpu)}"
+
     logIndent:
         result = OPCODES[ord cpu.inst.opcode] cpu
 
