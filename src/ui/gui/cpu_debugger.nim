@@ -17,7 +17,7 @@ import widgets
 
 
 proc Draw*(state: var State) =
-    begin "Debugger", state.config.debugger.window_visible:
+    begin "CPU: Debugger", state.config.debugger.window_visible:
         block top_toolbar:
             button state, "debugger.step"
             sameline

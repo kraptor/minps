@@ -10,7 +10,8 @@ import strutils
 include inc/imports
 import state
 import mainmenu
-import debugger
+import cpu_debugger
+import cpu_registers
 import fonts
 import actions
 
@@ -105,7 +106,8 @@ proc Draw*(app: var Application) =
         
         # TODO: draw here user interface
         mainmenu.Draw(app.state)
-        debugger.Draw(app.state)
+        cpu_debugger.Draw(app.state)
+        cpu_registers.Draw(app.state)
 
         igRender()
         igOpenGL3RenderDrawData(igGetDrawData())
@@ -133,7 +135,7 @@ proc GetShortcut(key, mods, action: int32): string =
         is_super = (mods and GLFWModSuper) == GLFWModSuper
         is_alt = (mods and GLFWModAlt) == GLFWModAlt
 
-    # # shortcuts need a modified
+    # # shortcuts need a modifier
     # if not(is_shift or is_ctrl or is_super or is_alt):
     #     return ""
 

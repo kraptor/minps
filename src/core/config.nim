@@ -16,6 +16,7 @@ type
         bios*: BiosConfig
         gui*: GuiConfig
         debugger*: DebuggerConfig
+        registers*: RegistersConfig
 
 type
     BiosConfig* = object
@@ -34,6 +35,8 @@ type
     DebuggerConfig* = object
         window_visible *{.defaultValue: false.}: bool
 
+    RegistersConfig* = object
+        window_visible *{.defaultValue: false.}: bool
 
 proc New*(T: type Config, ini_file: string): Config =
     notice "Loading configuration from: " & ini_file

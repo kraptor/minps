@@ -27,6 +27,7 @@ proc Draw*(state: var State) =
             menuitem(state, "debugger.reset")
 
         menu "Windows":
+            menuitem(state, "registers.window.toggle")
             menuitem(state, "debugger.window.toggle")
 
         

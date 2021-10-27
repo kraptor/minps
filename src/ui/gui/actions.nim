@@ -61,6 +61,13 @@ const
     NO_ACTION* = Action.New("no.action", "No action")
 
     ACTIONS = {
+        "registers.window.toggle": Action.New(
+            "Registers",
+            "Toggle Registers window visibility",
+            proc(state: var State) = switch(state.config.registers.window_visible),
+            isSelected = proc(state: var State): bool = state.config.registers.window_visible,
+            shortcut = "Super+R"
+        ),
         "debugger.window.toggle": Action.New(
             "Debugger",
             "Toggle Debugger window visibility",
