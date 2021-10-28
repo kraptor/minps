@@ -61,21 +61,28 @@ const
     NO_ACTION* = Action.New("no.action", "No action")
 
     ACTIONS = {
-        "registers.window.toggle": Action.New(
-            "Registers",
-            "Toggle Registers window visibility",
-            proc(state: var State) = switch(state.config.registers.window_visible),
-            isSelected = proc(state: var State): bool = state.config.registers.window_visible,
+        "cop0.registers.window.toggle": Action.New(
+            "COP0 Registers",
+            "Toggle COP0 Registers window visibility",
+            proc(state: var State) = switch(state.config.gui.cop0_registers.window_visible),
+            isSelected = proc(state: var State): bool = state.config.gui.cop0_registers.window_visible,
+            shortcut = "Super+C"
+        ),
+        "cpu.registers.window.toggle": Action.New(
+            "CPU Registers",
+            "Toggle CPU Registers window visibility",
+            proc(state: var State) = switch(state.config.gui.registers.window_visible),
+            isSelected = proc(state: var State): bool = state.config.gui.registers.window_visible,
             shortcut = "Super+R"
         ),
-        "debugger.window.toggle": Action.New(
-            "Debugger",
-            "Toggle Debugger window visibility",
-            proc(state: var State) = switch(state.config.debugger.window_visible),
-            isSelected = proc(state: var State): bool = state.config.debugger.window_visible,
+        "cpu.debugger.window.toggle": Action.New(
+            "CPU Debugger",
+            "Toggle CPU Debugger window visibility",
+            proc(state: var State) = switch(state.config.gui.debugger.window_visible),
+            isSelected = proc(state: var State): bool = state.config.gui.debugger.window_visible,
             shortcut = "Super+D"
         ),
-        "debugger.step": Action.New(
+        "cpu.debugger.step": Action.New(
             "Step",
             "Step one instruction",
             proc(state: var State) = 
@@ -85,7 +92,7 @@ const
             ,
             "F10"
         ),
-        "debugger.reset": Action.New(
+        "cpu.debugger.reset": Action.New(
             "Reset",
             "Reset platform to initial state",
             proc(state: var State) = state.platform.cpu.Reset(),

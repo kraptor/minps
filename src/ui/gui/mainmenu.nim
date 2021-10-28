@@ -19,15 +19,16 @@ proc Draw*(state: var State) =
     menubar:
         menu "MinPS":
             `----`
-            menuitem(state, "app.quit")
+            menuitem state, "app.quit"
 
         menu "Debugger":
-            menuitem(state, "debugger.step")
+            menuitem state, "cpu.debugger.step"
             `----`
-            menuitem(state, "debugger.reset")
+            menuitem state, "cpu.debugger.reset"
 
         menu "Windows":
-            menuitem(state, "registers.window.toggle")
-            menuitem(state, "debugger.window.toggle")
+            menuitem state, "cpu.registers.window.toggle"
+            menuitem state, "cpu.debugger.window.toggle"
+            menuitem state, "cop0.registers.window.toggle"
 
         

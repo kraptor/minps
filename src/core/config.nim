@@ -15,8 +15,6 @@ type
     Config* = object
         bios*: BiosConfig
         gui*: GuiConfig
-        debugger*: DebuggerConfig
-        registers*: RegistersConfig
 
 type
     BiosConfig* = object
@@ -27,16 +25,23 @@ type
         size *{.defaultValue:   16.}: float32
 
     GuiConfig* = object 
-        window_width  *{.defaultValue: 1024.}: int32
-        window_height *{.defaultValue:  400.}: int32
-        ui_font       *: FontConfig
-        mono_font     *: FontConfig
+        window_width   *{.defaultValue: 1024.}: int32
+        window_height  *{.defaultValue:  400.}: int32
+        ui_font        *: FontConfig
+        mono_font      *: FontConfig
+        debugger       *: DebuggerConfig
+        registers      *: RegistersConfig
+        cop0_registers *: Cop0RegistersConfig
 
     DebuggerConfig* = object
         window_visible *{.defaultValue: false.}: bool
 
     RegistersConfig* = object
         window_visible *{.defaultValue: false.}: bool
+
+    Cop0RegistersConfig* = object
+        window_visible *{.defaultValue: false.}: bool
+
 
 proc New*(T: type Config, ini_file: string): Config =
     notice "Loading configuration from: " & ini_file

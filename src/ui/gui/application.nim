@@ -10,10 +10,12 @@ import strutils
 include inc/imports
 import state
 import mainmenu
-import cpu_debugger
-import cpu_registers
 import fonts
 import actions
+
+import cpu_debugger
+import cpu_registers
+import cop0_registers
 
 logChannels ["gui", "app"]
 
@@ -108,6 +110,7 @@ proc Draw*(app: var Application) =
         mainmenu.Draw(app.state)
         cpu_debugger.Draw(app.state)
         cpu_registers.Draw(app.state)
+        cop0_registers.Draw(app.state)
 
         igRender()
         igOpenGL3RenderDrawData(igGetDrawData())
