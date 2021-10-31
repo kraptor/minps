@@ -13,6 +13,7 @@ import ../../emulator/cpu/disassembler
 import ../../emulator/cpu/cop0
 import ../../emulator/mmu
 import ../../core/util
+
 import state
 import widgets
 
@@ -21,10 +22,20 @@ proc Draw*(state: var State) =
     begin "COP0: Registers", state.config.gui.cop0_registers.window_visible, AlwaysAutoResize:
         font "mono":
             var cop0 = state.platform.cpu.cop0
+            var cfg = state.config
 
-            text fmt"{""id"":>2} {""alias"":>8} {""hex"":>8} {""int32"":>11} {""uint32"":>11}"
+            text fmt"{""id"":>2} {""alias"":>9} {""hex"":>8} {""int32"":>11} {""uint32"":>11}"
             `----`
-            for index, register in cop0.regs:
-                text fmt"{index:>2} {GetCop0RegisterAlias(index):>8} {register:>8x} {cast[int32](register):>11} {register:>11}"
+            for register, value in cop0.regs:
+                var name = $register
+                text fmt"{register:>2} "
+                sameline
+                text fmt"{GetCop0RegisterAlias(register):>9} "
+                sameline
+                text_color value == 0, fmt"{value:>8x} ", cfg.gui.palette.ZERO_VALUE
+                sameline
+                text_color value == 0, fmt"{cast[int32](value):>11} ", cfg.gui.palette.ZERO_VALUE
+                sameline
+                text_color value == 0, fmt"{value:>11}", cfg.gui.palette.ZERO_VALUE
             `----`
 

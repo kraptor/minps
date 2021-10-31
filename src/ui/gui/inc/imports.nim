@@ -7,6 +7,7 @@
 import ../../../core/log
 import ../../../core/config
 import ../../../core/version
+import ../../../core/colors
 import ../../../emulator/address
 import ../../../emulator/platform
 import ../../../emulator/cpu/cpu

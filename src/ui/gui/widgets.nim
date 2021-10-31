@@ -16,6 +16,8 @@ export fonts
 const
     BUTTON_SIZE_DEFAULT = ImVec2(x: 0, y:0)
 
+# converter toImColor(c: Color): ImColor = cast[ImColor](c)
+proc toVec4*(c: Color): ImVec4 = ImVec4(x:c.r,y:c.g,z:c.b,w:c.a)
 
 template font*(font_name: string, body: untyped): untyped =
     igPushFont(GetFont(font_name))
@@ -27,7 +29,23 @@ template font*(font_name: string, body: untyped): untyped =
 template separator*() = igSeparator()
 template `----`*() = separator()
 template sameline*() = igSameLine()
+
 template text*(value: string) = igText(value.cstring)
+template text_color*(value: string, c: Color) = igTextColored c.toVec4(), value.cstring
+
+
+template text_color*(condition: bool, value: string, true_color: Color, false_color: Color) =
+    if condition: 
+        text_color value, true_color 
+    else: 
+        text_color value, false_color
+
+
+template text_color*(condition: bool, value: string, true_color: Color) =
+    if condition: 
+        text_color value, true_color 
+    else: 
+        text value
 
 
 template begin*(title: string, open: var bool, flags: ImGuiWindowFlags, body: untyped): untyped =
@@ -56,7 +74,7 @@ template button*(label, tooltip: string, body: untyped): untyped =
         igSetTooltip(tooltip.cstring)
 
 
-template button*(state: State, action_id: string): untyped =
+template button*(state: var State, action_id: string): untyped =
     let 
         action = GetActionByName(action_id)
         
