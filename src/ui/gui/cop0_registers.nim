@@ -18,7 +18,7 @@ import widgets
 
 
 proc Draw*(state: var State) =
-    begin "COP0: Registers", state.config.gui.cop0_registers.window_visible:
+    begin "COP0: Registers", state.config.gui.cop0_registers.window_visible, AlwaysAutoResize:
         font "mono":
             var cop0 = state.platform.cpu.cop0
 

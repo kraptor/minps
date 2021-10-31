@@ -16,7 +16,7 @@ import widgets
 
 
 proc Draw*(state: var State) =
-    begin "CPU: Debugger", state.config.gui.debugger.window_visible:
+    begin "CPU: Debugger", state.config.gui.debugger.window_visible, AlwaysAutoResize:
         block top_toolbar:
             button state, "cpu.debugger.step"
             sameline
