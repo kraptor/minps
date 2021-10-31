@@ -27,3 +27,6 @@ proc main*(config: var Config) =
         app.Present()
 
     app.Terminate()
+
+    # update configuration with the current one used by the application
+    config = app.state.config

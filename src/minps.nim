@@ -31,16 +31,18 @@ proc main(run_mode: RunMode) =
     logEcho "minps - a wannabe PlayStation 1 emulator"
     logEcho "version: " & VersionString
 
-    var config = Config.New("minps.ini")
-    
-    
+    var 
+        config = Config.New("minps.cfg")
+        
     case run_mode:
-    of Console:
-        notice "Using command-line interface."
-        cli.main(config)
-    of Gui:
-        notice "Using GUI interface"
-        gui.main(config)
+        of Console:
+            notice "Using command-line interface."
+            cli.main(config)
+        of Gui:
+            notice "Using GUI interface."
+            gui.main(config)
+
+    config.save("minps.cfg")
 
 
 when isMainModule:
