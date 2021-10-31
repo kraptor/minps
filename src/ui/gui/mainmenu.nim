@@ -17,6 +17,9 @@ proc Draw*(state: var State) =
 
     menubar:
         menu "MinPS":
+            menu "Settings":
+                menuitem state, "app.config.reset_palette"
+                menuitem state, "app.config.reset"
             `----`
             menuitem state, "app.quit"
 
@@ -29,5 +32,3 @@ proc Draw*(state: var State) =
             menuitem state, "cpu.registers.window.toggle"
             menuitem state, "cpu.debugger.window.toggle"
             menuitem state, "cop0.registers.window.toggle"
-
-        

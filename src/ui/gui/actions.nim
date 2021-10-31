@@ -97,6 +97,16 @@ const
             "Reset platform to initial state",
             proc(state: var State) = state.platform.cpu.Reset(),
         ),
+        "app.config.reset": Action.New(
+            "Reset configuration",
+            "Reset configuration to default values",
+            proc(state: var State) = state.config.reset()
+        ),
+        "app.config.reset_palette": Action.New(
+            "Reset color palette",
+            "Reset color palette to default values",
+            proc(state: var State) = state.config.gui.palette.reset()
+        ),
         "app.quit": Action.New(
             "Quit", 
             "Quit application", 
