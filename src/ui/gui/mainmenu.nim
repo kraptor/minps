@@ -4,7 +4,6 @@
 # https://opensource.org/licenses/MIT
 
 include inc/imports
-import nimgl/imgui
 
 import state
 import widgets

@@ -6,7 +6,6 @@
 import strformat
 
 include inc/imports
-import nimgl/imgui
 
 import ../../emulator/cpu/instruction
 import ../../emulator/cpu/disassembler
