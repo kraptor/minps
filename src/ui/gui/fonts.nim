@@ -12,7 +12,17 @@ var
 const 
     USE_EXTRA_SYMBOLS = false
 
+
+proc LoadDefaultFont*() =
+    igGetIO().fonts.addFontDefault()
+    fonts["base"] = igGetDefaultFont()
+
+
 proc LoadFont*(name: string, font: FontConfig) =
+    if font.file == "":
+        fonts[name] = fonts["base"]
+        return
+
     when USE_EXTRA_SYMBOLS:
         # TODO: to use extra symbols, NimGL ImGUI bindings need to be updated 
         #       with missing functions and types:

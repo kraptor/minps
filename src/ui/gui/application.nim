@@ -78,6 +78,7 @@ proc New*(t: type Application, config: var Config, platform: var Platform): Appl
     discard setKeyCallback(result.state.window, glfwKeyCallback)
 
     # load fonts
+    LoadDefaultFont()
     LoadFont("ui", config.gui.ui_font)
     LoadFont("mono", config.gui.mono_font)
 
@@ -94,38 +95,6 @@ proc Terminate*(app: var Application) =
         destroyWindow app.state.window
         glfwTerminate()
         notice "done."
-
-
-proc Draw*(app: var Application) =
-    block background:
-        glClearColor(0, 0, 0, 1)
-        glClear(GL_COLOR_BUFFER_BIT)
-
-    block user_interface:
-        igOpenGL3NewFrame()
-        igGlfwNewFrame()
-        igNewFrame()
-        
-        # TODO: draw here user interface
-        mainmenu.Draw(app.state)
-        cpu_debugger.Draw(app.state)
-        cpu_registers.Draw(app.state)
-        cop0_registers.Draw(app.state)
-
-        igRender()
-        igOpenGL3RenderDrawData(igGetDrawData())
-
-
-proc ProcessEvents*(app: var Application) =
-    glfwPollEvents()
-
-
-proc IsClosing*(app: var Application): bool =
-    app.state.window.windowShouldClose()
-
-
-proc Present*(app: var Application) =
-    app.state.window.swapBuffers()
 
 
 proc GetShortcut(key, mods, action: int32): string =
@@ -163,3 +132,35 @@ proc glfwKeyCallback(window: GLFWWindow, key: int32, scancode: int32, action_pre
         if action == NO_ACTION:
             debug "Shortcut ignored: " & shortcut
         action.Run(app.state)
+
+
+proc Draw*(app: var Application) =
+    block background:
+        glClearColor(0, 0, 0, 1)
+        glClear(GL_COLOR_BUFFER_BIT)
+
+    block user_interface:
+        igOpenGL3NewFrame()
+        igGlfwNewFrame()
+        igNewFrame()
+
+        block draw_gui:
+            mainmenu.Draw(app.state)
+            cpu_debugger.Draw(app.state)
+            cpu_registers.Draw(app.state)
+            cop0_registers.Draw(app.state)
+
+        igRender()
+        igOpenGL3RenderDrawData(igGetDrawData())
+
+
+proc ProcessEvents*(app: var Application) =
+    glfwPollEvents()
+
+
+proc IsClosing*(app: var Application): bool =
+    app.state.window.windowShouldClose()
+
+
+proc Present*(app: var Application) =
+    app.state.window.swapBuffers()
