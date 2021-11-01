@@ -72,8 +72,7 @@ proc New*(t: type Application, config: var Config, platform: var Platform): Appl
     
     if not igOpenGL3Init():
         error "Can't initialize Imgui OpenGL!"
-    igStyleColorsCherry()
-
+    
     debug "Setting up key callback..."
     discard setKeyCallback(result.state.window, glfwKeyCallback)
 
@@ -81,6 +80,7 @@ proc New*(t: type Application, config: var Config, platform: var Platform): Appl
     LoadDefaultFont()
     LoadFont("ui", config.gui.ui_font)
     LoadFont("mono", config.gui.mono_font)
+    igGetIO().fontDefault = GetFont("ui")
 
 
 proc Terminate*(app: var Application) =
@@ -144,15 +144,13 @@ proc Draw*(app: var Application) =
         igGlfwNewFrame()
         igNewFrame()
 
-        igPushFont(GetFont("ui"))
+        igShowDemoWindow()
 
         block draw_gui:
             mainmenu.Draw(app.state)
             cpu_debugger.Draw(app.state)
             cpu_registers.Draw(app.state)
             cop0_registers.Draw(app.state)
-
-        igPopFont()
 
         igRender()
         igOpenGL3RenderDrawData(igGetDrawData())

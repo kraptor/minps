@@ -3,13 +3,13 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
-{.experimental:"codeReordering".}
+# {.experimental:"codeReordering".}
 
 import json
 import jsony
 
 import ../core/log
-import ../core/colors
+import ../core/palette
 
 logChannels ["config"]
 
