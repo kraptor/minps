@@ -15,68 +15,65 @@ import state
 import widgets
 
 
+const
+    DEBUGGER_ITEM_SPACING = ImVec2(x: 8, y: 0)
+
+
 proc Draw*(state: var State) =
     begin "CPU: Debugger", state.config.gui.debugger.window_visible, AlwaysAutoResize:
+        
         block top_toolbar:
             button state, "cpu.debugger.step"
             sameline
             button state, "cpu.debugger.reset"
         `----`
+        
+        push_style ImguiStyleVar.ItemSpacing, DEBUGGER_ITEM_SPACING:
+            var 
+                cpu = state.platform.cpu
+                pc = cpu.pc # - 0xbfc0_0000'u32
 
-        block pc_info:
+            const 
+                debug_instruction_peek_before = 10
+                debug_instruction_peek_after = 10
+
             font "mono":
-                text "PC="
-                sameline
-                address state, state.platform.cpu.pc
-        `----` 
+                block prev_instructions:
+                    # display previous instructions
+                    for i in countdown(debug_instruction_peek_before, 1):
+                        var mem_addr = pc - (i.uint32 * sizeof(Instruction).uint32)
+                        
+                        # do not peek addressess below 0x0
+                        if mem_addr > pc:
+                            continue
 
-        var 
-            cpu = state.platform.cpu
-            pc = cpu.pc # - 0xbfc0_0000'u32
+                        text "   "
+                        sameline
+                        address state, mem_addr
+                        sameline
+                        var inst = Instruction.New(cpu.mmu.ReadDebug32(mem_addr))
+                        text inst.Disasm(cpu).DisasmAsText()
 
-        const 
-            debug_instruction_peek_before = 10
-            debug_instruction_peek_after = 10
-
-        font "mono":
-            block prev_instructions:
-                # display previous instructions
-                for i in countdown(debug_instruction_peek_before, 1):
-                    var mem_addr = pc - (i.uint32 * sizeof(Instruction).uint32)
-                    
-                    # do not peek addressess below 0x0
-                    if mem_addr > pc:
-                        continue
-
-                    text "   "
+                block current_instruction:
+                    `----`
+                    text " PC"
                     sameline
-                    address state, mem_addr
+                    address state, pc
                     sameline
-                    var inst = Instruction.New(cpu.mmu.ReadDebug32(mem_addr))
-                    text inst.Disasm(cpu).DisasmAsText()
-
-            block current_instruction:
-                `----`
-                text "PC:"
-                sameline
-                address state, pc
-                sameline
-                text cpu.inst.Disasm(cpu).DisasmAsText()
-                `----`
-            
-            block next_instructions:
-                for i in 1'u32 .. debug_instruction_peek_after:
-                    var mem_addr = pc + (i * sizeof(Instruction).uint32)
-                    
-                    # do not peek instructions over maximum value
-                    if mem_addr < pc:
-                        break
-                    
-                    text "   "
-                    sameline
-                    address state, mem_addr
-                    sameline
-                    var inst = Instruction.New(ReadDebug[uint32](cpu.mmu, mem_addr))
-                    text inst.Disasm(cpu).DisasmAsText()
-            `----`
-
+                    text cpu.inst.Disasm(cpu).DisasmAsText()
+                    `----`
+                
+                block next_instructions:
+                    for i in 1'u32 .. debug_instruction_peek_after:
+                        var mem_addr = pc + (i * sizeof(Instruction).uint32)
+                        
+                        # do not peek instructions over maximum value
+                        if mem_addr < pc:
+                            break
+                        
+                        text "   "
+                        sameline
+                        address state, mem_addr
+                        sameline
+                        var inst = Instruction.New(ReadDebug[uint32](cpu.mmu, mem_addr))
+                        text inst.Disasm(cpu).DisasmAsText()
