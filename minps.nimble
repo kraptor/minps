@@ -16,9 +16,8 @@ const cimgui_version = "1.82"
 
 # Dependencies
 
-requires "nim >= 1.6.0"
-requires "sim >= 0.1.6"
-
+requires "nim   >= 1.6.0"
+requires "jsony >= 1.0.5"
 requires "nimgl >= 1.3.2"
 
 # Utilities
