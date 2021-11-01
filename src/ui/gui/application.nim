@@ -144,11 +144,15 @@ proc Draw*(app: var Application) =
         igGlfwNewFrame()
         igNewFrame()
 
+        igPushFont(GetFont("ui"))
+
         block draw_gui:
             mainmenu.Draw(app.state)
             cpu_debugger.Draw(app.state)
             cpu_registers.Draw(app.state)
             cop0_registers.Draw(app.state)
+
+        igPopFont()
 
         igRender()
         igOpenGL3RenderDrawData(igGetDrawData())

@@ -14,13 +14,14 @@ const
 
 
 proc LoadDefaultFont*() =
-    igGetIO().fonts.addFontDefault()
-    fonts["base"] = igGetDefaultFont()
+    var font = igGetIO().fonts.addFontDefault()
+    fonts["base"] = font
+    fonts["ui"] = font
+    fonts["mono"] = font
 
 
 proc LoadFont*(name: string, font: FontConfig) =
     if font.file == "":
-        fonts[name] = fonts["base"]
         return
 
     when USE_EXTRA_SYMBOLS:
@@ -45,7 +46,7 @@ proc LoadFont*(name: string, font: FontConfig) =
         fonts[name] = igGetIO().fonts.addFontFromFileTTF(font.file.cstring, font.size, nil, ranges.data)
     else:
         fonts[name] = igGetIO().fonts.addFontFromFileTTF(font.file.cstring, font.size)
-    
+
 
 proc GetFont*(name: string): ptr ImFont =
     fonts[name]
