@@ -16,8 +16,8 @@ export fonts
 const
     BUTTON_SIZE_DEFAULT = ImVec2(x: 0, y:0)
 
-# converter toImColor(c: Color): ImColor = cast[ImColor](c)
-proc toVec4*(c: Color): ImVec4 = ImVec4(x:c.r,y:c.g,z:c.b,w:c.a)
+template toVec4*(c: Color): ImVec4 = ImVec4(x:c.r,y:c.g,z:c.b,w:c.a)
+
 
 template font*(font_name: string, body: untyped): untyped =
     igPushFont(GetFont(font_name))
@@ -29,7 +29,6 @@ template font*(font_name: string, body: untyped): untyped =
 template separator*() = igSeparator()
 template `----`*() = separator()
 template sameline*() = igSameLine()
-
 template text*(value: string) = igText(value.cstring)
 template text_color*(value: string, c: Color) = igTextColored c.toVec4(), value.cstring
 
@@ -135,3 +134,26 @@ template address*(state: var State, a: Address) =
         let popup_id = not_implemented("Open memory viewer at: " & $a)
         button $a:
             open_popup(popup_id)
+
+
+template push_style*(style_var: ImGuiStyleVar, value: ImVec2, body) =
+    igPushStyleVar(stylevar, value)
+    body
+    igPopStyleVar()
+
+
+template table*(name: string, columns: Natural, body) =
+    if igBeginTable(name, columns):
+        body
+        igEndTable()
+
+
+proc table_next_row* = igTableNextRow()
+proc table_next_column* = igTableNextColumn()
+
+
+proc table_setup_column*(name: string, flags: ImguiTableColumnFlags = 
+    ImGuiTableColumnFlags.None) = igTableSetupColumn(name.cstring, flags)
+
+
+proc table_header_row_draw* = igTableHeadersRow()
