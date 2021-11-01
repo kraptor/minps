@@ -8,6 +8,7 @@ import ../../../core/log
 import ../../../core/config
 import ../../../core/version
 import ../../../core/colors
+import ../../../core/palette
 import ../../../emulator/address
 import ../../../emulator/platform
 import ../../../emulator/cpu/cpu
