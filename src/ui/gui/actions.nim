@@ -100,12 +100,12 @@ const
         "app.config.reset": Action.New(
             "Reset configuration",
             "Reset configuration to default values",
-            proc(state: var State) = state.config.reset()
+            proc(state: var State) = newHook state.config
         ),
         "app.config.reset_palette": Action.New(
             "Reset color palette",
             "Reset color palette to default values",
-            proc(state: var State) = state.config.gui.palette.reset()
+            proc(state: var State) = newHook state.config.gui.palette
         ),
         "app.quit": Action.New(
             "Quit", 

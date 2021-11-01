@@ -46,39 +46,64 @@ type
         window_visible *: bool
 
 
-proc reset*(cfg: var Config) =
-    cfg.bios.file = "bios/bios.bin"
-    cfg.gui.ui_font.file = ""
-    cfg.gui.ui_font.size = 13
-    cfg.gui.mono_font.file = ""
-    cfg.gui.mono_font.size = 13
-    cfg.gui.window_width = 1024
-    cfg.gui.window_height = 800
+proc setDefaults*(cfg: var Config) =
     cfg.gui.debugger.window_visible = false
     cfg.gui.registers.window_visible = false
     cfg.gui.cop0_registers.window_visible = false
 
-    cfg.gui.palette.reset()
+
+proc newHook*(debugger: var DebuggerConfig) =
+    debugger.window_visible = false
 
 
-proc newHook*(cfg: var Config) = 
-    #[
-        NOTE: this method should be exported so jsony can use it when
-        loading the configuration file defaults values.
-    ]#
-    cfg.reset()
+proc newHook*(registers: var RegistersConfig) =
+    registers.window_visible = false
+
+
+proc newHook*(cop0_registers: var Cop0RegistersConfig) =
+    cop0_registers.window_visible = false
+
+
+proc newHook*(palette: var ColorPalette) = 
+    palette = DefaultPalette
+
+
+proc newHook*(bios: var BiosConfig) = 
+    bios.file = "bios/bios.bin"
+
+
+proc newHook*(font: var FontConfig) = 
+    font.file = ""
+    font.size = 13
+
+
+proc newHook*(gui: var GuiConfig) =
+    gui.window_width = 1024
+    gui.window_height = 800
+    newHook gui.ui_font
+    newHook gui.mono_font
+    newHook gui.debugger
+    newHook gui.registers
+    newHook gui.cop0_registers
+    newHook gui.palette
+
+
+proc newHook*(config: var Config) =
+    newHook config.gui
+    newHook config.bios
 
 
 proc New*(T: type Config, filename: string): Config =
     notice "Loading configuration from: " & filename
     logIndent:
         var config: Config
-                
+        
         try:
             var contents = readFile(filename)
             return fromJson(contents, Config)
         except IOError:
-            newHook(config)
+            # use defaults in config cannot be read
+            newHook config
             
         result = config
 

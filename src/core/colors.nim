@@ -17,7 +17,7 @@ type
         REGISTER_ID *: Color
 
 
-proc reset*(palette: var ColorPalette) = 
+proc setDefaults*(palette: var ColorPalette) = 
     palette = DefaultPalette
 
 
