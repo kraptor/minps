@@ -12,6 +12,7 @@ type
         ZERO_VALUE     *: Color
         REGISTER_NAME  *: Color
         REGISTER_NUMBER*: Color
+        REGISTER_DETAIL*: Color
 
 
 proc setDefaults*(palette: var ColorPalette) = 
@@ -22,5 +23,6 @@ const
     DefaultPalette* = ColorPalette(
         ZERO_VALUE     : GRAY_DIMMED,
         REGISTER_NUMBER: GRAY_DIMMED,
-        REGISTER_NAME  : PALETTE_LIGHT
+        REGISTER_NAME  : PALETTE_LIGHT,
+        REGISTER_DETAIL: GRAY_DIMMED
     )
