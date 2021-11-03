@@ -14,7 +14,11 @@ import ../../core/util
 logChannels ["cop0"]
 
 const
-    PRID_RESET_VALUE = 0x00000002
+    PRID_RESET_VALUE = Cop0PRIDRegister(
+        Revision: 0x2,
+        Implementation: 0,
+        NotUsed: 0
+    )
 
 type 
     Cop0RegisterIndex* = 0..31
@@ -35,7 +39,7 @@ type
         SR        : Cop0SystemStatusRegister # System Status Register
         CAUSE     : Cop0CauseRegister # Exception Cause Register
         EPC       : uint32 # Return address from exception
-        PRID      : uint32 # Processor ID
+        PRID      : Cop0PRIDRegister # Processor ID
         r16, r17, r18, r19, r20, r21, r22, r23: uint32
         r24, r25, r26, r27, r28, r29, r30, r31: uint32
     
@@ -164,6 +168,15 @@ type
         coprocessor_error  *{.bitsize:  2.}: CoprocessorErrorCode
         branch_taken       *{.bitsize:  1.}: bool
         branch_delay       *{.bitsize:  1.}: bool
+
+type
+    Cop0PRIDRegister* {.packed.} = object
+        Revision       *{.bitsize: 8.}: uint8
+        Implementation *{.bitsize: 8.}: uint8
+        NotUsed        *{.bitsize:16.}: uint16
+
+
+proc PRID *(cop0: var Cop0): var Cop0PRIDRegister = cop0.parts.PRID
 
 
 proc CAUSE *(cop0: var Cop0): var Cop0CauseRegister = cop0.parts.CAUSE
