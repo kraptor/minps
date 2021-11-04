@@ -9,10 +9,11 @@ import colors
 
 type
     ColorPalette* = object
-        ZERO_VALUE     *: Color
-        REGISTER_NAME  *: Color
-        REGISTER_NUMBER*: Color
-        REGISTER_DETAIL*: Color
+        ZERO_VALUE          *: Color
+        REGISTER_NAME       *: Color
+        REGISTER_NUMBER     *: Color
+        REGISTER_DETAIL     *: Color
+        REGISTER_DESCRIPTION*: Color
 
 
 proc setDefaults*(palette: var ColorPalette) = 
@@ -21,8 +22,9 @@ proc setDefaults*(palette: var ColorPalette) =
 
 const
     DefaultPalette* = ColorPalette(
-        ZERO_VALUE     : GRAY_DIMMED,
-        REGISTER_NUMBER: GRAY_DIMMED,
-        REGISTER_NAME  : PALETTE_LIGHT,
-        REGISTER_DETAIL: GRAY_DIMMED
+        ZERO_VALUE          : GRAY_DIMMED,
+        REGISTER_NUMBER     : GRAY_DIMMED,
+        REGISTER_NAME       : PALETTE_LIGHT,
+        REGISTER_DETAIL     : GRAY_DIMMED,
+        REGISTER_DESCRIPTION: GRAY_DIMMED,
     )
