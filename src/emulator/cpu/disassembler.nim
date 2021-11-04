@@ -172,13 +172,13 @@ proc `$`*(metadata: seq[MetadataPart]): string =
 
 proc `$`*(part: InstructionPart): string =
     case part.kind:
-    of CpuRegister   : return GetCpuRegisterAlias(part.value)
+    of CpuRegister   : return $part.value.CpuRegisterAlias
     of ImmediateValue: return fmt"{part.value:x}h"
     of Offset        : return fmt"{cast[int32](part.value):x}h"
     of MemoryAddress : return fmt"{part.value:x}h"
     of Cop0Register  : return $part.value.Cop0RegisterAlias
     of MemoryAddressIndirect:
-        return fmt"{part.offset:x}h({part.base_register.GetCpuRegisterAlias})"
+        return fmt"{part.offset:x}h({part.base_register.CpuRegisterAlias})"
     of ShiftAmount   : return fmt"{cast[int32](part.value)}"
     NOT_IMPLEMENTED "Disassembly part stringify not implemented for: " & $part.kind
 

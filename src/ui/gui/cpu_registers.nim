@@ -47,7 +47,7 @@ proc Draw*(state: var State) =
                 for register, value in cpu.regs:
                     draw_register_row(
                         $register, 
-                        GetCpuRegisterAlias(register), 
+                        $register.CpuRegisterAlias,
                         value, 
                         cfg.gui.palette
                     )

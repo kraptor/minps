@@ -56,27 +56,51 @@ type
         echo_intructions*: bool
         bios_msg: string
 
-
-proc GetCpuRegisterAlias*(r: CpuRegisterIndex): string {.inline.} =
-    const CPU_REGISTER_TO_ALIAS = [
-        "zero", "at", "v0", "v1", "a0", "a1", "a2", "a3", 
-        "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", 
-        "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7", 
-        "t8", "t9", "k0", "k1", "gp", "sp", "fp_s8", "ra"]
-    CPU_REGISTER_TO_ALIAS[r]
-
+    CpuRegisterAlias* {.pure.} = enum
+        r0  = "zero",
+        r1  = "at",
+        r2  = "v0", 
+        r3  = "v1",
+        r4  = "a0", 
+        r5  = "a1", 
+        r6  = "a2", 
+        r7  = "a3",
+        r8  = "t0", 
+        r9  = "t1", 
+        r10 = "t2", 
+        r11 = "t3", 
+        r12 = "t4", 
+        r13 = "t5", 
+        r14 = "t6", 
+        r15 = "t7",
+        r16 = "s0", 
+        r17 = "s1", 
+        r18 = "s2", 
+        r19 = "s3", 
+        r20 = "s4", 
+        r21 = "s5", 
+        r22 = "s6", 
+        r23 = "s7",
+        t24 = "t8", 
+        r25 = "t9", 
+        r26 = "k0", 
+        r27 = "k1", 
+        r28 = "gp", 
+        r29 = "sp", 
+        r30 = "fp/s8", 
+        r31 = "ra"
 
 
 proc WriteRegister*(self: Cpu, r: CpuRegisterIndex, v: uint32) =
     let 
         prev_value = self.regs[r]
 
-    trace fmt"write reg[{GetCpuRegisterAlias(r)}] {GetCpuRegisterAlias(r)}=${r} value={self.regs[r]:08x}h (was={prev_value:08x}h)"
+    trace fmt"write reg[{CpuRegisterAlias(r)}] {CpuRegisterAlias(r)}=${r} value={self.regs[r]:08x}h (was={prev_value:08x}h)"
     self.WriteRegisterDebug(r, v)
 
 
 proc ReadRegister*(self: Cpu, r: CpuRegisterIndex): uint32 = 
-    trace fmt"read reg[{GetCpuRegisterAlias(r)}] {GetCpuRegisterAlias(r)}=${r} value={self.regs[r]:08x}h"
+    trace fmt"read reg[{CpuRegisterAlias(r)}] {CpuRegisterAlias(r)}=${r} value={self.regs[r]:08x}h"
     ReadRegisterDebug(self, r)
 
 
