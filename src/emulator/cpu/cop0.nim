@@ -35,7 +35,7 @@ type
         BadVaddr  : uint32
         BDAM      : uint32 # Breakpoint on Data Access Mask Register
         r10       : uint32 #
-        BPCM      : uint32 # Breakpoint on Execute Mas Register
+        BPCM      : uint32 # Breakpoint on Execute Mask Register
         SR        : Cop0SystemStatusRegister # System Status Register
         CAUSE     : Cop0CauseRegister # Exception Cause Register
         EPC       : uint32 # Return address from exception
@@ -52,6 +52,25 @@ type
         BadVaddr, BDAM, r10, BPCM, SR, CAUSE, EPC, PRID,
         r16, r17, r18, r19, r20, r21, r22, r23,
         r24, r25, r26, r27, r28, r29, r30, r31
+
+    Cop0RegisterDescription* {.pure.} = enum
+        d_r0 = "", d_r1 = "", d_r2 = "",
+        D_BPC      = "(R/W) Breakpoint on Execute Address Register"
+        d_r4 = "",
+        D_BDA      = "(R/W) Breakpoint on Data Access Address Register"
+        D_JUMPDEST = "(R)   JUMPEST - Randomly memorized jump address"
+        D_DCIC     = "(R/W) Debug and Cache Invalidate Control Register"
+        D_BadVaddr = "(R)   Bad Virtual Address"
+        D_BDAM     = "(R/W) Breakpoint on Data Access Mask Register"
+        d_r10 = ""
+        D_BPCM     = "(R/W) Breapoint on Execute Mask Register"
+        D_SR       = "(R/W) System Status Register"
+        D_CAUSE    = "(R)   Exception Cause Register"
+        D_EPC      = "(R)   Return address from exception"
+        D_PRID     = "(R)   Processor ID"
+        d_r16 = "", d_r17 = "", d_r18 = "", d_r19 = "", d_r20 = "", d_r21 = "", 
+        d_r22 = "", d_r23 = "", d_r24 = "", d_r25 = "", d_r26 = "", d_r27 = "", 
+        d_r28 = "", d_r29 = "", d_r30 = "", d_r31 = ""
 
 type
     InterruptEnableMode* {.pure.} = enum
@@ -83,7 +102,7 @@ type
         KUp     *{.bitsize: 1.}: KernelUserMode      # Previous Kernel/User Mode
         IEo     *{.bitsize: 1.}: InterruptEnableMode # Old Interrupt Enable
         KUo     *{.bitsize: 1.}: KernelUserMode      # Old Kernel/User Mode
-        U_06_07 *{.bitsize: 2.}: Unused8
+        Unused_06_07 *{.bitsize: 2.}: Unused8
         Im      *{.bitsize: 8.}: uint8               # 8bit Interrupt Mask
         Isc     *{.bitsize: 1.}: bool                # Isolate Cache
         Swc     *{.bitsize: 1.}: SwappedCacheMode    # Swapped cache mode
@@ -96,9 +115,9 @@ type
                                                      #   matches 2 TLB entries. (initial value on reset allows to 
                                                      #   detect extended CPU version?)
         BEV     *{.bitsize: 1.}: BootExceptionVectorLocation
-        U_23_24  {.bitsize: 2.}: Unused8
+        Unused_23_24  *{.bitsize: 2.}: Unused8
         RE      *{.bitsize: 1.}: bool                # Reverse Endianess
-        U_26_27  {.bitsize: 2.}: Unused8
+        Unused_26_27  *{.bitsize: 2.}: Unused8
         CU0     *{.bitsize: 1.}: CoprocessorEnableMode
         CU1     *{.bitsize: 1.}: CoprocessorEnableMode
         CU2     *{.bitsize: 1.}: CoprocessorEnableMode
