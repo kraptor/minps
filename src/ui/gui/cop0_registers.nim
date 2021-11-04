@@ -82,7 +82,7 @@ proc Draw*(state: var State) =
                 for register, value in cop0.regs:
                     table_next_row()
                     table_next_column(); text_color fmt"{register:>2d}", palette.REGISTER_NUMBER
-                    table_next_column(); var open = igTreeNodeEx(fmt"{GetCop0RegisterAlias(register)}".cstring, SpanFullWidth)
+                    table_next_column(); var open = igTreeNodeEx(fmt"{$register.Cop0RegisterAlias}".cstring, SpanFullWidth)
                     table_next_column(); text_color value == 0, fmt"{value:>8x}", palette.ZERO_VALUE
                     table_next_column(); text_color value == 0, fmt"{cast[int32](value):>10x}", palette.ZERO_VALUE
                     table_next_column(); text_color value == 0, fmt"{value:>10x} ", palette.ZERO_VALUE
