@@ -176,7 +176,7 @@ proc `$`*(part: InstructionPart): string =
     of ImmediateValue: return fmt"{part.value:x}h"
     of Offset        : return fmt"{cast[int32](part.value):x}h"
     of MemoryAddress : return fmt"{part.value:x}h"
-    of Cop0Register  : return GetCop0RegisterAlias(part.value)
+    of Cop0Register  : return $part.value.Cop0RegisterAlias
     of MemoryAddressIndirect:
         return fmt"{part.offset:x}h({part.base_register.GetCpuRegisterAlias})"
     of ShiftAmount   : return fmt"{cast[int32](part.value)}"
