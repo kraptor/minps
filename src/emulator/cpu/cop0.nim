@@ -53,6 +53,15 @@ type
         r16, r17, r18, r19, r20, r21, r22, r23,
         r24, r25, r26, r27, r28, r29, r30, r31
 
+    Cop0RegisterAlias* {.pure.} = enum
+        a_r0="$0", a_r1="$1", a_r2="$2", A_BPC="BPC", a_r4="$r4", A_BDA="BDA", 
+        A_JUMPDEST="JUMPDEST", A_DCIC="DCIC", A_BadVaddr="BadVAddr", 
+        A_BDAM="BDAM", a_r10="$10", A_BPCM="BPCM", A_SR="SR", A_CAUSE="CAUSE",
+        A_EPC="EPC", A_PRID="PRID", a_r16="$16", a_r17="$17", a_r18="$18", 
+        a_r19="$19", a_r20="$20", a_r21="$21", a_r22="$22", a_r23="$23", 
+        a_r24="$24", a_r25="$25", a_r26="$26", a_r27="$27", a_r28="$28", 
+        a_r29="$29", a_r30="$30", a_r31="$31"
+
     Cop0RegisterDescription* {.pure.} = enum
         d_r0 = "", d_r1 = "", d_r2 = "",
         D_BPC      = "(R/W) Breakpoint on Execute Address Register"
@@ -204,16 +213,8 @@ proc `SR=` *(cop0: var Cop0, v: uint32) = cop0.parts.SR = cast[Cop0SystemStatusR
 proc EPC   *(cop0: var Cop0): uint32 = cop0.parts.EPC
 proc `EPC=`*(cop0: var Cop0, v: uint32) = cop0.parts.EPC = v
 
+
 proc IsolateCacheEnabled*(cop0: var Cop0): bool = cop0.parts.SR.Isc
-
-
-proc GetCop0RegisterAlias*(r: Cop0RegisterIndex): string =
-    const COP0_REGISTER_TO_ALIAS = [
-        "$0"      , "$1"  , "$2" , "BPC" , "$4" , "BDA"  , "JUMPDEST", "DCIC", 
-        "BadVaddr", "BDAM", "$10", "BPCM", "SR" , "CAUSE", "EPC"     , "PRID", 
-        "$16"     , "$17" , "$18", "$19" , "$20", "$21"  , "$22"     , "$23", 
-        "$24"     , "$25" , "$26", "$27" , "$28", "$29"  , "$30"     , "$31"]
-    COP0_REGISTER_TO_ALIAS[r]
 
 
 proc ReadRegisterDebug*(self: var Cop0, r: Cop0RegisterName): uint32 =
@@ -242,29 +243,29 @@ proc WriteRegisterDebug*(self: var Cop0, r: Cop0RegisterIndex, v: uint32) =
     of Cop0RegisterName.BPC:
         self.regs[r] = v
         notice fmt"Cop0 BPC Register set to: {v:08x}h"
-        warn fmt"cop0[{r.GetCop0RegisterAlias}] set to: {v:08x}h. Side-effects are not implemented."
+        warn fmt"cop0[{$r.Cop0RegisterAlias}] set to: {v:08x}h. Side-effects are not implemented."
     of Cop0RegisterName.BDA:
         self.regs[r] = v
         notice fmt"Cop0 BDA Register set to: {v:08x}h"
-        warn fmt"cop0[{r.GetCop0RegisterAlias}] set to: {v:08x}h. Side-effects are not implemented."
+        warn fmt"cop0[{$r.Cop0RegisterAlias}] set to: {v:08x}h. Side-effects are not implemented."
     of Cop0RegisterName.JUMPDEST:
         # JUMPDEST is read-only
         # self.regs[r] = v
-        warn fmt"cop0[{r.GetCop0RegisterAlias}] attempted write: value={v:08x}h. Ignored write."
+        warn fmt"cop0[{$r.Cop0RegisterAlias}] attempted write: value={v:08x}h. Ignored write."
     of Cop0RegisterName.BDAM:
         self.regs[r] = v
         notice fmt"Cop0 BDAM Register set to: {v:08x}h"
-        warn fmt"cop0[{r.GetCop0RegisterAlias}] set to: {v:08x}h. Side-effects are not implemented."
+        warn fmt"cop0[{$r.Cop0RegisterAlias}] set to: {v:08x}h. Side-effects are not implemented."
     of Cop0RegisterName.BPCM:
         self.regs[r] = v
         notice fmt"Cop0 Breakpoint On Execute Mask Register set to: {v:08x}h."
-        warn fmt"cop0[{r.GetCop0RegisterAlias}] set to: {v:08x}h. Side-effects are not implemented."
+        warn fmt"cop0[{$r.Cop0RegisterAlias}] set to: {v:08x}h. Side-effects are not implemented."
     of Cop0RegisterName.CAUSE:
         notice fmt"Cop0 Exception Cause Register set to: {v:08x}h."
         # Only bits 8 and 9 are writable
         const WRITE_MASK = (0b11 shl 8)
         self.regs[r] = v and WRITE_MASK
-        warn fmt"cop0[{r.GetCop0RegisterAlias}] set to: {v:08x}h. Side-effects are not implemented."
+        warn fmt"cop0[{$r.Cop0RegisterAlias}] set to: {v:08x}h. Side-effects are not implemented."
     of Cop0RegisterName.SR:
         self.regs[r] = v
         var sr = self.parts.SR
@@ -294,7 +295,7 @@ proc WriteRegisterDebug*(self: var Cop0, r: Cop0RegisterIndex, v: uint32) =
         notice fmt"- CU2 (COP2 Mode)  : {sr.CU2}"
         notice fmt"- CU3 (COP3 Mode)  : {sr.CU3}"       
 
-        warn fmt"cop0[{r.GetCop0RegisterAlias}] set to: {v:08x}h. Side-effects are not implemented."
+        warn fmt"cop0[{$r.Cop0RegisterAlias}] set to: {v:08x}h. Side-effects are not implemented."
     of Cop0RegisterName.DCIC:
         self.regs[r] = v
         var dcic = self.parts.DCIC
@@ -324,14 +325,14 @@ proc WriteRegisterDebug*(self: var Cop0, r: Cop0RegisterIndex, v: uint32) =
         notice fmt"- UD (User Debug Enable)  : {dcic.UD}"
         notice fmt"- TR (Trap Enable)        : {dcic.TR}"
 
-        warn fmt"cop0[{r.GetCop0RegisterAlias}] set to: {v:08x}h. Side-effects are not implemented."
+        warn fmt"cop0[{$r.Cop0RegisterAlias}] set to: {v:08x}h. Side-effects are not implemented."
     else:
-        NOT_IMPLEMENTED fmt"Cop0[{r.GetCop0RegisterAlias}] Register write not implemented: {r.Cop0RegisterName}"
+        NOT_IMPLEMENTED fmt"Cop0[{$r.Cop0RegisterAlias}] Register write not implemented: {r.Cop0RegisterName}"
 
 
 proc WriteRegister*(self: var Cop0, r: Cop0RegisterIndex, v: uint32) =
     let 
-        alias = GetCop0RegisterAlias(r)
+        alias = $r.Cop0RegisterAlias
         prev_value = self.regs[r]
 
     trace fmt"write cop0reg[{alias}] {alias}=${r} value={v:08x}h (was={prev_value:08x}h)"
@@ -339,7 +340,7 @@ proc WriteRegister*(self: var Cop0, r: Cop0RegisterIndex, v: uint32) =
 
 
 proc ReadRegister*(self: var Cop0, r: Cop0RegisterIndex): uint32 = 
-    let alias = GetCop0RegisterAlias(r)
+    let alias = $r.Cop0RegisterAlias
     trace fmt"read cop0reg[{alias}] {alias}=${r} value={self.regs[r]:08x}h"
     ReadRegisterDebug(self, r)
 
