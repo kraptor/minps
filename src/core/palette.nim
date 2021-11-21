@@ -15,6 +15,9 @@ type
         REGISTER_DETAIL     *: Color
         REGISTER_DESCRIPTION*: Color
 
+        DEBUGGER_INST_DEFAULT*: Color
+        DEBUGGER_INST_NOP    *: Color
+
 
 proc setDefaults*(palette: var ColorPalette) = 
     palette = DefaultPalette
@@ -27,4 +30,7 @@ const
         REGISTER_NAME       : PALETTE_LIGHT,
         REGISTER_DETAIL     : GRAY_DIMMED,
         REGISTER_DESCRIPTION: GRAY_DIMMED,
+
+        DEBUGGER_INST_DEFAULT: WHITE,
+        DEBUGGER_INST_NOP    : GRAY_DIMMED,
     )

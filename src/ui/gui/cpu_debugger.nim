@@ -19,7 +19,17 @@ const
     DEBUGGER_ITEM_SPACING = ImVec2(x: 8, y: 0)
 
 
+proc Draw(inst: Instruction, cpu: Cpu, palette: ColorPalette) =
+    if inst.value == 0:
+        text_color inst.Disasm(cpu).DisasmAsText(), palette.DEBUGGER_INST_NOP
+    else:    
+        text_color inst.Disasm(cpu).DisasmAsText(), palette.DEBUGGER_INST_DEFAULT
+
+
 proc Draw*(state: var State) =
+    var
+        palette = state.config.gui.palette
+
     begin "CPU: Debugger", state.config.gui.debugger.window_visible, AlwaysAutoResize:
         
         block top_toolbar:
@@ -52,7 +62,7 @@ proc Draw*(state: var State) =
                         address state, mem_addr
                         sameline
                         var inst = Instruction.New(cpu.mmu.ReadDebug32(mem_addr))
-                        text inst.Disasm(cpu).DisasmAsText()
+                        inst.Draw(cpu, palette)
 
                 block current_instruction:
                     `----`
@@ -60,7 +70,7 @@ proc Draw*(state: var State) =
                     sameline
                     address state, pc
                     sameline
-                    text cpu.inst.Disasm(cpu).DisasmAsText()
+                    cpu.inst.Draw(cpu, palette)
                     `----`
                 
                 block next_instructions:
@@ -76,4 +86,4 @@ proc Draw*(state: var State) =
                         address state, mem_addr
                         sameline
                         var inst = Instruction.New(ReadDebug[uint32](cpu.mmu, mem_addr))
-                        text inst.Disasm(cpu).DisasmAsText()
+                        inst.Draw(cpu, palette)
