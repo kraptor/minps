@@ -76,6 +76,9 @@ proc New*(t: type Application, config: var Config, platform: var Platform): Appl
     debug "Setting up key callback..."
     discard setKeyCallback(result.state.window, glfwKeyCallback)
 
+    # disable imgui.ini file
+    igGetIO().iniFileName = nil
+
     # load fonts
     LoadDefaultFont()
     LoadFont("ui", config.gui.ui_font)
