@@ -6,13 +6,13 @@ description   = "A wannabe PlayStation 1 emulator"
 license       = "MIT"
 srcDir        = "src"
 binDir        = "bin"
-backend       = "cpp"
+backend       = "c"
 bin           = @[
     "minps"
 ]
 
 # Library dependencies
-const cimgui_version = "1.82"
+const cimgui_version = "1.84.1"
 
 # Dependencies
 
@@ -30,7 +30,7 @@ proc appendBinaries(postfix: string) =
 # Tasks
 
 task build_debug, "Build debug version":
-    exec "nimble -d:debug --debugger:native --debuginfo --linedir:on -d:MINPS_DEBUG -d:Version:" & version & " build"
+    exec "nimble -d:debug -d:nimDebugDlOpen --debugger:native --debuginfo --linedir:on -d:MINPS_DEBUG -d:Version:" & version & " build"
     appendBinaries "_debug"
 
 task build_release, "Build release version":
@@ -71,13 +71,14 @@ task clean, "Clean all build files":
 task build_cimgui, "Build cimgui dll":
     let tmpdir = "__build_cimgui"
 
-    if dirExists(tmp_dir):
-        rmDir(tmp_dir)
-
-    exec("git clone --recursive https://github.com/cimgui/cimgui " & tmp_dir)
+    if dirExists(tmpdir):
+        # rmDir(tmpdir)
+        discard
+    else:
+        exec("git clone --recursive https://github.com/cimgui/cimgui " & tmp_dir)
+        exec("git pull")
         
     withDir tmpdir:
-        exec("git pull")
         exec("git checkout tags/" & cimgui_version)
         exec("git submodule update")        
         exec("make")
