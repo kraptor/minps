@@ -20,7 +20,7 @@ logChannels ["cpu", "disasm"]
 
 
 type
-    Mnemonic {.pure.} = enum 
+    Mnemonic* {.pure.} = enum 
         lui, ori, sw, nop, addiu, 
         j, `or`, mtc0, bne, addi, 
         lw, sltu, addu, sh, jal,
@@ -33,7 +33,7 @@ type
         divu, slt, syscall,
         UNKNOWN = "?????"
 
-    InstructionPartType {.pure.}  = enum
+    InstructionPartType* {.pure.}  = enum
         CpuRegister
         ImmediateValue
         MemoryAddress
@@ -42,47 +42,47 @@ type
         Offset
         ShiftAmount
 
-    InstructionPartMode {.pure.}  = enum
+    InstructionPartMode* {.pure.}  = enum
         Source
         Target
 
-    InstructionPart = object
-        mode: InstructionPartMode
-        case kind: InstructionPartType
+    InstructionPart* = object
+        mode*: InstructionPartMode
+        case kind*: InstructionPartType
         of MemoryAddressIndirect:
-            base_register: uint32
-            offset: int32
+            base_register*: uint32
+            offset*: int32
         else:
-            value: uint32
+            value*: uint32
 
-    MetadataPartKind {.pure.} = enum
+    MetadataPartKind* {.pure.} = enum
         MemoryAssignment32
         MemoryAssignment16
         MemoryAssignment8
         MemoryAddressMetadata
         UnknownInstructionMetadata
 
-    MetadataPart = object
+    MetadataPart* = object
         case kind: MetadataPartKind
         of MemoryAssignment32:
-            assign_target32: uint32
-            assign_value32: uint32
+            assign_target32*: uint32
+            assign_value32*: uint32
         of MemoryAssignment16:
-            assign_target16: uint32
-            assign_value16: uint16
+            assign_target16*: uint32
+            assign_value16*: uint16
         of MemoryAssignment8:
-            assign_target8: uint32
-            assign_value8: uint8
+            assign_target8*: uint32
+            assign_value8*: uint8
         of MemoryAddressMetadata:
-            address: uint32
+            address*: uint32
         of UnknownInstructionMetadata:
-            unknown: string
+            unknown*: string
     
-    DisassembledInstruction = object
-        mnemonic: Mnemonic
-        mnemonic_aliases: seq[Mnemonic]
-        parts: seq[InstructionPart]
-        metadata: seq[MetadataPart]
+    DisassembledInstruction* = object
+        mnemonic*: Mnemonic
+        mnemonic_aliases*: seq[Mnemonic]
+        parts*: seq[InstructionPart]
+        metadata*: seq[MetadataPart]
 
 
 proc Disasm*(inst: Instruction, cpu: Cpu): DisassembledInstruction =
