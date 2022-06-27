@@ -4,6 +4,7 @@
 # https://opensource.org/licenses/MIT
 
 include inc/imports
+import std/times
 
 import state
 import actions
@@ -26,12 +27,23 @@ template font*(font_name: string, body: untyped): untyped =
         defer: igPopFont()
 
 
+template push_id*(value, body) =
+    igPushId(value)
+    body
+    igPopId()
+
+
 template separator*() = igSeparator()
 template `----`*() = separator()
 template sameline*() = igSameLine()
 template text*(value: string) = igText(value.cstring)
 template text_color*(value: string, c: Color) = igTextColored c.toVec4(), value.cstring
 
+
+template tooltip*(body) =
+    igBeginTooltip()
+    body
+    igEndTooltip()
 
 template text_color*(condition: bool, value: string, true_color: Color, false_color: Color) =
     if condition: 
@@ -81,12 +93,11 @@ template button*(state: var State, action_id: string): untyped =
         action.Run(state)
 
     if igIsItemHovered():
-        igBeginTooltip()
-        text action.help
-        if action.shortcut != "":
-            igSameLine()
-            text "(" & action.shortcut & ")"
-        igEndTooltip()
+        tooltip:
+            text action.help
+            if action.shortcut != "":
+                igSameLine()
+                text "(" & action.shortcut & ")"
 
 
 template menubar*(body: untyped): untyped =
@@ -120,20 +131,43 @@ template popup_modal(id: string, content: untyped) =
             igEndPopup()
 
 
-proc not_implemented*(message: string): string =
-    result = "NOT IMPLEMENTED##" & message
-    popup_modal result:
-        text message
-        separator
-        button "ok":
-            close_current_popup()
+# proc not_implemented*(message: string): string =
+#     result = "NOT IMPLEMENTED##" & message
+#     popup_modal result:
+#         text message
+#         separator
+#         button "ok":
+#             close_current_popup()
 
 
-template address*(state: var State, a: Address) =
+template reference_address*(state: var State, a: Address) =
     font "mono":
-        let popup_id = not_implemented("Open memory viewer at: " & $a)
         button $a:
-            open_popup(popup_id)
+            echo "NOT IMPLEMENTED: open memory address at: " & $a
+
+
+template reference_cpu_register*(state: var State, register: CpuRegisterIndex) =
+    font "mono":
+        # button $CpuRegisterAlias(register):
+        #     echo "NOT IMPLEMENTED: open cpu register info for: " & $register
+        text $register.CpuRegisterAlias
+        if igIsItemHovered():
+            tooltip:
+                var 
+                    value = state.platform.cpu.ReadRegisterDebug(register)
+                    value_str = ""
+
+                text "CPU Register"
+                igSeparator()
+                
+                formatValue(value_str, value, ">8x")
+                text "  value (hex): " & value_str
+
+                formatValue(value_str, cast[int32](value), ">11")
+                text "  value (i32): " & value_str
+
+                formatValue(value_str, value, ">11")
+                text "  value (u32): " & $value_str
 
 
 template push_style*(style_var: ImGuiStyleVar, value: ImVec2, body) =

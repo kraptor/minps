@@ -19,19 +19,29 @@ const
     DEBUGGER_ITEM_SPACING = ImVec2(x: 8, y: 0)
 
 
-proc Draw(inst: Instruction, cpu: Cpu, palette: ColorPalette) =
-    if inst.value == 0:
-        text_color inst.Disasm(cpu).DisasmAsText(), palette.DEBUGGER_INST_NOP
-    else:    
-        text_color inst.Disasm(cpu).DisasmAsText(), palette.DEBUGGER_INST_DEFAULT
+proc Draw(inst: Instruction, inst_addr: Address, state: var State) =
+    var
+        palette = state.config.gui.palette
+        cpu = state.platform.cpu
+        di = Disasm(inst, cpu)
+
+    push_id(cast[int32](inst_addr)):
+        if inst.value == 0:
+            text_color $di.mnemonic, palette.DEBUGGER_OPCODE_NOP
+        else:
+            text_color $di.mnemonic, palette.DEBUGGER_OPCODE_DEFAULT
+            for index, part in di.parts.pairs:
+                push_id(index.int32):
+                    sameline
+                    case part.kind:
+                        of CpuRegister:
+                            reference_cpu_register(state, part.value.CpuRegisterIndex)
+                        else:
+                            text $part
 
 
 proc Draw*(state: var State) =
-    var
-        palette = state.config.gui.palette
-
     begin "CPU: Debugger", state.config.gui.debugger.window_visible, AlwaysAutoResize:
-        
         block top_toolbar:
             button state, "cpu.debugger.step"
             sameline
@@ -59,18 +69,18 @@ proc Draw*(state: var State) =
 
                         text "   "
                         sameline
-                        address state, mem_addr
+                        reference_address state, mem_addr
                         sameline
                         var inst = Instruction.New(cpu.mmu.ReadDebug32(mem_addr))
-                        inst.Draw(cpu, palette)
+                        inst.Draw(mem_addr, state)
 
                 block current_instruction:
                     `----`
                     text " PC"
                     sameline
-                    address state, pc
+                    reference_address state, pc
                     sameline
-                    cpu.inst.Draw(cpu, palette)
+                    cpu.inst.Draw(pc, state)
                     `----`
                 
                 block next_instructions:
@@ -83,7 +93,7 @@ proc Draw*(state: var State) =
                         
                         text "   "
                         sameline
-                        address state, mem_addr
+                        reference_address state, mem_addr
                         sameline
                         var inst = Instruction.New(ReadDebug[uint32](cpu.mmu, mem_addr))
-                        inst.Draw(cpu, palette)
+                        inst.Draw(mem_addr, state)
