@@ -9,6 +9,16 @@
 ![Languages](https://img.shields.io/github/languages/count/kraptor/minps?label=Languages)
 ![Code Size](https://img.shields.io/github/languages/code-size/kraptor/minps)
 
+## Linux Dependencies
+
+`X11` development libraries:
+
+    sudo zypper install libX11-devel libXcursor-devel libXrandr-devel libXinerama-devel libXi-devel
+
+`OpenGL` development libraries:
+
+    sudo zypper install Mesa-libGL-devel
+
 ## Building instructions
 
 ``minps`` can be compiled in different flavors using ``nimble``.
