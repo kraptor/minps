@@ -78,9 +78,6 @@ proc Reset*(self: Mmu) =
     warn "MMU Reset not fully implemented!"
 
 
-
-
-
 proc ReadImpl[T: uint32|uint16|uint8](self: Mmu, address: Address): T =
     block CheckKSEG2Addresses:
         # KSEG2 addresses are NOT mapped to KUSEG, so we have to test for them first
