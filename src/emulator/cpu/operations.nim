@@ -105,7 +105,7 @@ const COP0_OPCODES = block:
     for x in o.mitems: x = ExecuteCop0NotImplemented
     o[ord Cop0Opcode.MTC] = Op_MTC0
     o[ord Cop0Opcode.MFC] = Op_MFC0
-    o
+    o # return the array
 
 
 # Utility functions to support operations
