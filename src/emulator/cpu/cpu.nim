@@ -212,7 +212,7 @@ proc RunNext*(self: Cpu) =
     # by executing then fetching, we can easily handle
     # delay slots at the expense of executing an extra
     # instruction after the entry point (a NOP) which
-    # it doesn't hurt anyways...
+    # doesn't hurt anyways...
 
     # echo fmt"RunNext[pc={self.pc}] {DisasmAsText(self.inst, self)}"
 
@@ -226,10 +226,10 @@ proc RunNext*(self: Cpu) =
     inc self.stats.instruction_count    
 
     self.inst_in_delay = self.inst_is_branch
-    self.inst_is_branch = false  
-    
+    self.inst_is_branch = false     
 
     self.Fetch()
+
 
 proc Fetch*(self: Cpu) =
     self.inst = Instruction.New(self.mmu.Read32(self.pc))
