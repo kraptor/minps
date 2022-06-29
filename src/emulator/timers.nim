@@ -73,6 +73,8 @@ type
         value: uint32
 
     Timer2ModeParts* {.packed.} = object
+        # NOTE: this is not the same type as TimerModeParts, see Timer2SyncMode
+        #   versus its counterpart TimerSyncMode
         sync_enable       {.bitsize: 1.}: TimerSyncEnableMode
         sync_mode         {.bitsize: 2.}: Timer2SyncMode
         reset_counter     {.bitsize: 1.}: TimerResetMode
