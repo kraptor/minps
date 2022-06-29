@@ -5,6 +5,8 @@
 
 {.experimental: "codeReordering".}
 
+import cligen
+
 include inc/profiler # NOTE: should be an include for it to work
 include inc/concept_check # NOTE: we want to check concepts asap
 
@@ -33,7 +35,10 @@ proc main(run_mode: RunMode) =
 
     var 
         config = Config.New("minps.cfg")
-        
+
+    logDynamicLevel config.loglevel
+    logDynamicChannels config.logchannels
+    
     case run_mode:
         of Console:
             notice "Using command-line interface."
@@ -47,7 +52,12 @@ proc main(run_mode: RunMode) =
 
 when isMainModule:
     try:
-        # TODO: add switch to use cli/gui mode
-        main(Gui)
+        proc cmd_cli = main(Runmode.Console)
+        proc cmd_gui = main(Runmode.Gui)
+
+        dispatchMulti(
+            [cmd_cli, cmd_name="cli", doc="start in command-line mode"],
+            [cmd_gui, cmd_name="gui", doc="start in GUI mode"]
+        )
     finally:
         logFinalize()

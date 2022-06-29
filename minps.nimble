@@ -6,7 +6,7 @@ description   = "A wannabe PlayStation 1 emulator"
 license       = "MIT"
 srcDir        = "src"
 binDir        = "bin"
-backend       = "c"
+backend       = "cpp"
 bin           = @[
     "minps"
 ]
@@ -16,9 +16,10 @@ const cimgui_version = "1.84.1"
 
 # Dependencies
 
-requires "nim   >= 1.6.0"
-requires "jsony >= 1.0.5"
-requires "nimgl >= 1.3.2"
+requires "nim    >= 1.6.0"
+requires "jsony  >= 1.0.5"
+requires "nimgl  >= 1.3.2"
+requires "cligen >= 1.5.24"
 
 # Utilities
 
