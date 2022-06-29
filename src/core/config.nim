@@ -16,6 +16,8 @@ logChannels ["config"]
 
 type
     Config* = object
+        loglevel*: LogLevel
+        logchannels*: seq[string]
         bios*: BiosConfig
         gui*: GuiConfig
 
