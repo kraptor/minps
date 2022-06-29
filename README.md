@@ -56,7 +56,7 @@ Release build (with stacktrace support):
 Available defines:
 
 * `loglevel`: set a minimum log level to log.
-* `loglevel_channels`: set channels to log (separated by commas) or using a wildcard to specify all.
+* `logchannels_enabled`: set channels to log (separated by commas) or using a wildcard to specify all.
 * `log_indentation_width`: how many spaces to use when indenting the log output.
 
 See the file [``src/nim.cfg``](src/nim.cfg) for defaults.

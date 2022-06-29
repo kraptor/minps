@@ -15,26 +15,15 @@ import streams
 
 
 const
-    loglevel_channels {.strdefine.} = "*"
+    logchannels_enabled {.strdefine.} = "*"
     loglevel {.strdefine.} = "Trace"
     log_indentation_width {.intdefine.} = 2
 
+    ENABLED_CHANNELS = logchannels_enabled.split(",")
     MESSAGE_WIDTH = 80
 
-var
-    logfile_handle = stdout
-    current_indentation = 0
-
-    stream {.threadvar.} : Stream
-    stream_lock: Lock
-
-
-stream = newFileStream(logfile_handle)
-stream_lock.initLock()
-
-
 type
-    LogLevel {.pure.} = enum
+    LogLevel* {.pure.} = enum
         Exception = 0,
         Critical = 1,
         Error = 2
@@ -45,6 +34,21 @@ type
         Trace = 7
 
     SourceInfo = tuple[filename: string, line: int, column: int]
+
+var
+    logfile_handle = stdout
+    current_indentation = 0
+
+    stream {.threadvar.} : Stream
+    stream_lock: Lock
+
+    loglevel_dynamic = LogLevel.Trace
+    
+    logchannels_dynamic {.threadvar.}: seq[string]
+
+
+stream = newFileStream(logfile_handle)
+stream_lock.initLock()
 
 
 proc increaseLogIndentation =
@@ -97,19 +101,23 @@ proc doLogImplNoColors*(level: int, channels: openArray[string], message: string
     stream_lock.release()
 
 
-proc doLogImpl*(level: int, channels: openArray[string], message: string, sourceinfo: SourceInfo) =
+proc doLogImpl*(level: int, channels: static openArray[string], message: string, sourceinfo: SourceInfo) =
+    
+    # do not log if level over the dynamic configured level
+    if level > loglevel_dynamic.ord:
+        return
+
+    # do not log if channel is not in enabled dynamic channels
+    block check_dynamic_channels:
+        # do not generate code for disabled channels
+        if "*" notin logchannels_dynamic:
+            # wildcard enables everything
+            for ch in channels:
+                if ch in logchannels_dynamic:
+                    break check_dynamic_channels
+            return
+
     if logfile_handle in [stdout, stderr]:
-        # stream_lock.acquire()
-        # stream.write ansiForegroundColorCode(fgDefault)
-        # stream.write now().format("yyyy-MM-dd HH:mm:ss'.'ffffff")
-        # stream.write ansiForegroundColorCode(getLevelColor(level.LogLevel))
-        # stream.write " " & getLevelString(level.LogLevel)
-        # stream.write align(channels.join(","), 12)
-        # stream.write spaces(current_indentation + 1)
-        # stream.write alignLeft(message, MESSAGE_WIDTH - current_indentation)
-        # stream.write fmt"{sourceinfo[0]}::{sourceinfo[1]}"
-        # stream.write "\n"
-        # stream_lock.release()
         styledWrite(
             logfile_handle, 
             fgDefault,
@@ -120,7 +128,7 @@ proc doLogImpl*(level: int, channels: openArray[string], message: string, source
             resetStyle, styleDim, fmt"{sourceinfo[0]}::{sourceinfo[1]}",
             "\n"
         )
-        flushFile logfile_handle
+        # flushFile logfile_handle
     else:
         doLogImplNoColors(level, channels, message, sourceinfo)
 
@@ -128,17 +136,16 @@ proc doLogImpl*(level: int, channels: openArray[string], message: string, source
 macro doLog(level: static LogLevel, message: string, channels: static openArray[string], sourceinfo: static SourceInfo): untyped =
     block check_enabled_channels:
         # do not generate code for disabled channels
-        let enabled_channels = loglevel_channels.split(",")
-        if "*" notin enabled_channels:
+        if "*" notin ENABLED_CHANNELS:
             # wildcard enables everything
             for ch in channels:
-                if ch in enabled_channels:
+                if ch in ENABLED_CHANNELS:
                     break check_enabled_channels
             return
 
     block:
         # do not generate code for loglevels over the minimum allowed
-        let min_level = parseEnum[LogLevel](loglevel)
+        const min_level = parseEnum[LogLevel](loglevel)
         if level.ord > min_level.ord:
             return
     
@@ -185,7 +192,7 @@ template logIndent*(body) =
 
 
 proc logFile*(filename: string = ":stdout") =
-    if loglevel_channels == "":
+    if logchannels_enabled == "":
         return
 
     stream_lock.acquire()
@@ -222,7 +229,15 @@ proc logFlush* =
     stream_lock.release()
 
 
+proc logDynamicLevel*(level: LogLevel) =
+    loglevel_dynamic = level;
+
+
+proc logDynamicChannels*(channels: seq[string]) =
+    logchannels_dynamic = channels
+
+
 proc logFinalize* =
-    if loglevel_channels == "":
+    if ENABLED_CHANNELS.len == 0:
         return
     logFlush()
