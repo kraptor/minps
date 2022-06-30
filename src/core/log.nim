@@ -218,10 +218,6 @@ proc logFile*(filename: string = ":stdout") =
     stream_lock.release()
 
 
-# define default log channel if nothing specified
-logChannels [""]
-
-
 proc logFlush* =
     stream_lock.acquire()
     if stream != nil:
