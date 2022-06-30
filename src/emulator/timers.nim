@@ -14,7 +14,7 @@ logChannels ["timers"]
 
 
 const
-    TIMERS_MAX_SIZE = 0x32 # 0x1f801132 - 0x1f801100
+    TIMERS_MAX_SIZE = 0x1f801132 - 0x1f801100
 
     # device regions (in kuseg when possible)
     TIMERS_START* = (Address 0x1F801100).toKUSEG()
