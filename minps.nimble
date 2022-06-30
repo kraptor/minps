@@ -35,7 +35,7 @@ task build_debug, "Build debug version":
     appendBinaries "_debug"
 
 task build_release, "Build release version":
-    exec "nimble -d:danger --opt:speed -d:lto -d:strip -d:MINPS_RELEASE -d:Version:" & version & "-l:cimgui build"
+    exec "nimble -d:danger --opt:speed -d:flto -d:strip -d:MINPS_RELEASE -d:Version:" & version & "-l:cimgui build"
     appendBinaries "_release"
 
 task build_callgrind, "Build callgrind version (callgrind)":
