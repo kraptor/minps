@@ -109,6 +109,7 @@ proc Reset*(self: Spu) =
     debug "Resetting Spu..."
     logIndent:
         self.data.reset()
+        # self.regs.reset() not needed, both "data" and "regs" point to same memory
         debug("Spu Resetted.")
 
 
