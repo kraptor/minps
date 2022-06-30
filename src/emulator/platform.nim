@@ -38,8 +38,8 @@ proc New*(T: type Platform, bios: Bios = nil): Platform =
 proc Reset*(self: var Platform) =
     debug "Platform reset..."
     logIndent:
-        self.cpu.Reset()
-        self.mmu.Reset()
+        Reset self.cpu
+        Reset self.mmu
         debug "Platform resetted."
 
 

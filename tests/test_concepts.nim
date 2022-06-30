@@ -6,7 +6,7 @@
 import unittest
 
 import emulator/[
-    concepts, mmu, platform, mc, ram
+    concepts, mmu, platform, mc, ram, dma
 ]
 
 import emulator/cpu/[cpu, cop0]
@@ -42,3 +42,7 @@ suite "Test concepts":
 
     test "MemoryControl":
         assert MemoryControl is Device
+
+    test "DmaDevice":
+        assert DmaDevice is Resettable
+        assert DmaDevice is Device

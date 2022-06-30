@@ -18,6 +18,7 @@ import er1
 import er2
 import irq
 import timers
+import dma
 
 logChannels ["mmu"]
 
@@ -28,6 +29,7 @@ type
         Before_ER1    = "No device found before Expansion Region 1"
         Before_MC1    = "No device found before MemoryControl 1"
         Before_IC     = "No device found before Interrupt Control"
+        Before_DMA    = "No device found before DMA registers"
         Before_TIMERS = "No device found before Timers"
         Before_SPU    = "No device found before SPU"
         Before_ER2    = "No device found before Expansion Region 2"
@@ -43,7 +45,8 @@ type
         spu: Spu
         er2: ExpansionRegion2
         ic : InterruptControl
-        timers: Timers       
+        timers: Timers  
+        dma: DmaDevice     
 
         error: MmuError
 
@@ -58,6 +61,7 @@ proc New*(T: type Mmu, bios: Bios): Mmu =
         er2   : ExpansionRegion2.New(),
         ic    : InterruptControl.New(),
         timers: Timers.New(),
+        dma   : DmaDevice.New(),
 
         error: MmuError.None
     )
@@ -72,6 +76,7 @@ proc Reset*(self: Mmu) =
     Reset self.er2
     Reset self.ic
     Reset self.timers
+    Reset self.dma
     self.error = MmuError.None
 
     # TODO: implement full MMU reset
@@ -97,6 +102,8 @@ proc ReadImpl[T: uint32|uint16|uint8](self: Mmu, address: Address): T =
         elif ka <= MC1_END     : return Read[T](self.mc, ka)
         elif ka <  IC_START    : self.error = Before_IC
         elif ka <= IC_END      : return Read[T](self.ic, ka)
+        elif ka <  DMA_MAP_START: self.error = Before_DMA
+        elif ka <= DMA_MAP_END  : return Read[T](self.dma, ka)
         elif ka <  TIMERS_START: self.error = Before_TIMERS
         elif ka <= TIMERS_END  : return Read[T](self.timers, ka)
         elif ka <  SPU_START   : self.error = Before_SPU
@@ -125,6 +132,8 @@ proc WriteImpl*[T: uint32|uint16|uint8](self: Mmu, address: Address, value: T) =
         elif ka <= MC1_END     : Write(self.mc, ka, value); return
         elif ka <  IC_START    : self.error = Before_IC
         elif ka <= IC_END      : Write(self.ic, ka, value); return
+        elif ka <  DMA_MAP_START: self.error = Before_DMA
+        elif ka <= DMA_MAP_END  : Write[T](self.dma, ka, value); return
         elif ka <  TIMERS_START: self.error = Before_TIMERS
         elif ka <= TIMERS_END  : Write[T](self.timers, ka, value); return
         elif ka <  SPU_START   : self.error = Before_SPU
