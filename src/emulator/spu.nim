@@ -10,8 +10,7 @@ import strformat
 import ../core/[log, util]
 import address
 
-logChannels ["spu"]
-
+logChannels {LogChannel.spu}
 
 const
     SPU_MAX_SIZE = 1024
@@ -100,17 +99,15 @@ type
 
 proc New*(T: type Spu): Spu =
     debug "Creating Spu..."
-    logIndent:
-        result = Spu()
-        debug "Spu created!"
+    result = Spu()
+    debug "Spu created!"
 
 
 proc Reset*(self: Spu) =
     debug "Resetting Spu..."
-    logIndent:
-        self.data.reset()
-        # self.regs.reset() not needed, both "data" and "regs" point to same memory
-        debug("Spu Resetted.")
+    self.data.reset()
+    # self.regs.reset() not needed, both "data" and "regs" point to same memory
+    debug("Spu Resetted.")
 
 
 proc Read8 *(self: Spu, address: KusegAddress): uint8  {.inline.} = Read[uint8 ](self, address)

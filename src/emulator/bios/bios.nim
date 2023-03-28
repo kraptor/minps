@@ -12,7 +12,7 @@ import ../../core/[log, util]
 import ../address
 import ../cpu/instruction
 
-logChannels ["bios"]
+logChannels {LogChannel.bios}
 
 
 const
@@ -36,16 +36,14 @@ type
 
 proc New*(T: type Bios): Bios =
     debug "Creating BIOS..."
-    logIndent:
-        result = Bios()
-        debug "BIOS created!"
+    result = Bios()
+    debug "BIOS created!"
 
 
 proc Reset*(self: Bios) =
     debug "Resetting BIOS..."
-    logIndent:
-        self.data.reset()
-        debug("BIOS Resetted.")
+    self.data.reset()
+    debug("BIOS Resetted.")
 
 
 proc FromStream*(T: type Bios, stream: Stream): Bios =
@@ -68,13 +66,12 @@ proc FromProgram*(T: type Bios, program: seq[Instruction]): Bios =
 
 proc FromFile*(T: type Bios, filename: string): Bios =
     debug fmt"Loading BIOS from file: {filename}"
-    logIndent:
-        result = Bios.FromStream(openFileStream(filename))
-        result.filename = filename
-        debug fmt"BIOS Loaded. Size: {result.size_loaded} bytes"
+    result = Bios.FromStream(openFileStream(filename))
+    result.filename = filename
+    debug fmt"BIOS Loaded. Size: {result.size_loaded} bytes"
 
 
-proc Read8 *(self: Bios, address: KusegAddress): uint8 {.inline.} = Read[uint8](self, address)
+proc Read8 *(self: Bios, address: KusegAddress): uint8  {.inline.} = Read[uint8](self, address)
 proc Read16*(self: Bios, address: KusegAddress): uint16 {.inline.} = Read[uint16](self, address)
 proc Read32*(self: Bios, address: KusegAddress): uint32 {.inline.} = Read[uint32](self, address)
 

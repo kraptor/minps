@@ -10,7 +10,7 @@ import strformat
 import ../core/[log, util]
 import address
 
-logChannels ["er1"]
+logChannels {LogChannel.er1}
 
 
 const
@@ -26,16 +26,14 @@ type
 
 proc New*(T: type ExpansionRegion1): ExpansionRegion1 =
     debug "Creating ExpansionRegion1..."
-    logIndent:
-        result = ExpansionRegion1()
-        debug "ExpansionRegion1 created!"
+    result = ExpansionRegion1()
+    debug "ExpansionRegion1 created!"
 
 
 proc Reset*(self: ExpansionRegion1) =
     debug "Resetting ExpansionRegion1..."
-    logIndent:
-        # TODO: reset Expansion 1 devices here if it's ever implemented
-        debug("ExpansionRegion1 Resetted.")
+    # TODO: reset Expansion 1 devices here if it's ever implemented
+    debug("ExpansionRegion1 Resetted.")
 
 
 proc Read8 *(self: ExpansionRegion1, address: KusegAddress): uint8  {.inline.} = Read[uint8 ](self, address)

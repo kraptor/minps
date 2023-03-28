@@ -10,7 +10,7 @@ import strformat
 import ../core/[log, util]
 import address
 
-logChannels ["timers"]
+logChannels {LogChannel.timers}
 
 
 const
@@ -115,18 +115,16 @@ type
 
 proc New*(T: type Timers): Timers =
     debug "Creating Timers..."
-    logIndent:
-        result = Timers()
-        debug "Timers created!"
+    result = Timers()
+    debug "Timers created!"
 
 
 proc Reset*(self: Timers) =
     debug "Resetting Timers..."
-    logIndent:
-        self.timer0.reset()
-        self.timer1.reset()
-        self.timer2.reset()
-        debug("Spu Timers.")
+    self.timer0.reset()
+    self.timer1.reset()
+    self.timer2.reset()
+    debug("Spu Timers.")
 
 
 proc Read8 *(self: Timers, address: KusegAddress): uint8  {.inline.} = Read[uint8 ](self, address)

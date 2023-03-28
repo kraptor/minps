@@ -50,13 +50,3 @@ Release build (with stacktrace support):
 ## Running tests
 
     nimble test --silent
-
-## Logging configuration
-
-Available defines:
-
-* `loglevel`: set a minimum log level to log.
-* `logchannels_enabled`: set channels to log (separated by commas) or using a wildcard to specify all.
-* `log_indentation_width`: how many spaces to use when indenting the log output.
-
-See the file [``src/nim.cfg``](src/nim.cfg) for defaults.

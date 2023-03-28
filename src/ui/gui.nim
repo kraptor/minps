@@ -11,7 +11,7 @@ import ../emulator/bios/bios
 import gui/application
 
 
-logChannels ["gui", "main"]
+logChannels {LogChannel.gui, LogChannel.main}
 
 
 proc main*(config: var Config) = 

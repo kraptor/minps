@@ -16,7 +16,8 @@ import emulator/cpu/cop0
 import emulator/mmu
 import emulator/address
 
-logChannels ["testing"]
+logScope:
+    topics = "testing"
 
 
 suite "CPU types":

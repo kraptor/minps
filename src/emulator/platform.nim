@@ -15,7 +15,7 @@ import cpu/disassembler
 import mmu
 import bios/bios
 
-logChannels ["platform"]
+logChannels {LogChannel.platform}
 
 
 type
@@ -25,28 +25,25 @@ type
 
 
 proc New*(T: type Platform, bios: Bios = nil): Platform =
-    debug "Creating Platform..."
-    logIndent:
-        var bios = if bios != nil: bios else: Bios.New()
-        var mmu = Mmu.New(bios)
-        result = Platform(
-            cpu: Cpu.New(mmu),
-            mmu: mmu
-        )
+    debug "Creating Platform..."    
+    var bios = if bios != nil: bios else: Bios.New()
+    var mmu = Mmu.New(bios)
+    result = Platform(
+        cpu: Cpu.New(mmu),
+        mmu: mmu
+    )
 
 
 proc Reset*(self: var Platform) =
-    debug "Platform reset..."
-    logIndent:
-        Reset self.cpu
-        Reset self.mmu
-        debug "Platform resetted."
+    debug "Platform reset..."   
+    Reset self.cpu
+    Reset self.mmu
+    debug "Platform resetted."
 
 
 proc RunNext*(self: var Platform) =
     debug fmt"[CPU] {self.cpu.pc}: {self.cpu.inst.DisasmAsText(self.cpu)}"
-    logIndent:
-        self.cpu.RunNext()
+    self.cpu.RunNext()
 
 
 proc Run*(self: var Platform) =
@@ -61,15 +58,13 @@ proc RunFor*(self: var Platform, number_of_instructions: int64) =
 
     while self.cpu.stats.instruction_count < target:
         debug fmt"[CPU] {self.cpu.pc}: {self.cpu.inst.DisasmAsText(self.cpu)}"
-        logIndent:
-            self.cpu.RunNext()
+        self.cpu.RunNext()
 
 
 proc RunToPc*(self: var Platform, pc: Address) =
     while self.cpu.pc != pc:
         debug fmt"[CPU] {self.cpu.pc}: {self.cpu.inst.DisasmAsText(self.cpu)}"
-        logIndent:
-            self.cpu.RunNext()
+        self.cpu.RunNext()
 
 
 proc SetProgram*(self: var Platform, program: Program) =

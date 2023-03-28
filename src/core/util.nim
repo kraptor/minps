@@ -3,6 +3,8 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
+import log
+
 type
     NotImplementedDefect* = object of Defect
 
@@ -11,15 +13,15 @@ const
 
 
 template NOT_IMPLEMENTED*(message: string = "") =
-    # by using a block we force the Nim compiler to allocate
-    # the string only within the block, therefore only when
-    # the code hits the NOT_IMPLEMENTED is allocated. Because
-    # this template is used very often during development
-    # by issuing a block we save lots and lots of string
-    # allocs/deallocs
-    block:
-        error NOT_IMPLEMENTED_PREFIX & message
-        raise newException(NotImplementedDefect, message)
+    # # by using a block we force the Nim compiler to allocate
+    # # the string only within the block, therefore only when
+    # # the code hits the NOT_IMPLEMENTED is allocated. Because
+    # # this template is used very often during development
+    # # by issuing a block we save lots and lots of string
+    # # allocs/deallocs
+    # block:
+    #     error NOT_IMPLEMENTED_PREFIX & message
+    raise newException(NotImplementedDefect, message)
 
 
 proc divmod*(x, y: SomeSignedInt): tuple[quotent, remainder: SomeSignedInt] {.inline.} =

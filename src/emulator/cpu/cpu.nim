@@ -13,8 +13,8 @@ import ../mmu
 
 import cop0
 import instruction
-    
-logChannels ["cpu"]
+
+logChannels {LogChannel.cpu}    
 
 
 type

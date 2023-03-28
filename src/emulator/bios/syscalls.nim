@@ -8,7 +8,7 @@ import ../cpu/cpu
 import ../address
 
 
-logChannels ["bios", "syscall"]
+logChannels {LogChannel.bios, LogChannel.syscall}
 
 
 type

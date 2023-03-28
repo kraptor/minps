@@ -11,13 +11,11 @@ import jsony
 import ../core/log
 import ../core/palette
 
-logChannels ["config"]
+logChannels {LogChannel.config}
 
 
 type
     Config* = object
-        loglevel*: LogLevel
-        logchannels*: seq[string]
         bios*: BiosConfig
         gui*: GuiConfig
 
@@ -96,18 +94,18 @@ proc newHook*(config: var Config) =
 
 
 proc New*(T: type Config, filename: string): Config =
-    notice "Loading configuration from: " & filename
-    logIndent:
-        var config: Config
+    notice "Loading configuration: " & filename
+    
+    var config: Config
+    
+    try:
+        var contents = readFile(filename)
+        return jsony.fromJson(contents, Config)
+    except IOError:
+        # use defaults in config cannot be read
+        newHook config
         
-        try:
-            var contents = readFile(filename)
-            return fromJson(contents, Config)
-        except IOError:
-            # use defaults in config cannot be read
-            newHook config
-            
-        result = config
+    result = config
 
 
 proc save*(config: var Config, filename: string) =
@@ -118,5 +116,3 @@ proc save*(config: var Config, filename: string) =
     content = content.fromJson().pretty()
 
     writeFile(filename, content)
-
-

@@ -18,9 +18,7 @@ import core/version
 from ui/cli import nil
 from ui/gui import nil
 
-
-logFile "minps.log"
-logChannels ["main"]
+logChannels {LogChannel.main}
 
 
 type
@@ -33,11 +31,12 @@ proc main(run_mode: RunMode) =
     logEcho "minps - a wannabe PlayStation 1 emulator"
     logEcho "version: " & VersionString
 
+    logInitialize  "minps.log"
+    logSetLogLevel LogLevel.Trace
+    logSetEnabledChannels {LogChannel.cli}
+
     var 
         config = Config.New("minps.cfg")
-
-    logDynamicLevel config.loglevel
-    logDynamicChannels config.logchannels
     
     case run_mode:
         of Console:

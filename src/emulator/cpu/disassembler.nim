@@ -16,7 +16,7 @@ import strutils
 import strformat
 import instruction
 
-logChannels ["cpu", "disasm"]
+logChannels {LogChannel.cpu, LogChannel.disasm}
 
 
 type
@@ -500,5 +500,5 @@ proc DisasmMFxx(inst: Instruction, cpu: Cpu, mnemonic: Mnemonic): DisassembledIn
 
 proc DisasmSYSCALL(inst: Instruction, cpu: Cpu): DisassembledInstruction =
     return DisassembledInstruction(
-        mnemonic: syscall
+        mnemonic: Mnemonic.syscall
     )

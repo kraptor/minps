@@ -11,7 +11,8 @@ import strformat
 import ../../core/log
 import ../../core/util
 
-logChannels ["cop0"]
+logChannels {LogChannel.cop0}
+
 
 const
     PRID_RESET_VALUE = Cop0PRIDRegister(

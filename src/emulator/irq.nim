@@ -10,7 +10,7 @@ import strformat
 import ../core/[log, util]
 import address
 
-logChannels ["irq"]
+logChannels {LogChannel.irq}
 
 
 const
@@ -47,16 +47,14 @@ type
 
 proc New*(T: type InterruptControl): InterruptControl =
     debug "Creating InterruptControl..."
-    logIndent:
-        result = InterruptControl()
-        debug "InterruptControl created!"
+    result = InterruptControl()
+    debug "InterruptControl created!"
 
 
 proc Reset*(self: InterruptControl) =
     debug "Resetting InterruptControl..."
-    logIndent:
-        # TODO: reset Expansion 1 devices here if it's ever implemented
-        debug("InterruptControl Resetted.")
+    # TODO: reset Expansion 1 devices here if it's ever implemented
+    debug("InterruptControl Resetted.")
 
 
 proc Read*[T: uint8|uint16|uint32](self: InterruptControl, address: KusegAddress): T =

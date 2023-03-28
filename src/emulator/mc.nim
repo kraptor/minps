@@ -12,7 +12,7 @@ import bitops
 import ../core/[log, util]
 import address
 
-logChannels ["mc"]
+logChannels {LogChannel.mc}
 
 
 const
@@ -131,18 +131,16 @@ type
 
 proc New*(T: type MemoryControl): MemoryControl =
     debug "Creating MemoryControl..."
-    logIndent:
-        result = MemoryControl()
-        debug "MemoryControl created!"
+    result = MemoryControl()
+    debug "MemoryControl created!"
 
 
 proc Reset*(self: MemoryControl) =
     debug "Resetting MemoryControl..."
-    logIndent:
-        # TODO: set maximum cycle delays in all registers
-        self.cache_control.value = 0
-        warn "MemoryControl Reset not fully implemented. Missing initial values!"
-        debug "MemoryControl Resetted."
+    # TODO: set maximum cycle delays in all registers
+    self.cache_control.value = 0
+    warn "MemoryControl Reset not fully implemented. Missing initial values!"
+    debug "MemoryControl Resetted."
 
 
 proc Read8* (self: MemoryControl, address: KusegAddress): uint8  {.inline.} = Read[uint8 ](self, address)

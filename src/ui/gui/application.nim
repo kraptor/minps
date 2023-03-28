@@ -17,7 +17,8 @@ import cpu_debugger
 import cpu_registers
 import cop0_registers
 
-logChannels ["gui", "app"]
+logChannels {LogChannel.gui, LogChannel.app}
+
 
 type
     Application* = object
@@ -29,40 +30,38 @@ proc New*(t: type Application, config: var Config, platform: var Platform): Appl
     result.state.platform = platform
 
     notice "Initializing glfw..."
-    logIndent:
-        if not glfwInit():
-            error "Can't initialize GLFW!"
-            quit(-1)
-        notice "done."
+    if not glfwInit():
+        error "Can't initialize GLFW!"
+        quit(-1)
+    notice "done."
 
     notice "Initializing window..."
-    logIndent:
-        glfwWindowHint(GLFWContextVersionMajor, 3)
-        glfwWindowHint(GLFWContextVersionMinor, 3)
-        glfwWindowHint(GLFWOpenglForwardCompat, GLFW_TRUE) # Used for Mac
-        glfwWindowHint(GLFWOpenglProfile, GLFW_OPENGL_CORE_PROFILE)
-        glfwWindowHint(GLFWResizable, GLFW_FALSE)
-        
-        result.state.window = glfwCreateWindow(
-            config.gui.window_width, 
-            config.gui.window_height, 
-            "minps - version: " & VersionString
-        )
 
-        if result.state.window == nil:
-            error "Can't create window!"
-            quit(-1)
-        
-        setWindowUserPointer(result.state.window, result.addr)
-        
-        result.state.window.makeContextCurrent()
-        notice "done."
+    glfwWindowHint(GLFWContextVersionMajor, 3)
+    glfwWindowHint(GLFWContextVersionMinor, 3)
+    glfwWindowHint(GLFWOpenglForwardCompat, GLFW_TRUE) # Used for Mac
+    glfwWindowHint(GLFWOpenglProfile, GLFW_OPENGL_CORE_PROFILE)
+    glfwWindowHint(GLFWResizable, GLFW_FALSE)
+    
+    result.state.window = glfwCreateWindow(
+        config.gui.window_width, 
+        config.gui.window_height, 
+        "minps - version: " & VersionString
+    )
+
+    if result.state.window == nil:
+        error "Can't create window!"
+        quit(-1)
+    
+    setWindowUserPointer(result.state.window, result.addr)
+    
+    result.state.window.makeContextCurrent()
+    notice "done."
 
     notice "Initializing OpenGL..."
-    logIndent:
-        if not glInit():
-            error "Can't initialize OpenGL!"
-            quit(-1)
+    if not glInit():
+        error "Can't initialize OpenGL!"
+        quit(-1)
 
     notice "Initialize Imgui..."
     result.state.context = igCreateContext()
@@ -88,16 +87,16 @@ proc New*(t: type Application, config: var Config, platform: var Platform): Appl
 
 proc Terminate*(app: var Application) =
     notice "Terminating application..."
-    logIndent:
-        # imgui
-        igOpenGL3Shutdown()
-        igGlfwShutdown()
-        app.state.context.igDestroyContext()
-        
-        # glfw
-        destroyWindow app.state.window
-        glfwTerminate()
-        notice "done."
+    
+    # imgui
+    igOpenGL3Shutdown()
+    igGlfwShutdown()
+    app.state.context.igDestroyContext()
+    
+    # glfw
+    destroyWindow app.state.window
+    glfwTerminate()
+    notice "done."
 
 
 proc GetShortcut(key, mods, action: int32): string =

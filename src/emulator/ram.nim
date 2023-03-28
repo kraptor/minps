@@ -10,7 +10,7 @@ import strformat
 import ../core/[log, util]
 import address
 
-logChannels ["ram"]
+logChannels {LogChannel.ram}
 
 
 const
@@ -32,16 +32,14 @@ type
 
 proc New*(T: type Ram): Ram =
     debug "Creating Ram..."
-    logIndent:
-        result = Ram()
-        debug "Ram created!"
+    result = Ram()
+    debug "Ram created!"
 
 
 proc Reset*(self: Ram) =
     debug "Resetting Ram..."
-    logIndent:
-        self.data.reset()
-        debug("Ram Resetted.")
+    self.data.reset()
+    debug("Ram Resetted.")
 
 
 proc Read8 *(self: Ram, address: KusegAddress): uint8  {.inline.} = Read[uint8 ](self, address)

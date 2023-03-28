@@ -21,31 +21,28 @@ import ../address
 import ../bios/syscalls
 
 
-logChannels ["cpu", "ops"]
+logChannels {LogChannel.cpu, LogChannel.ops}
 
 
 type
-    OperationProc = proc(cpu: Cpu): Cycles {.gcsafe.}
+    OperationProc = proc(cpu: Cpu): Cycles
 
 
 proc ExecuteNotImplemented(cpu: Cpu): Cycles {.used.} = 
-    logIndent:
-        trace fmt"{cpu.inst}"
-        trace fmt"{cpu.inst.value:032b}"
+    trace fmt"{cpu.inst}"
+    trace fmt"{cpu.inst.value:032b}"
     NOT_IMPLEMENTED fmt"Opcode not implemented: {cpu.inst.opcode}"
 
 
 proc ExecuteCop0NotImplemented(cpu: Cpu): Cycles {.used.} =
-    logIndent:
-        trace fmt"{cpu.inst}"
-        trace fmt"{cpu.inst.value:032b}"        
+    trace fmt"{cpu.inst}"
+    trace fmt"{cpu.inst.value:032b}"        
     NOT_IMPLEMENTED fmt"Cop0 Opcode not implemented: {cpu.inst.rs.Cop0Opcode}"
 
 
 proc ExecuteFunctionNotImplemented(cpu: Cpu): Cycles {.used.} = 
-    logIndent:
-        trace fmt"{cpu.inst}"
-        trace fmt"{cpu.inst.value:032b}"
+    trace fmt"{cpu.inst}"
+    trace fmt"{cpu.inst.value:032b}"
     NOT_IMPLEMENTED fmt"Function Opcode not implemented: {cpu.inst.function}"
 
 
@@ -172,8 +169,7 @@ proc Execute*(cpu: Cpu): Cycles =
     if cpu.echo_intructions:
         echo fmt"{cpu.inst_pc} - Execute: {cpu.inst.DisasmAsText(cpu)}"
 
-    logIndent:
-        result = OPCODES[ord cpu.inst.opcode] cpu
+    result = OPCODES[ord cpu.inst.opcode] cpu
 
 
 proc Op_Special(cpu: Cpu): Cycles =

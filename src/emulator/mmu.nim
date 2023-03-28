@@ -6,7 +6,7 @@
 # {.experimental: "codeReordering".}
 
 import strformat
-import macros
+# import macros
 
 import ../core/[util, log]
 import address
@@ -20,7 +20,7 @@ import irq
 import timers
 import dma
 
-logChannels ["mmu"]
+logChannels {LogChannel.mmu}
 
 
 type

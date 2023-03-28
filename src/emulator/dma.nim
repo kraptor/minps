@@ -10,7 +10,7 @@ import strformat
 import ../core/[log, util]
 import address
 
-logChannels ["dma"]
+logChannels {LogChannel.dma}
 
 
 const
@@ -131,21 +131,19 @@ type
 
 proc New*(T: type DmaDevice): DmaDevice =
     debug "Creating DMA Registers device..."
-    logIndent:
-        result = DmaDevice()
-        debug "DMA device created!"
+    result = DmaDevice()
+    debug "DMA device created!"
 
 
 proc Reset*(self: DmaDevice) =
     debug "Resetting DMA Registers device..."
-    logIndent:
-        self.channels.reset()
-        self.DPCR.reset()
-        self.DICR.reset()
-        self.UNKNOWN_F8.reset()
-        self.UNKNOWN_FC.reset()
+    self.channels.reset()
+    self.DPCR.reset()
+    self.DICR.reset()
+    self.UNKNOWN_F8.reset()
+    self.UNKNOWN_FC.reset()
 
-        self.DPCR.value = 0x07654321
+    self.DPCR.value = 0x07654321
 
 
 proc Read8 *(self: DmaDevice, address: KusegAddress): uint8  {.inline.} = Read[uint8 ](self, address)
