@@ -52,3 +52,13 @@ $ nimble -l build_docs
 ```
 
 Then open the generated `htmldocs/minps.html` file in any browser.
+
+# Debug
+
+## Performance (using callgrind)
+
+It's possible to build an optimized version that supports callgrind:
+
+```bash
+$ nimble -l run_callgrind
+```
