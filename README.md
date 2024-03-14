@@ -21,7 +21,7 @@
 **MinPS** requires the following software preinstalled:
    * [git](https://git-scm.com/) (any modern versions should do)
    * [nim](https://nim-lang.org/) >= 2.0.2
-   * [nimble]([https://nimble](https://github.com/nim-lang/nimble)) >= 0.14.2
+   * [nimble](https://github.com/nim-lang/nimble) >= 0.14.2
 
 ## Release mode
 
