@@ -9,12 +9,16 @@ import sequtils
 
 import minps/api
 
-const default_config = """
-  {
-  }
+proc delete_whitespace(text: string): string =
+  multireplace(
+    text, (" ", ""), ("\t", ""), ("\v", ""), ("\r", ""), ("\l", ""), ("\f", "")
+  )
+
+const default_config =
+  delete_whitespace""" 
+    {
+    } 
   """
-  .replace("\p", "")
-  .replace(" ", "")
 
 suite "Configuration":
   setup:
