@@ -13,6 +13,7 @@ bin = @["minps"]
 
 requires "nim >= 2.0.2"
 requires "jsony >= 1.1.5"
+requires "cligen >= 1.7.0"
 
 # Utility functions
 
@@ -22,7 +23,7 @@ proc postfixBinaries(name: string) =
       mvFile binary.toExe, (binary & name).toExe
 
 # Build tasks
-
+import distros
 let common_options = "--mm:orc -d:MINPS_VERSION:" & version
 
 task build_debug, "Build debug version":
@@ -43,7 +44,7 @@ task build_release_stacktrace, "Build release version (with stacktraces)":
     common_options & " build"
   postfixBinaries "_release_stacktrace"
 
-task build_callgrind, "Build callgrind version (callgrind)":
+task build_callgrind, "Build release version (for callgrind)":
   echo ">>>>>>>>>> Building: RELEASE (callgrind) <<<<<<<<<<"
   exec "nimble -d:danger --opt:speed -d:MINPS_MODE:release_callgrind " & common_options &
     " build"
@@ -68,21 +69,43 @@ task build_all, "Build all minps versions":
   exec "nimble build_release_stacktrace"
   exec "nimble build_profiler"
   exec "nimble build_profiler_memory"
+  exec "nimble build_docs"
+  echo ".. done."
+
+task build_docs, "Generate documentation":
+  echo ">>>>>>>>>> BUILD DOCUMENTATION <<<<<<<<<<"
+  exec "nimble " & common_options &
+    " -d:MINPS_MODE:release doc --project --index:on --showNonExports --docInternal --git.commit:ng --git.devel:ng --git.url:https://github.com/kraptor/minps " &
+    srcDir & "/minps.nim --out:htmldocs"
+  echo ".. done."
+
+task build_dist, "Generate distribution tarballs":
+  block: # build everything fresh
+    exec "nimble wipe"
+    exec "nimble build_release"
+    exec "nimble build_docs"
+  block: # generate tarball in dist
+    echo ">>>>>>>>>> GENERATING TARBALL <<<<<<<<<<"
+    mkDir "dist"
+    let
+      bin_paths = "bin htmldocs README.md LICENSE"
+      src_paths = "src tests build.sh minps.nimble README.md LICENSE"
+    if detectOs(Windows):
+      exec "tar.exe -cf dist/minps." & $version & ".zip " & bin_paths
+      exec "tar.exe -cf dist/minps." & $version & ".src.zip " & src_paths
+      exec "dir dist/*"
+    else:
+      exec "tar -cJf dist/minps." & $version & ".tar.xz " & bin_paths
+      exec "tar -cJf dist/minps." & $version & ".src.tar.xz " & src_paths
+      exec "ls dist/* -alh"
+    echo ".. done."
 
 task wipe, "Clear all build files":
   echo ">>>>>>>>>> WIPE BUILD FILES <<<<<<<<<<"
   rmDir "__nimcache"
   rmDir "htmldocs"
+  rmDir "dist"
   rmDir binDir
   rmFile "profile_results.txt"
   exec "rm -f callgrind.out*"
-
-task build_docs, "Generate documentation":
-  echo ">>>>>>>>>> DOCUMENTATION <<<<<<<<<<"
-  exec "nimble doc --project --index:on --showNonExports --docInternal " & srcDir &
-    "/minps.nim --out:htmldocs"
-
-task release, "Generate a release tarball":
-  exec "nimble wipe"
-  exec "nimble build_release"
-  
+  echo ".. done."
