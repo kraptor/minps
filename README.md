@@ -14,6 +14,8 @@
 ![Code Size](https://img.shields.io/github/languages/code-size/kraptor/minps)
 ![Build](https://github.com/kraptor/minps/workflows/Build/badge.svg)
 
+**NOTE**: the previous version of this repository [was archived in the `old` branch](https://github.com/kraptor/minps/tree/old).
+
 # Build
 
 ## Requirements
