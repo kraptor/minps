@@ -40,13 +40,13 @@ task build_release, "Build release version":
 
 task build_release_stacktrace, "Build release version (with stacktraces)":
   echo ">>>>>>>>>> Building: RELEASE (stacktrace) <<<<<<<<<<"
-  exec "nimble -d:danger --stackTrace:on --opt:speed -d:MINPS_MODE:release_stacktrace " &
+  exec "nimble -d:danger --opt:speed -d:flto --stackTrace:on -d:MINPS_MODE:release_stacktrace " &
     common_options & " build"
   postfixBinaries "_release_stacktrace"
 
 task build_callgrind, "Build release version (for callgrind)":
   echo ">>>>>>>>>> Building: RELEASE (callgrind) <<<<<<<<<<"
-  exec "nimble -d:danger --opt:speed -d:MINPS_MODE:release_callgrind " & common_options &
+  exec "nimble -d:danger --opt:speed -d:flto -d:MINPS_MODE:release_callgrind --linedir:on --debuginfo " & common_options &
     " build"
   postfixBinaries "_callgrind"
 
@@ -109,3 +109,13 @@ task wipe, "Clear all build files":
   rmFile "profile_results.txt"
   exec "rm -f callgrind.out*"
   echo ".. done."
+
+task run_callgrind, "Run with callgrind (valgrind), fix symbols and run kcachegrind":
+  exec "rm -f callgrind.out*"
+  exec "nimble build_callgrind"
+  # resources: https://web.stanford.edu/class/cs107/resources/callgrind
+  # extra possible params: --dump-instr=yes --collect-jumps=yes --simulate-cache=yes --passC:-Wa,--gstabs --passC:-save-temps
+  exec "valgrind --tool=callgrind bin/minps_callgrind > /dev/null"
+  # TODO: improve/update nim_callgrind and integrate it here
+  # exec "nim_callgrind/nim_callgrind.py `ls callgrind.out.*` callgrind.out"
+  exec "kcachegrind"
