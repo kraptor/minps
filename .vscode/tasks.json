@@ -9,6 +9,9 @@
             "group": {
                 "kind": "build",
                 "isDefault": true
+            },
+            "options": {
+                "cwd": "${workspaceRoot}"
             }
         },
         {
@@ -19,6 +22,22 @@
             "group": {
                 "kind": "build",
                 "isDefault": true
+            },
+            "options": {
+                "cwd": "${workspaceRoot}"
+            }
+        },
+        {
+            "label": "Build - Release (with stacktraces)",
+            "type": "shell",
+            "command": "nimble build_release_stacktrace",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "options": {
+                "cwd": "${workspaceRoot}"
             }
         },
         {
@@ -29,27 +48,71 @@
             "group": {
                 "kind": "build",
                 "isDefault": true
+            },
+            "options": {
+                "cwd": "${workspaceRoot}"
+            }
+        },
+        {
+            "label": "Build - Profiler (memory)",
+            "type": "shell",
+            "command": "nimble build_profiler_memory",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "options": {
+                "cwd": "${workspaceRoot}"
+            }
+        },
+        {
+            "label": "Build - Callgrind",
+            "type": "shell",
+            "command": "nimble build_callgrind",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "options": {
+                "cwd": "${workspaceRoot}"
             }
         },
         {
             "label": "Tests - Run",
             "type": "shell",
             "command": "nimble test --silent",
-            "problemMatcher": [],
             "group": {
-                "kind": "build",
-                "isDefault": true
+                "kind": "test",
+                "isDefault": false
+            },
+            "options": {
+                "cwd": "${workspaceRoot}"
             }
         },
         {
-            "label": "Clean",
+            "label": "Wipe",
             "type": "shell",
-            "command": "nimble clean",
-            "problemMatcher": [],
+            "command": "nimble wipe",
             "group": {
                 "kind": "build",
-                "isDefault": true
+                "isDefault": false
+            },
+            "options": {
+                "cwd": "${workspaceRoot}"
             }
+        },
+        {
+            "label": "Documentation",
+            "type": "shell",
+            "command": "nimble build_docs",
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "options": {
+                "cwd": "${workspaceRoot}"
+            },
+            "problemMatcher": []
         }
     ]
 }
