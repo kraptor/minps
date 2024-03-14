@@ -13,8 +13,9 @@ jobs:
           - macos-latest
           - ubuntu-latest
         nimversion:
-          - stable
-          - devel
+          - binary:stable
+          - nightly:https://github.com/nim-lang/nightlies/releases/tag/latest-devel
+          - master
     name: ${{ matrix.os }} - ${{ matrix.nimversion }}
     runs-on: ${{ matrix.os }}
     env:
