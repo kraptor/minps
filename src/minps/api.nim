@@ -14,7 +14,7 @@ import build
 export Build, BuildMode
 
 import configuration
-export Configuration, dump_json, load_json
+export Configuration, DefaultConfigFile, dump_json, load_json
 
 import version
 export version

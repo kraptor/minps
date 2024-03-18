@@ -15,5 +15,5 @@ type BuildMode* {.pure.} = enum
   Unknown = "unknown"
 
 const
-  MINPS_MODE* {.strdefine.} = "unknown"
+  MINPS_MODE {.strdefine.} = "unknown"
   Build* = parseEnum[BuildMode](MINPS_MODE)

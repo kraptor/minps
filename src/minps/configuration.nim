@@ -10,6 +10,9 @@
 import pkg/jsony
 import json
 
+const
+  DefaultConfigFile* = "minps.cfg"
+
 type
   Configuration* = object ## Default configuration.
     discard
