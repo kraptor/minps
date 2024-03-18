@@ -16,51 +16,59 @@ requires "jsony >= 1.1.5"
 requires "cligen >= 1.7.0"
 
 # Utility functions
+import distros
 
 proc postfixBinaries(name: string) =
   withDir binDir:
     for binary in bin:
       mvFile binary.toExe, (binary & name).toExe
 
-# Build tasks
-import distros
-let common_options = "--mm:orc -d:MINPS_VERSION:" & version
+let
+  common_options = " --mm:orc -d:MINPS_VERSION:" & version & " "
+  # TODO: more options to try in release -d:useMalloc -d:lto
+  release_options = " -d:danger -d:strip -d:lto --opt:speed "
 
+# Build tasks
 task build_debug, "Build debug version":
   echo ">>>>>>>>>> Building: DEBUG <<<<<<<<<<"
-  exec "nimble -d:debug -d:nimDebugDlOpen --debugger:native --debuginfo -d:nimTypeNames --linedir:on -d:MINPS_MODE:debug " &
-    common_options & " build"
+  exec "nimble -d:debug -d:nimDebugDlOpen --debugger:native --debuginfo -d:nimTypeNames --linedir:on -d:MINPS_MODE:debug" &
+    common_options & "build"
   postfixBinaries "_debug"
+  echo ".. done."
 
 task build_release, "Build release version":
   echo ">>>>>>>>>> Building: RELEASE <<<<<<<<<<"
-  exec "nimble -d:danger --opt:speed -d:flto -d:strip -d:MINPS_MODE:release " &
-    common_options & " build"
+  exec "nimble -d:MINPS_MODE:release" & common_options & release_options & "build"
   postfixBinaries "_release"
+  echo ".. done."
 
 task build_release_stacktrace, "Build release version (with stacktraces)":
   echo ">>>>>>>>>> Building: RELEASE (stacktrace) <<<<<<<<<<"
-  exec "nimble -d:danger --opt:speed -d:flto --stackTrace:on -d:MINPS_MODE:release_stacktrace " &
-    common_options & " build"
+  exec "nimble --stackTrace:on -d:MINPS_MODE:release_stacktrace" & common_options &
+    release_options & "build"
   postfixBinaries "_release_stacktrace"
+  echo ".. done."
 
 task build_callgrind, "Build release version (for callgrind)":
   echo ">>>>>>>>>> Building: RELEASE (callgrind) <<<<<<<<<<"
-  exec "nimble -d:danger --opt:speed -d:flto -d:MINPS_MODE:release_callgrind --linedir:on --debuginfo " & common_options &
-    " build"
+  exec "nimble -d:MINPS_MODE:release_callgrind --linedir:on --debuginfo" &
+    common_options & release_options & "build"
   postfixBinaries "_callgrind"
+  echo ".. done."
 
 task build_profiler, "Build with profiler":
   echo ">>>>>>>>>> Building: RELEASE (profiler) <<<<<<<<<<"
-  exec "nimble -d:danger --profiler:on --stackTrace:on -d:MINPS_PROFILER  -d:MINPS_MODE:release_profiler " &
-    common_options & " build"
+  exec "nimble --profiler:on --stackTrace:on -d:MINPS_PROFILER -d:MINPS_MODE:release_profiler" &
+    common_options & release_options & " build"
   postfixBinaries "_profiler"
+  echo ".. done."
 
 task build_profiler_memory, "Build with memory profiler":
   echo ">>>>>>>>>> Building: RELEASE (memory profiler) <<<<<<<<<<"
-  exec "nimble -d:danger --profiler:off -d:memProfiler --stackTrace:on -d:MINPS_PROFILER -d:MINPS_MODE:release_profiler_memory " &
-    common_options & " build"
+  exec "nimble --profiler:off -d:memProfiler --stackTrace:on -d:MINPS_PROFILER -d:MINPS_MODE:release_profiler_memory" &
+    common_options & release_options & " build"
   postfixBinaries "_profiler_memory"
+  echo ".. done."
 
 task build_all, "Build all minps versions":
   exec "nimble build_debug"
@@ -70,7 +78,6 @@ task build_all, "Build all minps versions":
   exec "nimble build_profiler"
   exec "nimble build_profiler_memory"
   exec "nimble build_docs"
-  echo ".. done."
 
 task build_docs, "Generate documentation":
   echo ">>>>>>>>>> BUILD DOCUMENTATION <<<<<<<<<<"
