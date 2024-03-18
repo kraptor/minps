@@ -1,14 +1,18 @@
-/nimcache/
-/nimblecache/
 /bios/
 /bios.bin
 /minps.log
 /profile_results.txt
 
 /__nimcache/
+/nimbledeps/
+/htmldocs/
 /bin/
+/dist/
 
 /callgrind.out*
 /imgui.ini
+
+nimble.develop
+nimble.paths
 
 /__build_cimgui/

@@ -1,52 +1,64 @@
-# `minps` - a wannabe PlayStation 1 emulator
+<!--
+ Copyright (c) 2024 kraptor
+ 
+ This software is released under the MIT License.
+ https://opensource.org/licenses/MIT
+-->
 
+# **MinPS** - a wannabe PlayStation 1 emulator
+
+![License](https://img.shields.io/github/license/kraptor/minps?color=olive)
 [![made-with-nim](https://img.shields.io/badge/Made%20with-Nim-ffc200.svg)](https://nim-lang.org/)
-![Build](https://github.com/kraptor/minps/workflows/Build/badge.svg)
-
-![License](https://img.shields.io/github/license/kraptor/minps?color=pink)
-![Total Lines](https://img.shields.io/tokei/lines/github/kraptor/minps?label=Total%20Lines)
-![Language](https://img.shields.io/github/languages/top/kraptor/minps?logo=Nim)
+[![Language](https://img.shields.io/github/languages/top/kraptor/minps?logo=Nim)](https://nim-lang.org/)
 ![Languages](https://img.shields.io/github/languages/count/kraptor/minps?label=Languages)
 ![Code Size](https://img.shields.io/github/languages/code-size/kraptor/minps)
+![Build](https://github.com/kraptor/minps/workflows/Build/badge.svg)
 
-## Linux Dependencies
+**NOTE**: the previous version of this repository [was archived in the `old` branch](https://github.com/kraptor/minps/tree/old).
 
-`X11` development libraries:
+# Build
 
-    sudo zypper install libX11-devel libXcursor-devel libXrandr-devel libXinerama-devel libXi-devel
+## Requirements
 
-`OpenGL` development libraries:
+**MinPS** requires the following software preinstalled:
+   * [git](https://git-scm.com/) (any modern versions should do)
+   * [nim](https://nim-lang.org/) >= 2.0.2
+   * [nimble](https://github.com/nim-lang/nimble) >= 0.14.2
 
-    sudo zypper install Mesa-libGL-devel
+## Release mode
 
-## Building instructions
+```sh
+$ ./build.sh
+```
 
-``minps`` can be compiled in different flavors using ``nimble``.
+**MinPS** can be built in several modes. To see all possible build modes, use the following command:
 
-Debug build:
+```bash
+$ nimble -l tasks
+```
 
-    nimble build_debug
+It's possible to build everything with:
 
-Profiler build:
+```bash
+$ nimble -l build_all
+```
 
-    nimble build_profiler
+## Developer documentation
 
-Profiler build (memory):
+Generate the documentation locally with:
 
-    nimble build_profiler_memory
+```bash
+$ nimble -l build_docs
+```
 
-Release build:
+Then open the generated `htmldocs/minps.html` file in any browser.
 
-    nimble build_release
+# Debug
 
-Release build with symbols for Valgrind/Callgrind:
+## Performance (using callgrind)
 
-    nimble build_callgrind
+It's possible to build an optimized version that supports callgrind:
 
-Release build (with stacktrace support):
-
-    nimble build_release_stacktrace
-
-## Running tests
-
-    nimble test --silent
+```bash
+$ nimble -l run_callgrind
+```

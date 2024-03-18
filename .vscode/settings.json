@@ -1,0 +1,13 @@
+{
+    "nim.projectMapping": [
+    // {
+    //     // open files under tests using one nimsuggest instance started with root = test/all.nim
+    //     "projectFile": "tests/*.nim",
+    //     "fileRegex": "tests/.*\\.nim"
+    // }, 
+    {
+        // everything else - use minps.nim as root.
+        "projectFile": "src/minps.nim",
+        "fileRegex": ".*\\.nim"
+    }]
+}
